@@ -2,141 +2,228 @@
 
 | Estado | Cubre | Tickets |
 |---|---|---|
-| Borrador (Entrega 1) | Entidades de PRD §7, RN-01/03/04/06/10 | TK-00.3, TK-00.4 |
+| Borrador v1.1 (Entrega 2), pendiente de aprobación | Entidades de PRD §7, CL-03, RN-01/03/04/05/09/10/12 | TK-00.3, TK-00.4 |
 
-Este documento define la persistencia. Las reglas de negocio se citan por ID: su lógica vive en los servicios del backend ([ARCHITECTURE](../docs/ARCHITECTURE.md)).
+Este documento define la persistencia. Las reglas de negocio se citan por ID: su lógica vive en los servicios del backend ([ARCHITECTURE](../docs/ARCHITECTURE.md)). La base de datos es PostgreSQL 16 en todos los entornos (RNF-01).
 
-## Diagrama entidad-relación
+**Alcance físico.** El esquema inicial del MVP contiene solo `User`, `Customer`, `Product`, `Order` y `OrderItem`. `Claim` y `PurchaseOrder` son de V2: su diseño conceptual se conserva al final de este documento, pero no se crean modelos Prisma, tablas, enums ni migraciones para ellas en el MVP.
+
+## Diagrama entidad-relación (MVP, esquema físico)
+
+Nombres físicos (tablas y columnas). `PK` clave primaria, `FK` clave foránea, `UK` único.
 
 ```mermaid
 erDiagram
-    CUSTOMER ||--o{ ORDER : "realiza"
-    ORDER ||--|{ ORDER_ITEM : "contiene"
-    PRODUCT ||--o{ ORDER_ITEM : "se vende en"
-    ORDER ||--o{ CLAIM : "recibe"
-    PRODUCT ||--o{ PURCHASE_ORDER : "se repone con"
-    USER
+    customers ||--o{ orders : "realiza"
+    orders ||--|{ order_items : "contiene"
+    products ||--o{ order_items : "se vende en"
+
+    users {
+        int id PK
+        text email UK "minúsculas"
+        text password_hash "bcrypt"
+        text name
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    customers {
+        int id PK
+        text business_name
+        text tax_id UK "RUT"
+        text phone UK "normalizado RN-12"
+        boolean is_active "default true"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    products {
+        int id PK
+        text name
+        text description "nullable"
+        decimal price "numeric(12,2), > 0"
+        int current_stock ">= 0"
+        int min_stock_alert ">= 0"
+        boolean is_active "default true"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    orders {
+        int id PK
+        text order_number UK "MED- + 5 o más dígitos, desde secuencia"
+        int customer_id FK
+        order_status status "default PENDING"
+        decimal total_amount "numeric(12,2), > 0"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    order_items {
+        int id PK
+        int order_id FK "UK con product_id"
+        int product_id FK "UK con order_id"
+        int quantity "> 0"
+        decimal unit_price "numeric(12,2), > 0"
+        timestamptz created_at
+        timestamptz updated_at
+    }
 ```
 
-`USER` no se relaciona con las demás entidades: el MVP no registra qué operador hizo cada acción.
+`users` no se relaciona con las demás tablas: el MVP no registra qué operador hizo cada acción.
 
 ## Convenciones
 
-- Modelos Prisma en `PascalCase` y campos en `camelCase`. Tablas y columnas en `snake_case` vía `@@map` / `@map`.
-- Todas las entidades tienen `id` (entero autoincremental), `createdAt` y `updatedAt`, gestionados por Prisma. No se repiten en las tablas.
-- Dinero: `Decimal(12,2)`. Nunca `Float`.
-- Fechas en UTC.
+- Modelos Prisma en `PascalCase` y campos en `camelCase`. Tablas en `snake_case` y plural, y columnas en `snake_case`, vía `@@map` / `@map`. El modelo `Order` se mapea a la tabla `orders`.
+- Todas las tablas tienen `id` como PK (entero autoincremental, `Int @id @default(autoincrement())`), `created_at` y `updated_at` (`@default(now())` y `@updatedAt`).
+- Fechas: `timestamptz` (`@db.Timestamptz(3)`), siempre en UTC.
+- Dinero: `numeric(12,2)` (`Decimal @db.Decimal(12, 2)`). Nunca `Float`.
+- Textos: `text`. Las longitudes máximas se validan en la API (contrato en `docs/openapi.yaml`), no en la base.
+- Enums: enums nativos de PostgreSQL vía `enum` de Prisma.
 - Relaciones con `onDelete: Restrict`: nada se borra en cascada (RN-10).
-- Los enums de Prisma se usan en SQLite y PostgreSQL (Prisma ≥ 6.2).
+- Las claves foráneas se indexan explícitamente: PostgreSQL no lo hace solo.
 
-## Entidades
+## Entidades del MVP
 
-### User — operador del dashboard
+### User → `users` — operador del dashboard (AU-01, AU-02)
 
-| Campo | Tipo | Restricciones |
-|---|---|---|
-| email | String | Único, minúsculas |
-| passwordHash | String | Hash bcrypt, nunca se expone en la API |
-| name | String | Requerido |
+| Campo | Columna | Tipo | Restricciones |
+|---|---|---|---|
+| id | `id` | Int | PK |
+| email | `email` | String | Requerido. Único. Se guarda en minúsculas (el servicio lo convierte antes de guardar y de buscar) |
+| passwordHash | `password_hash` | String | Requerido. Hash bcrypt. Nunca se expone en la API (RNF-08) |
+| name | `name` | String | Requerido |
 
-### Customer — clínica o farmacia
+### Customer → `customers` — clínica o farmacia (CL-02, CL-03)
 
-| Campo | Tipo | Restricciones |
-|---|---|---|
-| businessName | String | Requerido |
-| taxId | String | Único. Documento tributario (NIT/RUT) |
-| phone | String | Único. Normalizado a E.164 (`+573001234567`) antes de guardar y de buscar |
-| isActive | Boolean | Default `true` (CL-02, RN-10) |
+| Campo | Columna | Tipo | Restricciones |
+|---|---|---|---|
+| id | `id` | Int | PK |
+| businessName | `business_name` | String | Requerido |
+| taxId | `tax_id` | String | Requerido. Único. RUT del cliente |
+| phone | `phone` | String | Requerido. Único. Se guarda ya normalizado (RN-12). La búsqueda de CL-03 normaliza la entrada y compara por igualdad exacta con esta columna |
+| isActive | `is_active` | Boolean | Default `true` (CL-02, RN-10) |
 
-### Product — insumo médico
+En el MVP los clientes solo se crean por seed, y el seed aplica la misma normalización de RN-12 que el chat. La gestión desde el dashboard es V2 (CL-01).
 
-| Campo | Tipo | Restricciones |
-|---|---|---|
-| name | String | Requerido |
-| description | String? | Opcional |
-| price | Decimal(12,2) | `> 0` |
-| currentStock | Int | `>= 0` (RN-01) |
-| minStockAlert | Int | `>= 0` |
-| isActive | Boolean | Default `true` (RN-10) |
+### Product → `products` — insumo médico (IN-01, IN-02, RN-09)
 
-### Order — pedido confirmado
+| Campo | Columna | Tipo | Restricciones |
+|---|---|---|---|
+| id | `id` | Int | PK |
+| name | `name` | String | Requerido |
+| description | `description` | String? | Opcional |
+| price | `price` | Decimal(12,2) | `> 0` |
+| currentStock | `current_stock` | Int | `>= 0` (RN-01) |
+| minStockAlert | `min_stock_alert` | Int | `>= 0` |
+| isActive | `is_active` | Boolean | Default `true` (RN-10) |
 
-| Campo | Tipo | Restricciones |
-|---|---|---|
-| orderNumber | String | Único. Formato RN-04 |
-| customerId | Int | FK → Customer |
-| status | `OrderStatus` | `PENDING` · `PROCESSING` · `DISPATCHED` · `DELIVERED` · `CANCELLED`. Default `PENDING` |
-| totalAmount | Decimal(12,2) | Suma de `quantity × unitPrice` de sus ítems, calculada al confirmar |
+- El ajuste de stock de IN-02 no necesita una columna de versión: el control optimista compara `current_stock` con el `expectedStock` recibido (CA-13).
+- Una alerta (RN-09) es una consulta, no un dato guardado: `is_active = true AND current_stock <= min_stock_alert`.
 
-- El teléfono del cliente no se copia en el pedido: se obtiene vía `customerId`.
-- **`orderNumber` (RN-04):** se genera dentro de la misma transacción de creación como `MED-` + `id` rellenado a 5 dígitos. En PostgreSQL, una transacción revertida puede dejar un número sin usar. Se acepta.
+### Order → `orders` — pedido confirmado (CH-07, PE-01, PE-02)
 
-### OrderItem — línea de un pedido
+| Campo | Columna | Tipo | Restricciones |
+|---|---|---|---|
+| id | `id` | Int | PK |
+| orderNumber | `order_number` | String | Requerido. Único. Lo asigna la base al insertar (RN-04, ver abajo) |
+| customerId | `customer_id` | Int | FK → `customers.id`, `Restrict` |
+| status | `status` | `OrderStatus` | `PENDING` · `PROCESSING` · `DISPATCHED` · `DELIVERED` · `CANCELLED`. Default `PENDING` (RN-05) |
+| totalAmount | `total_amount` | Decimal(12,2) | `> 0`. Suma de `quantity × unit_price` de sus ítems, calculada al confirmar |
 
-| Campo | Tipo | Restricciones |
-|---|---|---|
-| orderId | Int | FK → Order |
-| productId | Int | FK → Product |
-| quantity | Int | `> 0` |
-| unitPrice | Decimal(12,2) | Precio del producto al confirmar (RN-03) |
+- El teléfono del cliente no se copia en el pedido: se obtiene vía `customer_id`.
+- Un pedido cancelado conserva sus ítems. La restitución de stock (RN-05) solo modifica `products.current_stock`.
+- **`order_number` (RN-04):** la migración crea la secuencia `order_number_seq` y la función `next_order_number()`, que toma un valor de la secuencia y devuelve `'MED-'` seguido del número completado con ceros hasta cinco dígitos, sin recortarlo si tiene más (`MED-00001`, `MED-99999`, `MED-100000`). Equivale a `lpad(n::text, greatest(5, length(n::text)), '0')` sobre un único `nextval`. La columna la usa como valor por defecto, declarado en Prisma con `@default(dbgenerated("next_order_number()"))`. Se asigna en el mismo `INSERT`, así que nunca queda nulo. Si la transacción se revierte, el valor consumido de la secuencia no se reutiliza: es el salto que RN-04 permite.
+- **Orden:** `order_number` no sirve para ordenar, porque `MED-100000` va alfabéticamente antes que `MED-99999`. Los listados ordenan por `created_at` o `id`.
 
-Único `(orderId, productId)`: el carrito agrupa el mismo producto en una sola línea.
+### OrderItem → `order_items` — línea de un pedido (RN-03)
 
-### Claim — reclamo
+| Campo | Columna | Tipo | Restricciones |
+|---|---|---|---|
+| id | `id` | Int | PK |
+| orderId | `order_id` | Int | FK → `orders.id`, `Restrict` |
+| productId | `product_id` | Int | FK → `products.id`, `Restrict` |
+| quantity | `quantity` | Int | `> 0` |
+| unitPrice | `unit_price` | Decimal(12,2) | `> 0`. Precio del producto al confirmar (RN-03) |
 
-| Campo | Tipo | Restricciones |
-|---|---|---|
-| orderId | Int | FK → Order |
-| type | `ClaimType` | `RETURN` · `DEFECTIVE` · `INCOMPLETE` |
-| description | String | Requerido |
-| status | `ClaimStatus` | `OPEN` · `APPROVED` · `REJECTED`. Default `OPEN` |
-| resolutionNote | String? | Obligatoria cuando `status ≠ OPEN` (RE-02) |
-| resolvedAt | DateTime? | Se asigna al resolver |
-
-"Máximo un reclamo `OPEN` por pedido" (RN-06) se valida en el servicio dentro de una transacción. Prisma no soporta índices únicos parciales.
-
-### PurchaseOrder — orden de reposición
-
-| Campo | Tipo | Restricciones |
-|---|---|---|
-| productId | Int | FK → Product |
-| requestedQuantity | Int | `> 0` |
-| supplierName | String? | Texto libre opcional (RP-01) |
-| status | `PurchaseOrderStatus` | `DRAFT` · `SENT` · `RECEIVED`. Default `DRAFT` |
-| sentAt | DateTime? | Se asigna al pasar a `SENT` |
-| receivedAt | DateTime? | Se asigna al pasar a `RECEIVED` |
-
-`receivedAt` no nulo indica que el stock ya se sumó (RN-11).
+Único `(order_id, product_id)`: el carrito agrupa el mismo producto en una sola línea.
 
 ## Restricciones en base de datos
 
-Prisma no declara `CHECK`. Se agregan con SQL manual en la migración inicial y deben funcionar igual en SQLite y PostgreSQL:
+Prisma no declara `CHECK`. Se agregan con SQL en la migración inicial:
 
-- `product.current_stock >= 0`, `product.min_stock_alert >= 0`, `product.price > 0`
-- `order_item.quantity > 0`
-- `purchase_order.requested_quantity > 0`
+| Tabla | Restricción | Regla |
+|---|---|---|
+| `products` | `current_stock >= 0` | RN-01 |
+| `products` | `min_stock_alert >= 0` | IN-01 |
+| `products` | `price > 0` | IN-01 |
+| `orders` | `total_amount > 0` | CH-06 |
+| `order_items` | `quantity > 0` | CH-05 |
+| `order_items` | `unit_price > 0` | RN-03 |
+| `customers` | `phone ~ '^\+[0-9]+$'` | RN-12: solo se guarda el formato normalizado |
 
-Son una red de seguridad: los servicios validan antes y devuelven errores legibles.
+Son una red de seguridad: los servicios validan antes y devuelven errores legibles. La de `current_stock` es además la última barrera de RN-01 si fallara la actualización condicional.
 
 ## Índices
 
-| Tabla | Índice | Uso |
-|---|---|---|
-| order | `customer_id`, `status` | Pedidos del cliente en el chat (RN-08), filtro PE-01 |
-| claim | `order_id`, `status` | Validación RN-06, filtro RE-01 |
-| purchase_order | `status` | Filtro RP-03 |
-| product | `is_active` | Catálogo (CH-04) y alertas (RN-09) |
+| Tabla | Índice | Tipo | Uso |
+|---|---|---|---|
+| `users` | `email` | Único | Login (AU-01) |
+| `customers` | `phone` | Único | Identificación en el chat (CL-03) |
+| `customers` | `tax_id` | Único | Unicidad del RUT |
+| `products` | `is_active` | Simple | Catálogo (CH-04) y alertas (RN-09) |
+| `orders` | `order_number` | Único | Consulta por número (CH-08). No se usa para ordenar |
+| `orders` | `customer_id` | Simple | FK y pedidos del cliente en el chat (RN-08) |
+| `orders` | `(status, created_at)` | Compuesto | Listado filtrado por estado y ordenado por fecha (PE-01) |
+| `order_items` | `(order_id, product_id)` | Único | Una línea por producto. También sirve como índice de la FK `order_id` |
+| `order_items` | `product_id` | Simple | FK |
 
 ## Fuera del modelo persistente
 
-- **Sesión de chat y carrito:** viven en memoria del backend y se pierden al reiniciar (PRD §9). Ver `specs/03_conversational_bot.spec.md`.
+- **Sesión de chat y carrito:** viven en memoria del backend y se pierden al reiniciar (PRD §10). Ver `specs/03_conversational_bot.spec.md`.
+- **Alertas de stock:** se calculan con una consulta (RN-09), no se guardan.
+- **Expiración de la sesión de chat (CH-11)** y **de la sesión del operador (AU-03):** se controlan en memoria y en el JWT, respectivamente. No requieren columnas.
+- **Precio mostrado en el resumen (RN-03, CH-06):** vive en la sesión de chat solo para compararlo al confirmar. El pedido guarda únicamente el precio vigente al confirmar (`order_items.unit_price`).
 - **Historial de cambios de estado y auditoría por operador:** fuera del MVP.
 
 ## Seed
 
+El seed es idempotente: correrlo dos veces no duplica datos. Los clientes se cargan aplicando la normalización de RN-12, igual que en el chat.
+
 | Datos | Propósito |
 |---|---|
-| 1 operador, con credenciales tomadas de variables de entorno | AU-02 |
-| 3 clientes activos y 1 inactivo | CA-06 |
-| ~10 productos: al menos 1 con stock 0, 2 con stock ≤ mínimo y 1 inactivo | CA-01, CH-04, RN-09 |
-| Pedidos de ejemplo en cada estado, al menos 1 `DELIVERED` | CA-07, CA-09 |
+| 1 operador, con credenciales tomadas de variables de entorno | AU-02, RNF-08 |
+| 3 clientes activos y 1 inactivo, con teléfonos escritos en distintos formatos de entrada (con espacios, sin `+56`, con `+56`) | CA-06, CL-02, RN-12 |
+| ~10 productos: al menos 1 con stock 0, 2 activos con stock ≤ mínimo (uno de ellos con stock = mínimo), 1 inactivo con stock ≤ mínimo y 1 inactivo más | CH-04, CA-01, RN-09, RN-10 |
+| Pedidos de ejemplo en cada estado de RN-05, de al menos 2 clientes distintos e incluido al menos 1 en `PROCESSING` | CA-07, CA-12, PE-01 |
+
+Los pedidos del seed no descuentan stock: el stock inicial de cada producto se fija directamente.
+
+## Diseño conceptual V2 (no forma parte del esquema físico del MVP)
+
+Se documenta para que el modelo del MVP no impida añadirlo después. No se crean tablas, enums ni migraciones en el MVP (PRD §7).
+
+```mermaid
+erDiagram
+    orders ||--o{ claims : "recibe"
+    products ||--o{ purchase_orders : "se repone con"
+
+    claims {
+        int id PK
+        int order_id FK
+        claim_type type "RETURN, DEFECTIVE, INCOMPLETE"
+        text description
+        claim_status status "OPEN, APPROVED, REJECTED"
+        text resolution_note "nullable, obligatoria si status != OPEN"
+        timestamptz resolved_at "nullable"
+    }
+    purchase_orders {
+        int id PK
+        int product_id FK
+        int requested_quantity "> 0"
+        text supplier_name "nullable"
+        purchase_order_status status "DRAFT, SENT, RECEIVED"
+        timestamptz sent_at "nullable"
+        timestamptz received_at "nullable"
+    }
+```
+
+- **Claim → `claims`** (CH-10, RE-01, RE-02, RN-06, RN-07): con PostgreSQL como único motor, "máximo un reclamo `OPEN` por pedido" (RN-06) puede garantizarse con un índice único parcial `(order_id) WHERE status = 'OPEN'`, creado por SQL en la migración. `CHECK (status = 'OPEN' OR resolution_note IS NOT NULL)` para RE-02.
+- **PurchaseOrder → `purchase_orders`** (RP-01..03, RN-11): `received_at` no nulo indica que el stock ya se sumó. La transición a `RECEIVED` debe ser una actualización condicional sobre `status = 'SENT'` para sumar el stock una sola vez. Índice en `status` (RP-03) y en `product_id`.
+- Ambas tablas añadirían `created_at` y `updated_at` según las convenciones, y sus FK con `Restrict`.

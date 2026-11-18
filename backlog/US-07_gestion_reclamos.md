@@ -1,8 +1,10 @@
 # US-07 · Gestión de reclamos
 
-| Requisitos | Reglas | Criterios PRD | Puntos | Depende de |
-|---|---|---|---|---|
-| CH-10, RE-01, RE-02 | RN-06, RN-07, RN-08 | CA-09, CA-10 | 11 | US-06 |
+| Fase | Requisitos | Reglas | Criterios PRD | Puntos | Depende de |
+|---|---|---|---|---|---|
+| `V2` | CH-10, RE-01, RE-02 · partes V2 de CH-03, CH-08 y PE-01 | RN-06, RN-07, RN-08 | CA-09, CA-10 | 11 | US-06 |
+
+Toda la historia es `V2`: en el MVP no se implementa ninguna gestión de reclamos (PRD §5.7). Requiere crear la entidad `Claim` según el diseño conceptual de la spec 01.
 
 ## Historia
 
@@ -21,38 +23,38 @@
 3. **Dado** un pedido con un reclamo `OPEN`, **cuando** intenta otro, **entonces** se rechaza. Si el reclamo anterior ya fue resuelto, sí puede abrir uno nuevo (RN-06).
 4. **Dado** un número de orden ajeno o inexistente, **cuando** intenta reclamar, **entonces** recibe "Pedido no encontrado" (RN-08).
 5. **Dado** un reclamo `OPEN`, **cuando** el operador intenta resolverlo sin nota, **entonces** no se permite. Con nota, queda `APPROVED` o `REJECTED` con fecha de resolución (RE-02, CA-10).
-6. **Dado** un reclamo resuelto, **entonces** el stock y el estado del pedido no cambian (RN-07), y el cliente ve el resultado en "Mis pedidos" (CH-08).
+6. **Dado** un reclamo resuelto, **entonces** el stock y el estado del pedido no cambian (RN-07), y el cliente ve el resultado en "Mis pedidos" (CH-08, parte `V2`).
 7. **Dado** el listado de reclamos, **cuando** el operador filtra por estado o tipo, **entonces** ve solo esos reclamos, con acceso al pedido asociado (RE-01).
 
 ## Tickets
 
 ### TK-07.1 · [API] Servicio de reclamos
-**Puntos:** 3 · **Depende de:** TK-06.1 · **Spec:** specs/04_orders_claims.spec.md
+**Fase:** `V2` · **Puntos:** 3 · **Depende de:** TK-06.1 · **Spec:** specs/04_orders_claims.spec.md
 
-Crear en `claims.service` la creación de reclamos (valida propiedad, estado `DELIVERED` y unicidad de `OPEN` en una transacción) y su resolución con nota obligatoria.
+Crear la entidad `Claim` y su migración, y en `claims.service` la creación de reclamos (valida propiedad, estado `DELIVERED` y unicidad de `OPEN`) y su resolución con nota obligatoria.
 
 **Hecho cuando:**
 - Cada rechazo tiene un código de error propio (`ORDER_NOT_DELIVERED`, `CLAIM_ALREADY_OPEN`, `ORDER_NOT_FOUND`).
 - Resolver un reclamo que no está `OPEN` devuelve 409.
 
 ### TK-07.2 · [API] Opción "Reclamo" en el chat
-**Puntos:** 2 · **Depende de:** TK-07.1, TK-05.1 · **Spec:** specs/03_conversational_bot.spec.md
+**Fase:** `V2` · **Puntos:** 2 · **Depende de:** TK-07.1, TK-05.1, TK-06.3 · **Spec:** specs/03_conversational_bot.spec.md
 
-Crear los estados del FSM para pedir número de orden, tipo (opciones numeradas) y descripción, y confirmar el registro.
+Agregar la opción 3) Reclamo al menú (CH-03, parte `V2`) y crear los estados del FSM para pedir número de orden, tipo (opciones numeradas) y descripción, y confirmar el registro. Mostrar el estado del reclamo en "Mis pedidos" (CH-08, parte `V2`).
 
 **Hecho cuando:**
 - Los errores del servicio se traducen a mensajes comprensibles para el cliente.
 
 ### TK-07.3 · [API] Endpoints de reclamos para el operador
-**Puntos:** 1 · **Depende de:** TK-07.1, TK-01.1 · **Spec:** specs/04_orders_claims.spec.md
+**Fase:** `V2` · **Puntos:** 1 · **Depende de:** TK-07.1, TK-01.1 · **Spec:** specs/04_orders_claims.spec.md
 
-Crear `GET /claims` con filtros, `GET /claims/:id` y `POST /claims/:id/resolve`.
+Crear `GET /claims` con filtros, `GET /claims/:id` y `POST /claims/:id/resolve`. Incluir los reclamos en el detalle de `GET /orders/:id` (PE-01, parte `V2`).
 
 **Hecho cuando:**
 - Sin `resolutionNote`, o con la nota vacía, se devuelve 422.
 
 ### TK-07.4 · [UI] Pantalla de reclamos
-**Puntos:** 3 · **Depende de:** TK-07.3, TK-01.2 · **Spec:** specs/04_orders_claims.spec.md
+**Fase:** `V2` · **Puntos:** 3 · **Depende de:** TK-07.3, TK-01.2 · **Spec:** specs/04_orders_claims.spec.md
 
 Crear la tabla con filtros por estado y tipo, el detalle con enlace al pedido y el modal de resolución con nota obligatoria.
 
@@ -60,7 +62,7 @@ Crear la tabla con filtros por estado y tipo, el detalle con enlace al pedido y 
 - Los reclamos `OPEN` se destacan y el modal no permite enviar sin nota.
 
 ### TK-07.5 · [TEST] Pruebas de reclamos
-**Puntos:** 2 · **Depende de:** TK-07.2, TK-07.4 · **Spec:** specs/04_orders_claims.spec.md
+**Fase:** `V2` · **Puntos:** 2 · **Depende de:** TK-07.2, TK-07.4 · **Spec:** specs/04_orders_claims.spec.md
 
 **Hecho cuando:**
 - Hay tests de integración para RN-06 (tres casos de rechazo) y RN-07 (sin efectos en stock ni pedido).

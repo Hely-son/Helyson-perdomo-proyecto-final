@@ -1,67 +1,88 @@
 # US-06 · Seguimiento y gestión de pedidos
 
-| Requisitos | Reglas | Criterios PRD | Puntos | Depende de |
-|---|---|---|---|---|
-| CH-08, CH-09, PE-01, PE-02 | RN-05, RN-08 | CA-07, CA-08 | 13 | US-05 |
+| Fase | Requisitos | Reglas | Criterios PRD | Puntos | Depende de |
+|---|---|---|---|---|---|
+| `MVP` | CH-08 (sin reclamos), PE-01 (sin reclamos), PE-02 | RN-05 (operador), RN-08 | CA-07, CA-12 | 15 | US-05 |
+| `V2` | CH-09 | RN-05 (cliente) | CA-08 | 3 | US-06 `MVP` |
 
-## Historia
+## Historias
 
-**Como** comprador de una clínica o farmacia,
-**quiero** consultar el estado de mis pedidos y cancelar los que aún no se procesan,
-**para** saber cuándo llega mi compra y corregir errores a tiempo.
+`MVP` **Como** comprador de una clínica o farmacia,
+**quiero** consultar el estado de mis pedidos,
+**para** saber cuándo llega mi compra.
 
-**Como** operador,
-**quiero** ver los pedidos y avanzar su estado,
+`V2` **Como** comprador de una clínica o farmacia,
+**quiero** cancelar los pedidos que aún no se procesan,
+**para** corregir errores a tiempo.
+
+`MVP` **Como** operador,
+**quiero** ver los pedidos, avanzar su estado y cancelarlos cuando corresponda,
 **para** gestionar su preparación y entrega.
 
 ## Criterios de aceptación
 
-1. **Dado** un pedido propio, **cuando** el cliente ingresa su número en "Mis pedidos", **entonces** ve el estado, los ítems, el total y el estado del reclamo si existe (CH-08).
-2. **Dado** un número de orden de otro cliente o inexistente, **cuando** lo consulta, **entonces** recibe "Pedido no encontrado" (RN-08, CA-07).
-3. **Dado** un pedido propio en `PENDING`, **cuando** el cliente lo cancela, **entonces** queda `CANCELLED` y el stock se restituye (CH-09, CA-08). En cualquier otro estado, el bot no ofrece cancelar.
-4. **Dado** un pedido, **cuando** el operador lo avanza, **entonces** solo puede ir al siguiente estado de RN-05, sin retroceder.
-5. **Dado** un pedido en `PENDING` o `PROCESSING`, **cuando** el operador lo cancela, **entonces** queda `CANCELLED` y el stock se restituye. Desde `DISPATCHED` o `DELIVERED` no se puede cancelar.
-6. **Dado** el listado de pedidos, **cuando** el operador filtra por estado, **entonces** ve solo esos pedidos y puede abrir el detalle con cliente, ítems, total y reclamos (PE-01).
+1. `MVP` **Dado** un pedido propio, **cuando** el cliente ingresa su número en "Mis pedidos", **entonces** ve el número de orden, el estado, los ítems y el total (CH-08).
+2. `MVP` **Dado** un número de orden de otro cliente o inexistente, **cuando** lo consulta, **entonces** recibe "Pedido no encontrado" (RN-08, CA-07).
+3. `V2` **Dado** un pedido propio en `PENDING`, **cuando** el cliente lo cancela, **entonces** queda `CANCELLED` y el stock se restituye (CH-09, CA-08). En cualquier otro estado, el bot no ofrece cancelar.
+4. `MVP` **Dado** un pedido, **cuando** el operador lo avanza, **entonces** solo puede ir al siguiente estado de RN-05, sin saltos ni retroceso.
+5. `MVP` **Dado** un pedido en `PENDING` o `PROCESSING`, **cuando** el operador lo cancela, **entonces** queda `CANCELLED` y el stock se restituye una sola vez, aunque la cancelación se repita o llegue en paralelo. Desde `DISPATCHED`, `DELIVERED` o `CANCELLED` se rechaza sin cambios (CA-12).
+6. `MVP` **Dado** el listado de pedidos, **cuando** el operador filtra por estado, **entonces** ve solo esos pedidos, ordenados por fecha, y puede abrir el detalle con cliente, ítems y total (PE-01).
 
 ## Tickets
 
 ### TK-06.1 · [API] Transiciones de estado del pedido
-**Puntos:** 3 · **Depende de:** TK-05.3 · **Spec:** specs/04_orders_claims.spec.md
+**Fase:** `MVP` · **Puntos:** 5 · **Depende de:** TK-05.3 · **Spec:** specs/04_orders_claims.spec.md
 
-Crear en `orders.service` la máquina de transiciones de RN-05, con el actor (`CUSTOMER` u `OPERATOR`) como parámetro. La cancelación restituye el stock en una transacción.
+Crear en `orders.service` la máquina de transiciones de RN-05 para el actor `OPERATOR`: avance al estado siguiente y cancelación desde `PENDING` o `PROCESSING` con restitución de stock en una transacción. Cada cambio de estado es una actualización condicional sobre el estado esperado.
 
 **Hecho cuando:**
-- Una transición no permitida para el actor devuelve un error de dominio (409 vía API).
-- Hay tests unitarios para todas las combinaciones de estado × actor.
+- Una transición no permitida o una carrera perdida devuelve un error de dominio (409 vía API).
+- Hay tests unitarios para todas las combinaciones de estado × transición del operador.
+- Los tests de integración contra PostgreSQL cubren CA-12: cancelación desde `PROCESSING` con restitución, rechazo desde `DISPATCHED`, `DELIVERED` y `CANCELLED`, y cancelaciones repetidas en paralelo que restituyen el stock una sola vez.
 
 ### TK-06.2 · [API] Endpoints de pedidos para el operador
-**Puntos:** 2 · **Depende de:** TK-06.1, TK-01.1 · **Spec:** specs/04_orders_claims.spec.md
+**Fase:** `MVP` · **Puntos:** 3 · **Depende de:** TK-06.1, TK-01.1 · **Spec:** specs/04_orders_claims.spec.md
 
-Crear `GET /orders` con filtro y paginación, `GET /orders/:id` y `PATCH /orders/:id/status`.
+Crear `GET /orders` con filtro por estado, paginación y orden por fecha de creación, `GET /orders/:id` y `PATCH /orders/:id/status`.
 
 **Hecho cuando:**
-- El detalle incluye el cliente, los ítems y los reclamos.
+- El detalle incluye el cliente, los ítems y el total.
+- El listado no se ordena por `order_number` (spec 01).
+- Hay tests de integración del filtro, del detalle y de los códigos de error del cambio de estado.
 
 ### TK-06.3 · [API] "Mis pedidos" en el chat
-**Puntos:** 3 · **Depende de:** TK-06.1, TK-05.1 · **Spec:** specs/03_conversational_bot.spec.md
+**Fase:** `MVP` · **Puntos:** 2 · **Depende de:** TK-05.1, TK-05.3 · **Spec:** specs/03_conversational_bot.spec.md
 
-Crear los estados del FSM para pedir el número de orden, mostrar el pedido y ofrecer cancelar si está `PENDING`.
+Crear los estados del FSM para pedir el número de orden y mostrar el pedido (CH-08, parte `MVP`).
 
 **Hecho cuando:**
 - La búsqueda filtra por el cliente de la sesión (RN-08).
-- Cancelar pide confirmación antes de ejecutarse.
+- La respuesta muestra número, estado, ítems y total, sin información de reclamos.
+- No ofrece cancelar el pedido (CH-09 es `V2`).
+- Hay tests unitarios del pedido propio, del ajeno y del inexistente.
 
 ### TK-06.4 · [UI] Pantalla de pedidos
-**Puntos:** 3 · **Depende de:** TK-06.2, TK-01.2 · **Spec:** specs/04_orders_claims.spec.md
+**Fase:** `MVP` · **Puntos:** 3 · **Depende de:** TK-06.2, TK-01.2 · **Spec:** specs/04_orders_claims.spec.md
 
 Crear la tabla con filtro por estado, el detalle en drawer o página y los botones de la siguiente transición y de cancelar.
 
 **Hecho cuando:**
 - Solo se muestran las acciones válidas para el estado actual.
+- Un 409 se informa y se recarga el estado actual del pedido.
 
-### TK-06.5 · [TEST] Pruebas de seguimiento
-**Puntos:** 2 · **Depende de:** TK-06.3, TK-06.4 · **Spec:** specs/04_orders_claims.spec.md
+### TK-06.5 · [TEST] E2E de seguimiento
+**Fase:** `MVP` · **Puntos:** 2 · **Depende de:** TK-06.3, TK-06.4, TK-00.4 · **Spec:** specs/04_orders_claims.spec.md
 
 **Hecho cuando:**
-- Los E2E de CA-07 y CA-08 pasan.
-- Hay un test de integración de la cancelación del operador desde `PROCESSING` con restitución de stock.
+- El E2E de CA-07 pasa.
+- El E2E de la cancelación por el operador desde `PROCESSING` pasa, y verifica el estado y la restitución de stock (CA-12).
+
+### TK-06.6 · [API] Cancelación por el cliente en el chat
+**Fase:** `V2` · **Puntos:** 3 · **Depende de:** TK-06.1, TK-06.3 · **Spec:** specs/03_conversational_bot.spec.md, specs/04_orders_claims.spec.md
+
+Agregar a `orders.service` el actor `CUSTOMER` para cancelar desde `PENDING`, y a "Mis pedidos" la opción de cancelar un pedido propio en `PENDING` (CH-09).
+
+**Hecho cuando:**
+- Cancelar pide confirmación antes de ejecutarse.
+- El bot solo ofrece cancelar si el pedido está `PENDING`.
+- El E2E de CA-08 pasa.

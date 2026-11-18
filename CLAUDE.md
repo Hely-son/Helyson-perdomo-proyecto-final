@@ -8,14 +8,16 @@ Cada dato vive en un solo archivo. Los demás lo referencian.
 
 | Qué necesitas | Dónde está |
 |---|---|
-| Alcance, requisitos (`CH-`, `IN-`, `PE-`…), reglas de negocio (`RN-`), criterios (`CA-`) | [docs/PRD.md](docs/PRD.md) |
-| Componentes, capas, módulos, API general, stack y su justificación | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| Diseño detallado de cada módulo: modelo de datos, contratos, FSM, pantallas | `specs/*.spec.md` |
+| Alcance y fases (`MVP`/`V2`), requisitos (`CH-`, `IN-`, `PE-`…), no funcionales (`RNF-`), reglas de negocio (`RN-`), criterios (`CA-`) | [docs/PRD.md](docs/PRD.md) |
+| Componentes, capas, módulos, flujos, API general, entornos, stack y su justificación | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| Contrato de la API: endpoints, payloads, errores y códigos | `docs/openapi.yaml` (pendiente de crear, RNF-02) |
+| Diseño detallado de cada módulo: modelo de datos, FSM, pantallas | `specs/*.spec.md` |
 | Historias de usuario, tickets (`TK-`), estimación, definición de hecho | [backlog/](backlog/README.md) |
 
 - Citar IDs (`RN-05`, `CH-06`, `TK-05.3`) en lugar de copiar texto entre documentos, código o tests.
 - Leer solo lo necesario para la tarea en curso: el ticket, su spec y las secciones del PRD que citen.
 - Si una spec o un ticket contradice el PRD, **detenerse y preguntar**. No resolverlo por cuenta propia.
+- No implementar nada marcado `V2` en el PRD ni en el backlog, aunque esté documentado.
 - Ignorar cualquier archivo o `CLAUDE.md` fuera de este directorio.
 
 ## Flujo Spec-Driven Development
@@ -30,19 +32,20 @@ Cada dato vive en un solo archivo. Los demás lo referencian.
 
 | Archivo | Cubre | Estado |
 |---|---|---|
-| `specs/01_data_models.spec.md` | Entidades, restricciones, índices, seed | Borrador |
-| `specs/02_inventory_system.spec.md` | IN, RP, RN-01/09/10/11 | Pendiente |
-| `specs/03_conversational_bot.spec.md` | CH, RN-02/04/08 (FSM del chat) | Pendiente |
-| `specs/04_orders_claims.spec.md` | PE, RE, RN-03/05/06/07 | Pendiente |
-| `specs/05_operator_dashboard.spec.md` | AU, CL, pantallas del operador | Pendiente |
+| `specs/01_data_models.spec.md` | Entidades MVP, restricciones, índices, seed. Diseño conceptual V2 de `Claim` y `PurchaseOrder` | Borrador |
+| `specs/02_inventory_system.spec.md` | IN, RN-01/09/10 · V2: RP, RN-11 | Pendiente |
+| `specs/03_conversational_bot.spec.md` | CH (FSM del chat, sesiones y su expiración CH-11), RN-08 | Pendiente |
+| `specs/04_orders_claims.spec.md` | PE, RN-02/03/04/05 (confirmación, número y estados del pedido) · V2: RE, RN-06/07 | Pendiente |
+| `specs/05_operator_dashboard.spec.md` | AU, CL-02/03, RN-12, pantallas del operador · V2: CL-01 | Pendiente |
 
 ## Convenciones de código
 
-- **Stack:** React 18 + Vite + Ant Design · Express + TypeScript + Zod · Prisma (SQLite dev/test, PostgreSQL prod) · JWT · Jest + Supertest + Playwright.
+- **Stack:** React 18 + Vite + Ant Design · Express + TypeScript + Zod · Prisma + PostgreSQL 16 en desarrollo, pruebas, CI y entrega · JWT · Jest + Supertest + Playwright · Docker Compose (entornos locales y entrega) · GitHub Actions (CI).
 - **Capas del backend:** `routes → controllers → services → Prisma`. Las reglas `RN-` viven solo en los servicios. Controllers y frontend no las aplican.
-- Nada de SQL ni funciones exclusivas de SQLite o PostgreSQL.
+- **SQL:** el acceso a datos va por Prisma desde los servicios. Se permiten funciones y características propias de PostgreSQL (secuencias, funciones, `CHECK`, índices parciales) solo si están justificadas en una spec y declaradas en las migraciones. No hay SQL embebido en controllers ni en el frontend.
+- Los tests de unidad e integración corren contra PostgreSQL real, nunca contra otro motor (RNF-01).
 - Los commits citan el ticket: `TK-05.3: …`.
 
 ## Comandos
 
-Todavía no hay código. Completar esta sección al crear `backend/` y `frontend/` (TK-00.1, TK-00.2).
+Todavía no hay código. Completar esta sección al crear `backend/`, `frontend/` y `docker-compose.yml` (TK-00.1, TK-00.2, TK-00.6).

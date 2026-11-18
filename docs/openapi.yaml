@@ -1,0 +1,1045 @@
+# Contrato de la API de MedSupply AI (RNF-02, TK-00.8).
+# Fuente de verdad del contrato HTTP. Solo endpoints MVP del PRD v1.2; los V2 no se documentan.
+#
+# Validación local (desde la raíz del repositorio):
+#   npx @redocly/cli@2.73.0 lint docs/openapi.yaml
+openapi: 3.0.3
+info:
+  title: MedSupply AI API
+  version: 1.0.0
+  description: |
+    API REST JSON de MedSupply AI. Cubre el alcance `MVP` del PRD v1.2
+    (`docs/PRD.md`) y sigue `docs/ARCHITECTURE.md` y `specs/01_data_models.spec.md`.
+
+    ## Convenciones
+
+    - Prefijo: `/api/v1`. Todas las peticiones y respuestas son `application/json`.
+    - Fechas: ISO 8601 en UTC (`2026-11-18T14:30:00.000Z`).
+    - Dinero: string decimal con dos decimales (`"1250.00"`), tanto en peticiones como
+      en respuestas, para no perder precisión (`numeric(12,2)`, spec 01).
+    - Identificadores: enteros. Las sesiones de chat usan un identificador opaco (UUID).
+    - Las rutas de operador exigen `Authorization: Bearer <token>` (AU-01). Un token
+      ausente, inválido o expirado (AU-03) responde `401 UNAUTHORIZED`.
+    - No existe ningún endpoint de borrado (RN-10).
+    - El stock de un producto solo se modifica con `PATCH /products/{productId}/stock`
+      y `expectedStock` (IN-02, CA-13); la edición general no lo admite.
+
+    ## Estado del contrato
+
+    Versión `1.0.0`, aprobada provisionalmente para chat y pedidos. Las specs 03 y 04
+    deben alinearse con este contrato; cualquier cambio contractual se revisa antes de
+    implementarlo y actualiza `info.version`.
+
+    ## Errores
+
+    Todas las respuestas de error usan el esquema `Error`:
+    `{ "error": { "code": "…", "message": "…" } }`. `message` es legible por personas y
+    no debe usarse para lógica; `code` es estable.
+
+    | Código | HTTP | Cuándo |
+    |---|---|---|
+    | `MALFORMED_REQUEST` | 400 | El cuerpo no es JSON válido. |
+    | `VALIDATION_ERROR` | 422 | Parámetros o cuerpo no cumplen el esquema. |
+    | `INVALID_CREDENTIALS` | 401 | Login con email o contraseña incorrectos (mensaje genérico, RNF-08). |
+    | `UNAUTHORIZED` | 401 | Ruta de operador sin token, con token inválido o expirado (AU-03, CA-11). |
+    | `NOT_FOUND` | 404 | La ruta no existe. |
+    | `PRODUCT_NOT_FOUND` | 404 | El producto no existe. |
+    | `ORDER_NOT_FOUND` | 404 | El pedido no existe. |
+    | `SESSION_INVALID` | 404 | La sesión de chat no existe o expiró por inactividad (CH-11, CA-16). El cliente debe iniciar una sesión nueva. |
+    | `STOCK_CHANGED` | 409 | El `expectedStock` del ajuste no coincide con el stock actual (IN-02, CA-13). |
+    | `INVALID_ORDER_TRANSITION` | 409 | La transición pedida no está permitida por RN-05 desde el estado actual, o el pedido cambió de estado entretanto (CA-12). |
+    | `INTERNAL_ERROR` | 500 | Error no controlado. |
+
+    ### Códigos de dominio de la confirmación de pedido
+
+    En el MVP los pedidos se confirman solo por chat. Estos códigos los devuelve
+    `orders.service` al motor del chat, que los traduce a mensajes (CH-06); **ningún
+    endpoint HTTP del MVP los devuelve** como error:
+
+    | Código | Motivo |
+    |---|---|
+    | `STOCK_INSUFFICIENT` | El stock ya no alcanza (RN-02, CA-05). |
+    | `PRODUCT_INACTIVE` | El producto se desactivó después de agregarse al carrito (RN-02, CA-14). |
+    | `PRICE_CHANGED` | El precio vigente difiere del mostrado en el resumen (RN-03, CA-15). |
+  contact:
+    name: Helyson Perdomo
+    url: https://github.com/Hely-son/Helyson-perdomo-proyecto-final
+servers:
+  - url: /api/v1
+    description: Mismo origen que el backend. El host y el puerto dependen del entorno (ARCHITECTURE, Entornos).
+tags:
+  - name: Health
+    description: Comprobación técnica para Docker Compose y CI.
+  - name: Auth
+    description: Acceso del operador (AU-01..03).
+  - name: Chat
+    description: Simulador conversacional público (CH-01..08, CH-11).
+  - name: Products
+    description: Catálogo, ajuste de stock y alertas (IN-01..03).
+  - name: Orders
+    description: Consulta y gestión de pedidos por el operador (PE-01, PE-02).
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      operationId: getHealth
+      summary: Estado del servicio
+      security: []
+      responses:
+        '200':
+          description: El servicio responde.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      operationId: login
+      summary: Iniciar sesión como operador
+      description: |
+        Valida email y contraseña (AU-01) y devuelve un JWT que expira según
+        `JWT_EXPIRES_IN`, 8 horas por defecto (AU-03). El email se compara en
+        minúsculas. Cerrar sesión es una acción del cliente: descarta el token.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Credenciales válidas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/MalformedRequest'
+        '401':
+          description: Email o contraseña incorrectos. Mensaje genérico, sin indicar cuál falló (RNF-08).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: INVALID_CREDENTIALS
+                  message: Email o contraseña incorrectos.
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /chat/sessions:
+    post:
+      tags: [Chat]
+      operationId: startChatSession
+      summary: Iniciar una conversación con un teléfono
+      description: |
+        Normaliza el teléfono (RN-12) y busca al cliente (CL-03).
+
+        - Cliente activo: crea la sesión y devuelve el menú (CH-03). Respuesta `201`.
+        - Teléfono no registrado, de un cliente inactivo, con formato inválido o no
+          normalizable (incluido uno formado solo por espacios): no crea sesión y
+          devuelve el mensaje de CH-02 sin menú (RN-12, CL-02, CA-06). Respuesta `200`
+          con `sessionId: null` y `active: false`.
+
+        Un `phone` ausente o vacío (`""`) es un error de validación (`422`).
+
+        Limitación conocida del MVP: la respuesta permite saber si un teléfono
+        corresponde a un cliente activo, lo que es inherente a CH-02. No se aplica
+        limitación de intentos.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartChatSessionRequest'
+      responses:
+        '201':
+          description: Cliente activo. Sesión creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatReply'
+              example:
+                sessionId: 3f1c2a9e-8b7d-4c1e-9f0a-2b6d5e4c3a21
+                active: true
+                messages:
+                  - text: Hola, Clínica Los Andes. Elige una opción.
+                  - text: "1) Catálogo y compra\n2) Mis pedidos"
+        '200':
+          description: Teléfono no reconocido como cliente activo. No se crea sesión.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatReply'
+              example:
+                sessionId: null
+                active: false
+                messages:
+                  - text: No encontramos tu número. Contacta a la distribuidora para habilitarlo.
+        '400':
+          $ref: '#/components/responses/MalformedRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /chat/sessions/{sessionId}/messages:
+    post:
+      tags: [Chat]
+      operationId: sendChatMessage
+      summary: Enviar un mensaje a una conversación
+      description: |
+        Entrega el texto al motor del chat (spec 03) y devuelve las respuestas del bot.
+        Cubre catálogo, carrito, resumen y confirmación (CH-04..CH-07) y "Mis pedidos"
+        (CH-08). Una entrada que el bot no entiende no es un error HTTP: el bot repite
+        la pregunta (CH-03).
+
+        Cada mensaje aceptado renueva el plazo de inactividad. Si la sesión no existe o
+        superó `CHAT_SESSION_TTL_MINUTES` (30 por defecto), el mensaje no se procesa, el
+        carrito se pierde y se responde siempre `404 SESSION_INVALID` (CH-11, CA-16). El
+        cliente debe iniciar una sesión nueva.
+
+        Un `sessionId` que no es un UUID responde `422 VALIDATION_ERROR`.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendChatMessageRequest'
+      responses:
+        '200':
+          description: Respuesta del bot.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatReply'
+              example:
+                sessionId: 3f1c2a9e-8b7d-4c1e-9f0a-2b6d5e4c3a21
+                active: true
+                messages:
+                  - text: "Pedido confirmado: MED-00042. Estado: PENDING."
+        '400':
+          $ref: '#/components/responses/MalformedRequest'
+        '404':
+          description: La sesión no existe o expiró.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: SESSION_INVALID
+                  message: La conversación no es válida o expiró. Inicia una nueva conversación.
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /products:
+    get:
+      tags: [Products]
+      operationId: listProducts
+      summary: Listar productos
+      description: Devuelve todos los productos, activos e inactivos, ordenados por nombre ascendente (IN-01).
+      responses:
+        '200':
+          description: Lista de productos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags: [Products]
+      operationId: createProduct
+      summary: Crear un producto
+      description: El producto se crea activo (IN-01). Aplican RN-01 y los `CHECK` de la spec 01.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Producto creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/MalformedRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /products/alerts:
+    get:
+      tags: [Products]
+      operationId: listStockAlerts
+      summary: Consultar alertas de stock
+      description: |
+        Productos activos con `currentStock <= minStockAlert` (RN-09, IN-03, CA-01),
+        ordenados por nombre ascendente. Consulta de solo lectura: no crea órdenes de reposición.
+      responses:
+        '200':
+          description: Productos en alerta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /products/{productId}:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+    get:
+      tags: [Products]
+      operationId: getProduct
+      summary: Obtener un producto
+      responses:
+        '200':
+          description: Producto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ProductNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      tags: [Products]
+      operationId: updateProduct
+      summary: Editar un producto
+      description: |
+        Edita nombre, descripción, precio y stock mínimo (IN-01). El stock actual no se
+        edita aquí: se ajusta con `PATCH /products/{productId}/stock` para conservar el
+        control de IN-02. El cambio de precio no afecta pedidos existentes (RN-03).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+      responses:
+        '200':
+          description: Producto actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/MalformedRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ProductNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /products/{productId}/deactivate:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+    post:
+      tags: [Products]
+      operationId: deactivateProduct
+      summary: Desactivar un producto
+      description: |
+        Marca el producto como inactivo sin borrarlo (RN-10). Deja de aparecer en el
+        catálogo del chat y en las alertas. Desactivar un producto ya inactivo no cambia
+        nada y responde `200`.
+      responses:
+        '200':
+          description: Producto inactivo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ProductNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /products/{productId}/stock:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+    patch:
+      tags: [Products]
+      operationId: adjustProductStock
+      summary: Ajustar el stock a mano
+      description: |
+        Fija el stock en `newStock` solo si el stock actual es igual a `expectedStock`
+        (IN-02). Si no coincide, responde `409 STOCK_CHANGED` y el stock no cambia
+        (CA-13); el cliente debe volver a leer el producto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustStockRequest'
+      responses:
+        '200':
+          description: Stock ajustado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/MalformedRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/ProductNotFound'
+        '409':
+          description: El stock cambió desde que el operador lo leyó.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: STOCK_CHANGED
+                  message: El stock cambió desde la última lectura. Vuelve a cargarlo.
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /orders:
+    get:
+      tags: [Orders]
+      operationId: listOrders
+      summary: Listar pedidos
+      description: |
+        Pedidos paginados, con filtro opcional por estado (PE-01), ordenados por fecha
+        de creación descendente (del más reciente al más antiguo). No se ordena por
+        `orderNumber` (spec 01). Una página fuera de rango responde `200` con
+        `items: []` y la paginación con los totales reales.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filtra por estado.
+          schema:
+            $ref: '#/components/schemas/OrderStatus'
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Página de pedidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /orders/{orderId}:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    get:
+      tags: [Orders]
+      operationId: getOrder
+      summary: Obtener el detalle de un pedido
+      description: Cliente, ítems y total (PE-01, parte `MVP`). No incluye reclamos (V2).
+      responses:
+        '200':
+          description: Detalle del pedido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/OrderNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /orders/{orderId}/status:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+    patch:
+      tags: [Orders]
+      operationId: changeOrderStatus
+      summary: Avanzar o cancelar un pedido
+      description: |
+        Cambia el estado según RN-05 para el operador (PE-02):
+
+        - Avance solo al estado siguiente: `PENDING → PROCESSING → DISPATCHED → DELIVERED`.
+        - `CANCELLED` solo desde `PENDING` o `PROCESSING`; restituye el stock de cada ítem
+          una sola vez, aunque la petición se repita o llegue en paralelo (CA-12).
+
+        Cualquier otra transición, o una petición que pierde la carrera contra otro cambio
+        de estado, responde `409 INVALID_ORDER_TRANSITION` sin modificar el pedido ni el stock.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeOrderStatusRequest'
+      responses:
+        '200':
+          description: Estado actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetail'
+        '400':
+          $ref: '#/components/responses/MalformedRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/OrderNotFound'
+        '409':
+          description: Transición no permitida desde el estado actual.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error:
+                  code: INVALID_ORDER_TRANSITION
+                  message: El pedido está DISPATCHED y no se puede cancelar.
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de `POST /auth/login`. Expira según AU-03.
+
+  parameters:
+    ProductId:
+      name: productId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    OrderId:
+      name: orderId
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    MalformedRequest:
+      description: El cuerpo no es JSON válido.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: MALFORMED_REQUEST
+              message: El cuerpo de la petición no es JSON válido.
+    ValidationError:
+      description: Parámetros o cuerpo inválidos.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: "price: debe ser mayor que 0."
+    Unauthorized:
+      description: Sin token, token inválido o expirado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Sesión no válida o expirada.
+    ProductNotFound:
+      description: El producto no existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: PRODUCT_NOT_FOUND
+              message: El producto no existe.
+    OrderNotFound:
+      description: El pedido no existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: ORDER_NOT_FOUND
+              message: El pedido no existe.
+    InternalError:
+      description: Error no controlado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: INTERNAL_ERROR
+              message: Ocurrió un error inesperado.
+
+  schemas:
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code:
+              $ref: '#/components/schemas/ErrorCode'
+            message:
+              type: string
+              description: Texto legible. No usar para lógica.
+
+    ErrorCode:
+      type: string
+      description: Códigos HTTP del MVP. Ver la tabla de errores en la descripción del contrato.
+      enum:
+        - MALFORMED_REQUEST
+        - VALIDATION_ERROR
+        - INVALID_CREDENTIALS
+        - UNAUTHORIZED
+        - NOT_FOUND
+        - PRODUCT_NOT_FOUND
+        - ORDER_NOT_FOUND
+        - SESSION_INVALID
+        - STOCK_CHANGED
+        - INVALID_ORDER_TRANSITION
+        - INTERNAL_ERROR
+
+    Money:
+      type: string
+      pattern: '^(?!0+\.00$)\d{1,10}\.\d{2}$'
+      description: Importe mayor que 0 con exactamente dos decimales, máximo `numeric(12,2)`. Mismo patrón que `MoneyInput`.
+      example: '1250.00'
+
+    MoneyInput:
+      type: string
+      pattern: '^(?!0+\.00$)\d{1,10}\.\d{2}$'
+      description: Importe mayor que 0 con exactamente dos decimales, mismo formato que `Money`. Se rechazan el cero (`0.00`, `00.00`) y los importes sin dos decimales (`1250`, `1250.5`) (IN-01). El backend y el `CHECK` de la base mantienen la misma regla.
+      example: '1250.50'
+
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          minLength: 1
+          maxLength: 200
+
+    LoginResponse:
+      type: object
+      additionalProperties: false
+      required: [token, tokenType, expiresAt, operator]
+      properties:
+        token:
+          type: string
+          description: JWT firmado (HS256).
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresAt:
+          type: string
+          format: date-time
+          description: Momento de expiración del token (AU-03).
+        operator:
+          $ref: '#/components/schemas/Operator'
+
+    Operator:
+      type: object
+      additionalProperties: false
+      required: [id, email, name]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+
+    StartChatSessionRequest:
+      type: object
+      additionalProperties: false
+      required: [phone]
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 30
+          description: Teléfono tal como lo escribe el cliente. Se normaliza según RN-12.
+          example: 9 1234 5678
+
+    SendChatMessageRequest:
+      type: object
+      additionalProperties: false
+      required: [text]
+      properties:
+        text:
+          type: string
+          maxLength: 500
+          description: Texto del cliente. Una entrada vacía o que el bot no entiende se trata como entrada inválida (CH-03), no como error HTTP.
+          example: '1'
+
+    ChatReply:
+      type: object
+      additionalProperties: false
+      required: [sessionId, active, messages]
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Identificador de la sesión. `null` si el teléfono no corresponde a un cliente activo.
+        active:
+          type: boolean
+          description: "`true` si la sesión acepta más mensajes."
+        messages:
+          type: array
+          minItems: 1
+          description: Mensajes del bot en orden. El frontend los muestra sin interpretarlos (TK-05.4).
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+
+    ChatMessage:
+      type: object
+      additionalProperties: false
+      required: [text]
+      properties:
+        text:
+          type: string
+
+    Product:
+      type: object
+      additionalProperties: false
+      required: [id, name, description, price, currentStock, minStockAlert, isActive, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          $ref: '#/components/schemas/Money'
+        currentStock:
+          type: integer
+          minimum: 0
+        minStockAlert:
+          type: integer
+          minimum: 0
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProductList:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    CreateProductRequest:
+      type: object
+      additionalProperties: false
+      required: [name, price, currentStock, minStockAlert]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          maxLength: 2000
+        price:
+          $ref: '#/components/schemas/MoneyInput'
+        currentStock:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        minStockAlert:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+
+    UpdateProductRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          maxLength: 2000
+        price:
+          $ref: '#/components/schemas/MoneyInput'
+        minStockAlert:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+
+    AdjustStockRequest:
+      type: object
+      additionalProperties: false
+      required: [newStock, expectedStock]
+      properties:
+        newStock:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+          description: Nuevo valor absoluto del stock (IN-02).
+        expectedStock:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+          description: Stock que el operador tenía a la vista.
+
+    OrderStatus:
+      type: string
+      enum: [PENDING, PROCESSING, DISPATCHED, DELIVERED, CANCELLED]
+
+    ChangeOrderStatusRequest:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [PROCESSING, DISPATCHED, DELIVERED, CANCELLED]
+          description: Estado destino. `PENDING` nunca es destino (RN-05).
+
+    CustomerSummary:
+      type: object
+      additionalProperties: false
+      required: [id, businessName]
+      properties:
+        id:
+          type: integer
+        businessName:
+          type: string
+
+    CustomerDetail:
+      type: object
+      additionalProperties: false
+      required: [id, businessName, taxId, phone]
+      properties:
+        id:
+          type: integer
+        businessName:
+          type: string
+        taxId:
+          type: string
+          description: RUT del cliente.
+        phone:
+          type: string
+          description: Teléfono normalizado (RN-12).
+          example: '+56912345678'
+
+    OrderSummary:
+      type: object
+      additionalProperties: false
+      required: [id, orderNumber, status, totalAmount, customer, createdAt]
+      properties:
+        id:
+          type: integer
+        orderNumber:
+          type: string
+          pattern: '^MED-\d{5,}$'
+          description: Formato de RN-04.
+          example: MED-00042
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        totalAmount:
+          $ref: '#/components/schemas/Money'
+        customer:
+          $ref: '#/components/schemas/CustomerSummary'
+        createdAt:
+          type: string
+          format: date-time
+
+    OrderItem:
+      type: object
+      description: Línea del pedido. `unitPrice` es el precio guardado al confirmar (RN-03); `subtotal` es un campo derivado (`quantity × unitPrice`) que no se persiste.
+      additionalProperties: false
+      required: [productId, productName, quantity, unitPrice, subtotal]
+      properties:
+        productId:
+          type: integer
+        productName:
+          type: string
+          description: Nombre actual del producto. No es un dato histórico del pedido.
+        quantity:
+          type: integer
+          minimum: 1
+        unitPrice:
+          $ref: '#/components/schemas/Money'
+        subtotal:
+          $ref: '#/components/schemas/Money'
+
+    OrderDetail:
+      type: object
+      additionalProperties: false
+      required: [id, orderNumber, status, totalAmount, customer, items, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        orderNumber:
+          type: string
+          pattern: '^MED-\d{5,}$'
+          example: MED-00042
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        totalAmount:
+          $ref: '#/components/schemas/Money'
+        customer:
+          $ref: '#/components/schemas/CustomerDetail'
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    OrderPage:
+      type: object
+      additionalProperties: false
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderSummary'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Pagination:
+      type: object
+      additionalProperties: false
+      required: [page, pageSize, totalItems, totalPages]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+        totalItems:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
