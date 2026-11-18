@@ -437,7 +437,7 @@ Inconsistencias detectadas en otras fuentes. No se corrigen en esta tarea.
 
 | ID | Observación | Dónde |
 |---|---|---|
-| OBS-01 | La arquitectura cita "PRD v1.1" y dice que `docs/openapi.yaml` "se crea en un paso posterior", pero el PRD vigente es v1.2 y el contrato existe (1.0.0) | `docs/ARCHITECTURE.md`, primer párrafo |
+| OBS-01 | Cerrada. La arquitectura citaba "PRD v1.1" y decía que `docs/openapi.yaml` "se crea en un paso posterior". Corregidos ambos asuntos: el primer párrafo cita ahora el PRD v1.2 (como OBS-04 de la spec 03) y describe `docs/openapi.yaml` como contrato ya definido, base aprobada para la Entrega 2 con aspectos provisionales en OBS-03 de la spec 03 | `docs/ARCHITECTURE.md`, primer párrafo |
 | OBS-02 | Resuelta: la spec 01, de la que depende esta spec, está "Aprobada v1.1 (Entrega 2)". Revisada contra el modelo aprobado sin contradicciones. Su sección "Puntos abiertos" recoge el posible impacto de DP-01 y DP-06 en el modelo | `specs/01_data_models.spec.md`, cabecera y "Puntos abiertos" |
 | OBS-03 | El contrato se declara "aprobada provisionalmente para chat y pedidos" en su descripción, mientras `CLAUDE.md` lo indica como aprobado. No queda explícito el estado de aprobación de las operaciones de productos | `docs/openapi.yaml` ("Estado del contrato"), `CLAUDE.md` |
 | OBS-04 | US-03 crit. 2 cita RN-01 para rechazar un precio ≤ 0, pero RN-01 trata solo del stock; el precio > 0 proviene de IN-01 y del `CHECK` de la spec 01. La cabecera de US-03 no lista RN-09, que usa TK-03.3 | `backlog/US-03_catalogo_inventario.md` |

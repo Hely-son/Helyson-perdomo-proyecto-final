@@ -73,13 +73,13 @@ Detalle y justificación en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | Ficha y descripción general | Este README · [PRD](docs/PRD.md) |
 | Requisitos, reglas y criterios (v1.2) | [docs/PRD.md](docs/PRD.md) |
 | Arquitectura del sistema y stack | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| Modelo de datos (diagrama ER con PK y FK) | [specs/01_data_models.spec.md](specs/01_data_models.spec.md) |
-| Specs por módulo | `specs/02` a `specs/05` (pendientes) |
-| Contrato de la API | [docs/openapi.yaml](docs/openapi.yaml): OpenAPI 3.0.3 del MVP, aprobado |
-| Historias de usuario y tickets | [backlog/](backlog/README.md): 7 historias y 41 tickets. MVP: 30 tickets, 94 puntos. V2: 11 tickets, 27 puntos |
+| Modelo de datos (diagrama ER con PK y FK) | [specs/01_data_models.spec.md](specs/01_data_models.spec.md) (aprobada v1.1) |
+| Specs por módulo | [specs/02_inventory_system.spec.md](specs/02_inventory_system.spec.md) (aprobada v1.1) · [specs/03_conversational_bot.spec.md](specs/03_conversational_bot.spec.md) (aprobada v1.0) · `specs/04` y `specs/05` (pendientes) |
+| Contrato de la API | [docs/openapi.yaml](docs/openapi.yaml): OpenAPI 3.0.3 del MVP, contrato base aprobado para la Entrega 2, con aspectos provisionales pendientes de revisión (OBS-03 de la spec 03) |
+| Historias de usuario y tickets | [backlog/](backlog/README.md): 7 historias y 42 tickets, 123 puntos. MVP: 31 tickets, 96 puntos. V2: 11 tickets, 27 puntos |
 | Guía del agente (SDD) | [CLAUDE.md](CLAUDE.md) |
 | Registro de prompts y evidencia de IA | [PROMPTS.md](PROMPTS.md) |
 
 ## 5. Estado
 
-**Entrega 2 — Documentación y diseño.** Todavía no hay código: no existen `backend/`, `frontend/`, `docker-compose.yml` ni el pipeline de CI. El PRD v1.2 está aprobado; la arquitectura, el modelo de datos y el backlog están alineados con él. El contrato `docs/openapi.yaml` está creado y aprobado (TK-00.8). Siguientes pasos: completar las specs 02 a 05 e implementar el backlog `MVP` en orden.
+**Entrega 2 — Documentación y diseño.** Todavía no hay código: no existen `backend/`, `frontend/`, `docker-compose.yml` ni el pipeline de CI. El PRD v1.2 está aprobado; la arquitectura, el modelo de datos y el backlog están alineados con él. El contrato `docs/openapi.yaml` (TK-00.8) es el contrato base aprobado para la Entrega 2, con aspectos provisionales pendientes de revisión documentados en OBS-03 de la spec 03. Las specs 01 (v1.1), 02 (v1.1) y 03 (v1.0) están aprobadas; las specs 04 y 05 están pendientes. Siguientes pasos: completar las specs 04 y 05 e implementar el backlog `MVP` en orden.

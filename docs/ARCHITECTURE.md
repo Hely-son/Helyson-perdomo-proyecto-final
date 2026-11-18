@@ -1,6 +1,6 @@
 # Arquitectura — MedSupply AI
 
-Qué construye el sistema: [PRD](PRD.md) v1.1. Modelo de datos: [spec 01](../specs/01_data_models.spec.md). Contrato de la API: `docs/openapi.yaml` (RNF-02, se crea en un paso posterior). Este documento define **cómo se organiza** el sistema.
+Qué construye el sistema: [PRD](PRD.md) v1.2. Modelo de datos: [spec 01](../specs/01_data_models.spec.md). Contrato de la API: definido de forma centralizada en `docs/openapi.yaml` (RNF-02); es el contrato base aprobado para la Entrega 2 y conserva aspectos provisionales pendientes de revisión, documentados en OBS-03 de la spec 03. Este documento define **cómo se organiza** el sistema.
 
 Cada módulo, endpoint y pantalla lleva la fase del PRD: `MVP` se construye en este ciclo; `V2` queda documentado para orientar el diseño, pero no se implementa ni se crea su esquema.
 
