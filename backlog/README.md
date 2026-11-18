@@ -13,10 +13,10 @@ Cada historia, criterio y ticket lleva la fase del PRD: `MVP` (se implementa en 
 | 2 | [US-02 Clientes: identificación y gestión](US-02_gestion_clientes.md) | `MVP` + `V2` | CL-02, CL-03 · V2: CL-01 | Habilitadores (TK-00.3, TK-00.5) | 2 | 7 |
 | 3 | [US-03 Catálogo e inventario](US-03_catalogo_inventario.md) | `MVP` | IN-01, IN-02 | US-01 | 9 | — |
 | 4 | [US-04 Alertas de stock y reposición](US-04_alertas_reposicion.md) | `MVP` + `V2` | IN-03 · V2: IN-03 (reposición), RP | US-03 | 4 | 6 |
-| 5 | [US-05 Compra conversacional](US-05_compra_conversacional.md) | `MVP` | CH-01..07, CH-11 | US-02 `MVP`, US-03 | 32 | — |
+| 5 | [US-05 Compra conversacional](US-05_compra_conversacional.md) | `MVP` | CH-01..07, CH-11 | US-02 `MVP`, US-03 | 34 | — |
 | 6 | [US-06 Seguimiento de pedidos](US-06_seguimiento_pedidos.md) | `MVP` + `V2` | CH-08, PE · V2: CH-09 | US-05 | 15 | 3 |
 | 7 | [US-07 Gestión de reclamos](US-07_gestion_reclamos.md) | `V2` | CH-10, RE | US-06 | — | 11 |
-| | **Total** | | | | **94 pts ≈ 94 h** (30 tickets) | **27 pts ≈ 27 h** (11 tickets) |
+| | **Total** | | | | **96 pts ≈ 96 h** (31 tickets) | **27 pts ≈ 27 h** (11 tickets) |
 
 **Orden dentro de los habilitadores.** TK-00.4 (seed) depende de TK-02.4 (normalización de teléfonos), así que la secuencia es: TK-00.8, TK-00.1, TK-00.2, TK-00.6, TK-00.3, TK-00.5, TK-02.4, TK-00.4 y TK-00.7.
 

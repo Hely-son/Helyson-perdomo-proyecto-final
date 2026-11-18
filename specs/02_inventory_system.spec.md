@@ -2,7 +2,7 @@
 
 | Estado | Cubre | Tickets |
 |---|---|---|
-| Borrador v1.0 (Entrega 2), pendiente de aprobación | IN-01, IN-02, IN-03 (`MVP`), RN-01, RN-09, RN-10 · lado inventario de RN-02, RN-03, RN-05 · Criterios: CA-01, CA-03, CA-04, CA-05, CA-12, CA-13, CA-14, CA-15 · V2: IN-03 (reposición), RP, RN-11, CA-02 | `MVP`: TK-03.1, TK-03.2, TK-03.3, TK-03.4, TK-04.1, TK-04.3, TK-04.5 · `V2`: TK-04.2, TK-04.4 |
+| Aprobada v1.1 (Entrega 2) | IN-01, IN-02, IN-03 (`MVP`), RN-01, RN-09, RN-10 · lado inventario de RN-02, RN-03, RN-05 · Criterios: CA-01, CA-03, CA-04, CA-05, CA-12, CA-13, CA-14, CA-15 · V2: IN-03 (reposición), RP, RN-11, CA-02 | `MVP`: TK-03.1, TK-03.2, TK-03.3, TK-03.4, TK-04.1, TK-04.3, TK-04.5 · `V2`: TK-04.2, TK-04.4 |
 
 **Fuentes.** [PRD](../docs/PRD.md) v1.2 · [ARCHITECTURE](../docs/ARCHITECTURE.md) · [`docs/openapi.yaml`](../docs/openapi.yaml) `info.version` 1.0.0 · [spec 01](01_data_models.spec.md) · [backlog](../backlog/README.md) US-03, US-04, US-05.
 
@@ -127,7 +127,7 @@ No son reglas nuevas: provienen de `docs/openapi.yaml` y se citan para que la sp
 
 | Supuesto | Comportamiento aprobado | Fuente |
 |---|---|---|
-| Un producto inactivo puede agregarse al carrito | **No** se lista en el catálogo del chat, así que no puede elegirse desde él. Si se desactiva después de agregarse, la confirmación lo rechaza. El caso intermedio (desactivado entre que se lista y se elige) no está definido: DP-03 | CH-04, RN-10, RN-02 |
+| Un producto inactivo puede agregarse al carrito | **No** se lista en el catálogo del chat, así que no puede elegirse desde él. Si se desactiva entre que se lista y se elige o se agrega, el chat revalida su estado con la consulta de disponibilidad y no lo agrega (DP-03, resuelta). Si se desactiva después de agregarse, la confirmación lo rechaza | CH-04, RN-10, RN-02 |
 | Desactivar un producto elimina su stock | **No.** La desactivación solo cambia el estado; `currentStock` conserva su valor | RN-10, `deactivateProduct` |
 | Un ajuste manual puede sobrescribir cambios concurrentes | **No.** Se aplica solo si el stock actual es igual a `expectedStock`; si no, `STOCK_CHANGED` | IN-02, CA-13, ARCHITECTURE (ajuste de stock) |
 | El stock puede modificarse con la edición general | **No.** `updateProduct` no acepta `currentStock` | `UpdateProductRequest`, convenciones del contrato |
@@ -217,7 +217,7 @@ Sin efectos secundarios.
 Capacidad de `products.service` que consume el chat (TK-05.2). No tiene endpoint propio: el chat la usa dentro de `sendChatMessage`.
 
 1. **Catálogo:** devuelve los productos activos con su precio y su stock actual. El chat marca "Sin stock" los de stock 0 y no permite elegirlos (CH-04).
-2. **Disponibilidad al agregar:** al indicar una cantidad, el chat compara con el stock actual que devuelve el servicio. Si la supera, ofrece ajustar al disponible o descartar el ítem (CH-05, CA-04).
+2. **Disponibilidad al agregar:** al elegir un producto y al indicar una cantidad, el chat consulta al servicio el estado actual del producto: **si está activo** y su stock actual. Si ya no está activo, el chat no lo agrega al carrito (DP-03, resuelta). Si la cantidad supera el stock, ofrece ajustar al disponible o descartar el ítem (CH-05, CA-04).
 3. La consulta no reserva stock (RN-02). El valor puede cambiar antes de confirmar; la confirmación lo revalida.
 
 Los mensajes, estados y opciones del chat son de la spec 03.
@@ -249,8 +249,8 @@ Todas las modificaciones de stock son actualizaciones condicionales sobre la mis
 | Cambio de precio y confirmación simultáneos | El cambio de precio espera al commit de la confirmación; la comparación con el precio mostrado y el precio guardado corresponden al instante de la confirmación | RN-03, ARCHITECTURE (confirmación) |
 | Edición general (`updateProduct`) y ajuste de stock simultáneos | No compiten: tocan columnas distintas y la edición no modifica el stock | Contrato (`updateProduct`) |
 | Dos ediciones generales simultáneas del mismo producto | No hay requisito de control de concurrencia para la edición general. Ver DP-06 | — |
-| Producto desactivado después de agregarse al carrito y antes de confirmar | La confirmación se rechaza con `PRODUCT_INACTIVE`, no se crea el pedido y el stock no cambia. Las opciones que ofrece el bot después son de la spec 03 | RN-02, CH-06, CA-14, TK-05.6 |
-| Producto desactivado después de listarse en el catálogo y antes de agregarse | No definido en el PRD. Ver DP-03 | — |
+| Producto desactivado después de agregarse al carrito y antes de confirmar | La confirmación se rechaza con `PRODUCT_INACTIVE`, no se crea el pedido y el stock no cambia; el producto nunca forma parte de un pedido confirmado. La experiencia conversacional posterior (retirarlo del carrito, nuevo resumen y nueva confirmación) es de la spec 03 (DP-02 de la spec 03; DP-05 de esta spec, resuelta) | RN-02, CH-06, CA-14, TK-05.6 |
+| Producto desactivado después de listarse en el catálogo y antes de agregarse | La consulta de disponibilidad informa que ya no está activo y el chat no lo agrega al carrito (F-7; DP-03, resuelta; DP-01 de la spec 03) | RN-02, RN-10, CH-04, TK-05.2 |
 | Edición o ajuste de stock de un producto inactivo | El contrato no lo restringe. Ver DP-02 | — |
 
 ## 8. Operaciones relacionadas
@@ -278,7 +278,7 @@ No forman parte del contrato HTTP. Se nombran por su función; los nombres de la
 | Capacidad | Consumidor | Reglas | Spec que la detalla | Tickets |
 |---|---|---|---|---|
 | Catálogo del chat: productos activos con precio y stock | Chat FSM (vía `sendChatMessage`) | CH-04, RN-10 | 03 | TK-05.2 |
-| Disponibilidad de un producto al agregar al carrito | Chat FSM | CH-05, RN-02 (sin reserva) | 03 | TK-05.2 |
+| Disponibilidad de un producto al elegirlo y al agregarlo al carrito: si está activo y su stock actual | Chat FSM | CH-05, RN-02 (sin reserva), RN-10 · DP-03 (resuelta) | 03 | TK-05.2 |
 | Descuento condicional del stock al confirmar | `orders.service` | RN-01, RN-02, RN-03, RNF-03, RNF-04 | 04 | TK-05.3, TK-05.5 |
 | Restitución del stock al cancelar | `orders.service` | RN-05 | 04 | TK-06.1 |
 
@@ -387,7 +387,7 @@ Los mensajes del bot se verifican en la spec 03; la transacción, en la spec 04.
 | RN-09 | `MVP` | 5.1, F-6 | `listStockAlerts` | CA-01 | US-04 crit. 1 | TK-04.1, TK-04.3, TK-04.5, TK-03.3 | ESC-05, 06, 17, 19..23 |
 | RN-10 | `MVP` | 5.1, F-4, §10 | `deactivateProduct` | CA-14 | US-03 crit. 6 | TK-03.1 | ESC-06..08, 31 |
 | CH-04 | `MVP` | F-7 | Catálogo del chat | — | US-05 crit. 3 | TK-05.2 | ESC-06, 17 |
-| CH-05 | `MVP` | F-7 | Disponibilidad | CA-04 | US-05 crit. 4 | TK-05.2 | (spec 03) |
+| CH-05 | `MVP` | F-7 | Disponibilidad | CA-04 | US-05 crit. 4 | TK-05.2 | (spec 03: ESC-22, ESC-43) |
 | CH-06 | `MVP` | §7 | Descuento al confirmar | CA-05, CA-14, CA-15 | US-05 crit. 8–10 | TK-05.6 | ESC-25, 29 |
 | RNF-03 | `MVP` | F-8, §10 | Descuento al confirmar | — | — | TK-05.3 | ESC-26 |
 | RNF-04 | `MVP` | §7 | Descuento al confirmar | CA-05 | — | TK-05.5 | ESC-27, 28 |
@@ -420,15 +420,15 @@ Los mensajes del bot se verifican en la spec 03; la transacción, en la spec 04.
 
 ### 13.2 Decisiones pendientes
 
-Ninguna está aprobada ni se resuelve en esta spec. Cuando la tabla describe lo que permite el contrato vigente, lo hace para dejar constancia del estado actual, no como decisión tomada. Cada una requiere aprobación humana y, si cambia una regla, se actualizan primero el PRD o el contrato.
+DP-03 y DP-05 están **resueltas**: se aprobaron con las decisiones DP-01 y DP-02 de la spec 03 (alternativa A). Las demás siguen pendientes: ninguna está aprobada ni se resuelve en esta spec. Cuando la tabla describe lo que permite el contrato vigente, lo hace para dejar constancia del estado actual, no como decisión tomada. Cada una requiere aprobación humana y, si cambia una regla, se actualizan primero el PRD o el contrato.
 
 | ID | Tema | Situación | Fuentes | Quién decide |
 |---|---|---|---|---|
 | DP-01 | Reactivación de productos | IN-01 solo prevé crear, editar y desactivar. No hay operación para reactivar y `UpdateProductRequest` no admite `isActive`. Un producto desactivado por error no puede volver a venderse en el MVP | IN-01, RN-10, `UpdateProductRequest` | Responsable del producto. Si se requiere: PRD (IN-01) y contrato (`info.version`) |
 | DP-02 | Edición y ajuste de stock de un producto inactivo | Ni el PRD ni el contrato los prohíben ni los autorizan de forma explícita. El contrato vigente no los impide y esta spec no añade restricción, pero no es una decisión aprobada | IN-01, IN-02, `updateProduct`, `adjustProductStock` | Responsable del producto |
-| DP-03 | Producto desactivado entre que el chat lo lista y el cliente lo agrega | RN-02 cubre "después de agregarse al carrito"; CH-04 solo dice que el catálogo lista activos. No está definido si al agregar se revalida el estado | RN-02, CH-04, CH-05 | Spec 03 (con el responsable del producto). Si se decide revalidar al agregar, la capacidad de disponibilidad (§8.2) tendrá que informar el estado del producto; esta spec no lo fija |
+| DP-03 | Producto desactivado entre que el chat lo lista y el cliente lo agrega | **Resuelta (aprobada, DP-01 de la spec 03, alternativa A).** El chat revalida el estado al elegir el producto y al validar la cantidad; si está inactivo, informa, no lo agrega y vuelve al catálogo. Para ello la consulta de disponibilidad informa si el producto está activo (F-7, §8.2). No se crea ningún endpoint | RN-02, CH-04, CH-05, RN-10 | Resuelta |
 | DP-04 | Resaltado de stock crítico en la tabla de inventario | TK-03.3 pide resaltar "stock ≤ mínimo (RN-09)". El schema `Product` no trae un indicador de alerta, así que el frontend tendría que calcular RN-09, lo que contradice que el frontend no aplica reglas `RN-`. Además TK-03.3 no menciona la condición "activo" de RN-09 | TK-03.3, RN-09, RNF-07, ARCHITECTURE "Frontend", schema `Product` | Responsable del producto. **Alternativa recomendada, sin cambio de contrato:** el dashboard llama a `listStockAlerts` y a `listProducts`, y resalta en la tabla los productos cuyo `id` figura en el resultado de alertas. Así la condición de RN-09, incluida la de "activo", la aplica solo el servicio. No se propone ningún campo nuevo |
-| DP-05 | Opciones del bot tras `PRODUCT_INACTIVE` y orden de presentación con varios motivos | Ya registrado como pendiente en TK-05.6. Desde el inventario solo se garantiza que no hay pedido ni cambio de stock | CH-06, RN-02, TK-05.6 | Spec 03 |
+| DP-05 | Opciones del bot tras `PRODUCT_INACTIVE` y orden de presentación con varios motivos | **Resuelta (aprobada, DP-02 y DP-03 de la spec 03, alternativa A).** Responsabilidad del inventario: que la confirmación informe el rechazo `PRODUCT_INACTIVE` y que el producto nunca forme parte de un pedido confirmado, sin cambio de stock. La retirada del carrito, el nuevo resumen, la reconfirmación y el orden de los motivos se especifican solo en la spec 03 | CH-06, RN-02, TK-05.6 | Resuelta |
 | DP-06 | Concurrencia en la edición general | No hay requisito de control para dos `updateProduct` simultáneos sobre el mismo producto. El contrato vigente no prevé ningún control, así que la última escritura prevalecería; esto describe el estado actual y no es una decisión aprobada | IN-01, `updateProduct` | Responsable del producto, si se considera necesario |
 
 ### 13.3 Observaciones documentales
@@ -438,7 +438,7 @@ Inconsistencias detectadas en otras fuentes. No se corrigen en esta tarea.
 | ID | Observación | Dónde |
 |---|---|---|
 | OBS-01 | La arquitectura cita "PRD v1.1" y dice que `docs/openapi.yaml` "se crea en un paso posterior", pero el PRD vigente es v1.2 y el contrato existe (1.0.0) | `docs/ARCHITECTURE.md`, primer párrafo |
-| OBS-02 | La spec 01, de la que depende esta spec, sigue en "Borrador v1.1, pendiente de aprobación" | `specs/01_data_models.spec.md`, cabecera |
+| OBS-02 | Resuelta: la spec 01, de la que depende esta spec, está "Aprobada v1.1 (Entrega 2)". Revisada contra el modelo aprobado sin contradicciones. Su sección "Puntos abiertos" recoge el posible impacto de DP-01 y DP-06 en el modelo | `specs/01_data_models.spec.md`, cabecera y "Puntos abiertos" |
 | OBS-03 | El contrato se declara "aprobada provisionalmente para chat y pedidos" en su descripción, mientras `CLAUDE.md` lo indica como aprobado. No queda explícito el estado de aprobación de las operaciones de productos | `docs/openapi.yaml` ("Estado del contrato"), `CLAUDE.md` |
 | OBS-04 | US-03 crit. 2 cita RN-01 para rechazar un precio ≤ 0, pero RN-01 trata solo del stock; el precio > 0 proviene de IN-01 y del `CHECK` de la spec 01. La cabecera de US-03 no lista RN-09, que usa TK-03.3 | `backlog/US-03_catalogo_inventario.md` |
 | OBS-05 | TK-03.1 exige probar que un cambio de precio no afecta pedidos existentes (RN-03), pero solo depende de TK-01.1; la creación de pedidos llega en TK-05.3. El test necesitará pedidos insertados como datos de prueba | `backlog/US-03_catalogo_inventario.md`, TK-03.1 |

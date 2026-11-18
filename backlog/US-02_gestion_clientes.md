@@ -35,7 +35,7 @@ Crear la función de normalización de RN-12 y, en `customers.service`, la consu
 
 **Hecho cuando:**
 - Tests unitarios de la normalización: separadores, número nacional sin prefijo, número con `+56`, número con otro prefijo internacional, prefijo no duplicado, entrada vacía e inválida.
-- Tests de integración de la consulta: cliente activo, cliente inactivo y teléfono inexistente.
+- Tests de integración de la consulta: cliente activo, cliente inactivo y teléfono inexistente. Los fixtures incluyen teléfonos escritos como número nacional sin prefijo internacional, con `+56` y con un prefijo internacional distinto de `+56` (spec 03, ESC-06).
 - La función es la misma que usan el seed (TK-00.4) y el chat (TK-05.1).
 
 ### TK-02.1 · [API] Endpoints de clientes

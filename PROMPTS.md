@@ -1362,3 +1362,247 @@ No hagas ninguna implementación.
 ```
 
 **Qué salió:**: aplico lo solicitado, dio el resumen. pero indica que aun hay decisiones que no estan cerradas.
+
+
+### Prompt 2.B.4: Cierre documental Spec 02
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Realiza el cierre documental de `specs/02_inventory_system.spec.md` y actualiza el estado correspondiente en `CLAUDE.md`.
+
+## Alcance autorizado
+Puedes modificar exclusivamente:
+- `specs/02_inventory_system.spec.md`
+- `CLAUDE.md`
+No modifiques PRD, arquitectura, OpenAPI, Spec 01, otras specs, backlog ni código fuente.
+No realices commits ni push.
+
+## 1. Actualización de Spec 02
+- Actualiza OBS-02 para reflejar que Spec 01 está aprobada v1.1.
+- Revisa que no existan referencias adicionales que indiquen que Spec 01 sigue en borrador.
+- Verifica que el modelo de datos aprobado no contradiga ninguna definición de inventario.
+- Conserva OBS-03 si sigue siendo válida.
+- Conserva DP-01 a DP-06 como decisiones pendientes. No las apruebes implícitamente.
+- No introduzcas requisitos ni decisiones nuevas.
+Si no aparecen nuevas contradicciones, actualiza el estado de Spec 02 a `Aprobada v1.0 (Entrega 2)`.
+Si aparece alguna contradicción bloqueante con Spec 01, conserva el estado pendiente y documenta el problema.
+
+## 2. Actualización de CLAUDE.md
+Actualiza exclusivamente la referencia al estado de Spec 01 para que indique:
+`Aprobada v1.1 (Entrega 2)`
+Actualiza también el estado de Spec 02 únicamente si su revisión permite aprobarla.
+No cambies otras referencias ni estados documentales.
+
+## 3. Validación
+
+Comprueba:
+- Coherencia de Spec 02 con Spec 01 aprobada.
+- Referencias y estados documentales correctos.
+- Conservación de los 31 escenarios ESC-01 a ESC-31.
+- Trazabilidad de requisitos, criterios y tickets.
+- Separación MVP/V2.
+- Ausencia de contradicciones internas.
+- Que no se hayan introducido decisiones nuevas.
+
+## 4. Informe
+
+Entrega:
+1. Cambios realizados.
+2. Estado final de Spec 01 y Spec 02.
+3. Decisiones que siguen pendientes.
+4. Validaciones ejecutadas.
+5. Estado de Git antes y después, demostrando que solo modificaste los archivos autorizados.
+
+No avances  a implementación.
+```
+**Qué salió:**: La spec 02 queda en Aprobada v1.0 (Entrega 2). Al revisarla contra la spec 01 aprobada no apareció ninguna contradicción.
+
+
+### Prompt 2.B.5: Inicializar especificación  Spec 03
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Crea el archivo `specs/03_conversational_bot.spec.md` en estado de Borrador v1.0 (Entrega 2), pendiente de aprobación. 
+- Lee y valida el contenido y restricciones de: docs/PRD.md (v1.2), docs/ARCHITECTURE.md, docs/openapi.yaml (v1.0.0), specs/01_data_models.spec.md (v1.1), specs/02_inventory_system.spec.md (v1.0) y CLAUDE.md.
+- Define la sección de Propósito y Alcance del módulo conversacional para el MVP de Entrega 2.
+- No modifiques ningún otro archivo del repositorio.
+```
+**Qué salió:**:  Creación del archivo specs/03_conversational_bot.spec.md con la estructura base, el encabezado oficial y la sección de fuentes de verdad validadas.
+
+
+###  Prompt 2.B.6: Definicfiones para spec 3
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Edita el archivo `specs/03_conversational_bot.spec.md` para redactar las secciones de:
+1. Identificación del cliente: Inicio mediante teléfono, normalización conforme a RN-12 (aplicando prefijo +56 por defecto para números nacionales sin código internacional, conservando los existentes), coincidencia por teléfono normalizado y tratamiento de clientes inexistentes/teléfonos inválidos (sin crear sesiones para no identificados).
+2. Ciclo de vida de la sesión: Creación, estados, TTL configurable mediante CHAT_SESSION_TTL_MINUTES (30 min por defecto), renovación de actividad, manejo de sesiones expiradas y coherencia con SESSION_INVALID y el contrato OpenAPI.
+- Respeta estrictamente el aislamiento de estados y no inventes persistencia no definida.
+```
+**Qué salió:**:  Las secciones 2 y 3 redactadas y documentadas dentro del archivo markdown de la spec.
+
+### Prompt 2.B.7: Navegación, Catálogo e Integración con Inventario (Spec 02)
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Edita el archivo `specs/03_conversational_bot.spec.md` para documentar:
+1. Navegación y catálogo: Menú inicial, consulta de productos, precios, disponibilidad y stock.
+2. Delegación estricta al módulo de inventario de la Spec 02 (sin duplicar sus reglas) para verificar productos activos/inactivos y existencias.
+3. Tratamiento de productos inexistentes o inactivos durante la navegación del usuario.
+```
+**Qué salió:**:  La sección 4 de la spec integrada con el comportamiento de inventario de la Spec 02.
+
+### Prompt 2.B.8: Gestión del Carrito de Compras
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Edita el archivo `specs/03_conversational_bot.spec.md` incorporando la sección del Carrito:
+- Operaciones permitidas: Agregar productos, modificar cantidades, eliminar productos y consultar resumen.
+- Validaciones en vivo: Cantidades, disponibilidad y estado activo.
+- Regla crítica: Especifica claramente qué sucede cuando un producto previamente agregado al carrito se desactiva antes de la confirmación (debe rechazarse y excluirse).
+- Coherencia estricta entre el estado del carrito y la sesión.
+```
+**Qué salió:**: La sección 5 redactada con las reglas del carrito y el manejo de productos desactivados.
+
+### Prompt 2.B.9: Confirmación de Compra y Ciclo de Pedidos
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Edita el archivo `specs/03_conversational_bot.spec.md` para la Confirmación de Compra y Pedidos:
+- Revalidación obligatoria de stock, estado activo y precios vigentes frente al resumen previo.
+- Comportamiento ante variación de precios: exigencia de un nuevo resumen y segunda confirmación obligatoria.
+- Creación del pedido solo tras confirmación válida del cliente, utilizando el formato de numeración MED- seguido de al menos 5 dígitos.
+- Manejo de confirmaciones simultáneas/mensajes repetidos y respuesta conversacional de éxito.
+- Reglas para la consulta de pedidos propios del cliente (restringiendo acceso cruzado).
+```
+**Qué salió:**: Las secciones 6 y 7 con el flujo completo de checkout, precios y pedidos.
+
+### Prompt 2.B.10: Máquina de Estados Conversacional y Diagrama Mermaid
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Edita el archivo `specs/03_conversational_bot.spec.md` para incluir:
+- La máquina de estados conversacional detallando para cada estado: ID, descripción, datos que conserva, mensajes/opciones permitidas, eventos, estados de destino, condiciones de transición y manejo de eventos inválidos.
+- Distinción clara entre estado de sesión, de conversación, del carrito y del pedido (sin mezclarlos).
+- Inclusión del diagrama Mermaid que represente visualmente el flujo principal.
+```
+**Qué salió:**: La sección 4 (o equivalente) de la spec con la definición formal de estados y el diagrama Mermaid funcional.
+
+### Prompt 2.B.11: Manejo de Errores, Contrato OpenAPI y Trazabilidad
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Edita el archivo `specs/03_conversational_bot.spec.md` para completar:
+1. Manejo de errores y situaciones límite (teléfono inválido, sesión expirada, stock insuficiente, cambio de precio, etc.).
+2. Relación de operationId de docs/openapi.yaml con su responsabilidad funcional y momento del flujo.
+3. Escenarios concretos con identificadores estables y matriz de trazabilidad (PRD, reglas, OpenAPI, backlog y escenarios).
+4. Separación explícita de MVP y V2 (excluyendo claims y cancelaciones de cliente del MVP).
+5. Registro formal de decisiones pendientes (DP) y estado documental final en Borrador v1.0.
+```
+**Qué salió:**:  La especificación completamente finalizada, lista para la validación documental y el informe final.
+
+### Prompt 2.B.12:  Auditar Decisiones de Diseño en Spec 03
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Realiza una revisión exclusivamente documental (sin modificar archivos, ni hacer commits) leyendo `specs/03_conversational_bot.spec.md` junto con `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/openapi.yaml`, `specs/01_data_models.spec.md` y `specs/02_inventory_system.spec.md`.
+Extrae las 12 decisiones de diseño (D-01 a D-12) de Spec 03 y construye una tabla detallada con:
+- ID.
+- Descripción exacta y completa.
+- Justificación funcional o técnica.
+- Fuente que la respalda (PRD, arquitectura, OpenAPI, otra spec o decisión explícita).
+- Estado de respaldo: si ya está cubierta por una decisión previamente aprobada o si requiere aprobación humana explícita (no presentes recomendaciones de Claude como decisiones aprobadas).
+- Consecuencia de aprobarla.
+Guarda este análisis en memoria para el informe final. No declares la Spec 03 aprobada.
+```
+**Qué salió:**:  Una tabla estructurada con las 12 decisiones de diseño de la Spec 03 trazadas contra su documento fuente, diferenciando claramente cuáles ya tienen respaldo oficial y cuáles dependen de validación humana.
+
+### Prompt  2.B.13:Auditar Decisiones Pendientes  y su impacto
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Continuando con la revisión documental de `specs/03_conversational_bot.spec.md` y cruzando con `backlog/README.md` y los tickets del flujo conversacional (sin editar ningún archivo):
+Extrae las 11 decisiones pendientes de aprobación (DP-01 a DP-11), conservando su numeración exacta sin combinarlas. Para cada una genera una ficha o fila de tabla con:
+- ID y pregunta exacta que debe resolver el usuario.
+- Contexto y escenario afectado en Spec 03.
+- Alternativa recomendada por Claude y otras alternativas viables.
+- Impacto desglosado en: requisitos, UX, arquitectura, API, pruebas y backlog.
+- Tickets o escenarios dependientes.
+- Nivel de bloqueo: indica si bloquea la aprobación total de Spec 03 o solo una parte de la implementación.
+No resuelvas ninguna decisión en nombre del usuario.
+```
+**Qué salió:**:  El inventario completo de las 11 decisiones pendientes (DP-01 a DP-11) con matriz de impacto técnico/funcional y nivel de criticidad/bloqueo para cada una.
+
+### Prompt 2.B.14:Detección de Observaciones y Brechas Documentales
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Analiza `specs/03_conversational_bot.spec.md` frente al resto de la documentación (`PRD.md`, `ARCHITECTURE.md`, `openapi.yaml`, `Spec 01`, `Spec 02` y `backlog`) en modo solo lectura.
+Extrae por separado todas las observaciones (OBS) y brechas detectadas, clasificándolas estrictamente bajo estas categorías:
+- Contradicción documental.
+- Dependencia pendiente.
+- Brecha de cobertura de pruebas.
+- Decisión de UX pendiente.
+- Deuda documental que no bloquea la aprobación.
+- Riesgo técnico.
+Para cada hallazgo detalla su impacto concreto en el proyecto y la acción recomendada para mitigarlo.
+```
+**Qué salió:**: Listado categorizado de todas las observaciones y brechas (OBS), separando los riesgos bloqueantes de la deuda documental menor.
+
+### Prompt 2.B.15: Ejecutar Validación Cruzada de Reglas Críticas y Contrato OpenAPI
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Sin modificar ningún archivo del repositorio, realiza una auditoría de cumplimiento cruzado sobre `specs/03_conversational_bot.spec.md` verificando punto por punto:
+1. Reflejo exacto de reglas confirmadas sobre producto inactivo (rechazo en confirmación) y cambio de precio (nuevo resumen + segunda confirmación).
+2. Formato estricto de numeración de pedidos (`MED-` seguido de mínimo 5 dígitos, sin límite máximo).
+3. Configuración del TTL de sesión (`CHAT_SESSION_TTL_MINUTES` con 30 min por defecto).
+4. Imposibilidad de crear pedidos sin confirmación válida del cliente y prevención de duplicados ante confirmaciones concurrentes.
+5. Coherencia total entre los flujos descritos y los endpoints/errores de `docs/openapi.yaml`.
+6. Dependencia estricta de la normalización telefónica con RN-12 sin introducir reglas paralelas.
+7. Separación explícita entre alcance MVP y funcionalidades V2 (Claims y cancelaciones fuera de MVP).
+Documenta cualquier desviación o confirmación de cumplimiento.
+```
+**Qué salió:**: Un checklist de auditoría técnica que certifica si las 8 reglas críticas del proyecto se cumplen sin contradicciones frente a OpenAPI, Spec 01 y Spec 02.
+
+### Prompt 2.B.12: Generar Informe Final de Revisión para Aprobación Humana
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Consolida todos los hallazgos de los pasos anteriores en un informe estructurado en consola (sin modificar ningún archivo del repositorio, sin commits y sin declarar aprobada la Spec 03) siguiendo exactamente este orden:
+1. Resumen ejecutivo del estado actual de `specs/03_conversational_bot.spec.md`.
+2. Tabla completa de Decisiones de Diseño (D-01 a D-12).
+3. Tabla completa de Decisiones Pendientes (DP-01 a DP-11).
+4. Listado clasificado de Observaciones (OBS) y gaps.
+5. Riesgos críticos que podrían bloquear la aprobación funcional.
+6. Recomendación clara sobre qué decisiones debería aprobar el usuario de inmediato y cuáles conviene mantener pendientes para etapas posteriores.
+Verifica con `git status` que el repositorio permanece intacto.
+```
+**Qué salió:**:El informe de auditoría completo y ordenado listo para ser presentado como entregable y servir de guía para la toma de decisiones humanas, acompañado de la evidencia de que el repositorio no fue alterado.
+
+### Prompt 2.B.13: Aprobar spec 3 
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Segun el informe de auditoria, anterior, aplica los cambios a la spec 2 y llevala a la version 1.1, despues haz una validacion de las 3 specs. segun la documentacion, buscando incosistencia entre estas, en caso de que  hayas alguna inconsistencia, indica cual, porque riesgos, posibles mitigaciones, marca la specs con problemas como rechazada, en caso de que las 3 esten aprobadas, marca la spec 3 como aprobada.
+```
+**Qué salió:**:Encontro inconsistencias, tareas subestimadas con la spec 3, por lo que la dejo rechazada, lanzo un plan de correccion, y pide aprobacion para aplicarlo. 
+
+
+### Prompt 2.B.13: Aprobar plan para resolucion spec 3 
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Apruebo el plan para la resolucion, pero en cuanto orders.service devuelva el pedido, la sesión pasa a MAIN_MENU y el carrito se vacía, antes de cualquier otro paso, así que un fallo posterior no puede volver a SUMMARY. ESC-48 lo verifica. Cumple los puntos 2, 3 y 4 en una sola instancia. El corte durante el COMMIT (punto 5) queda como limitación conocida del MVP, y el punto 1 no se cumple literalmente.
+```
+**Qué salió:**:Entrego un resumen de todo lo aplicado, que ya no hay nada pendiente, recomendando aprobar y pasar a la spec 4.
+
+### Prompt 2.B.14: Aprobacion spec 3 
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Se da por aprobada la spec 3, actualiza el claude y readme para que consideren esta aprobacion, despues commit y push 
+```
+**Qué salió:**:Spec 3 pasa a aprobado, claude y readme actualizado, recomienda seguir con la spec 4.
