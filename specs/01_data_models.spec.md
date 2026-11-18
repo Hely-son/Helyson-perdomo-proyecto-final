@@ -2,7 +2,7 @@
 
 | Estado | Cubre | Tickets |
 |---|---|---|
-| Borrador v1.1 (Entrega 2), pendiente de aprobación | Entidades de PRD §7, CL-03, RN-01/03/04/05/09/10/12 | TK-00.3, TK-00.4 |
+| Aprobada v1.1 (Entrega 2) | Entidades de PRD §7, CL-03, RN-01/03/04/05/09/10/12 | TK-00.3, TK-00.4 |
 
 Este documento define la persistencia. Las reglas de negocio se citan por ID: su lógica vive en los servicios del backend ([ARCHITECTURE](../docs/ARCHITECTURE.md)). La base de datos es PostgreSQL 16 en todos los entornos (RNF-01).
 
@@ -70,12 +70,13 @@ erDiagram
 
 ## Convenciones
 
-- Modelos Prisma en `PascalCase` y campos en `camelCase`. Tablas en `snake_case` y plural, y columnas en `snake_case`, vía `@@map` / `@map`. El modelo `Order` se mapea a la tabla `orders`.
+- Modelos Prisma en `PascalCase` y campos en `camelCase`. Tablas en `snake_case` y plural, y columnas en `snake_case`, vía `@@map` / `@map`. El modelo `Order` se mapea a la tabla `orders` con `@@map("orders")`.
+- Nulabilidad: todo campo sin `?` en Prisma es `NOT NULL`. En las tablas de entidades, solo `products.description` admite nulos.
 - Todas las tablas tienen `id` como PK (entero autoincremental, `Int @id @default(autoincrement())`), `created_at` y `updated_at` (`@default(now())` y `@updatedAt`).
 - Fechas: `timestamptz` (`@db.Timestamptz(3)`), siempre en UTC.
 - Dinero: `numeric(12,2)` (`Decimal @db.Decimal(12, 2)`). Nunca `Float`.
 - Textos: `text`. Las longitudes máximas se validan en la API (contrato en `docs/openapi.yaml`), no en la base.
-- Enums: enums nativos de PostgreSQL vía `enum` de Prisma.
+- Enums: enums nativos de PostgreSQL vía `enum` de Prisma, con nombre físico en `snake_case` (`OrderStatus` → tipo `order_status`, `@@map("order_status")`).
 - Relaciones con `onDelete: Restrict`: nada se borra en cascada (RN-10).
 - Las claves foráneas se indexan explícitamente: PostgreSQL no lo hace solo.
 
@@ -129,7 +130,8 @@ En el MVP los clientes solo se crean por seed, y el seed aplica la misma normali
 
 - El teléfono del cliente no se copia en el pedido: se obtiene vía `customer_id`.
 - Un pedido cancelado conserva sus ítems. La restitución de stock (RN-05) solo modifica `products.current_stock`.
-- **`order_number` (RN-04):** la migración crea la secuencia `order_number_seq` y la función `next_order_number()`, que toma un valor de la secuencia y devuelve `'MED-'` seguido del número completado con ceros hasta cinco dígitos, sin recortarlo si tiene más (`MED-00001`, `MED-99999`, `MED-100000`). Equivale a `lpad(n::text, greatest(5, length(n::text)), '0')` sobre un único `nextval`. La columna la usa como valor por defecto, declarado en Prisma con `@default(dbgenerated("next_order_number()"))`. Se asigna en el mismo `INSERT`, así que nunca queda nulo. Si la transacción se revierte, el valor consumido de la secuencia no se reutiliza: es el salto que RN-04 permite.
+- **Estados (RN-05):** la base solo restringe los valores posibles con el enum. Las transiciones permitidas y la restitución única de stock las aplica `orders.service` con una actualización condicional sobre el estado esperado (ARCHITECTURE, "Cancelación por operador" y "Avance de estado"). No requieren columnas, triggers ni restricciones adicionales.
+- **`order_number` (RN-04):** la migración inicial crea, antes que la tabla `orders` que la usa como valor por defecto, la secuencia `order_number_seq` y la función `next_order_number()`, que toma un valor de la secuencia y devuelve `'MED-'` seguido del número completado con ceros hasta cinco dígitos, sin recortarlo si tiene más (`MED-00001`, `MED-99999`, `MED-100000`). Equivale a `lpad(n::text, greatest(5, length(n::text)), '0')` sobre un único `nextval`. La columna la usa como valor por defecto, declarado en Prisma con `@default(dbgenerated("next_order_number()"))`. Se asigna en el mismo `INSERT`, así que nunca queda nulo. Si la transacción se revierte, el valor consumido de la secuencia no se reutiliza: es el salto que RN-04 permite.
 - **Orden:** `order_number` no sirve para ordenar, porque `MED-100000` va alfabéticamente antes que `MED-99999`. Los listados ordenan por `created_at` o `id`.
 
 ### OrderItem → `order_items` — línea de un pedido (RN-03)
@@ -176,7 +178,7 @@ Son una red de seguridad: los servicios validan antes y devuelven errores legibl
 
 ## Fuera del modelo persistente
 
-- **Sesión de chat y carrito:** viven en memoria del backend y se pierden al reiniciar (PRD §10). Ver `specs/03_conversational_bot.spec.md`.
+- **Sesión de chat y carrito:** viven en memoria del backend y se pierden al reiniciar (PRD §10). Se detallarán en `specs/03_conversational_bot.spec.md` (pendiente de redacción).
 - **Alertas de stock:** se calculan con una consulta (RN-09), no se guardan.
 - **Expiración de la sesión de chat (CH-11)** y **de la sesión del operador (AU-03):** se controlan en memoria y en el JWT, respectivamente. No requieren columnas.
 - **Precio mostrado en el resumen (RN-03, CH-06):** vive en la sesión de chat solo para compararlo al confirmar. El pedido guarda únicamente el precio vigente al confirmar (`order_items.unit_price`).
@@ -194,6 +196,17 @@ El seed es idempotente: correrlo dos veces no duplica datos. Los clientes se car
 | Pedidos de ejemplo en cada estado de RN-05, de al menos 2 clientes distintos e incluido al menos 1 en `PROCESSING` | CA-07, CA-12, PE-01 |
 
 Los pedidos del seed no descuentan stock: el stock inicial de cada producto se fija directamente.
+
+## Puntos abiertos (no bloqueantes)
+
+No son decisiones aprobadas ni cambian el esquema. Se registran para resolverlos donde se indica.
+
+| Punto | Situación | Dónde se resuelve |
+|---|---|---|
+| Idempotencia del seed para pedidos | `order_number` lo genera la base, así que no sirve como clave natural para evitar duplicados al repetir el seed | TK-00.4 (implementación del seed) |
+| Desempate al ordenar pedidos con el mismo `created_at` | ARCHITECTURE permite ordenar por fecha de creación o por `id`; no fija un criterio secundario | Spec 04, TK-06.2 |
+| Formato y normalización de `tax_id` (RUT) | El PRD no define reglas; en el MVP solo lo carga el seed | V2 (CL-01), fuera del alcance MVP |
+| Decisiones de la spec 02 con posible impacto en el modelo | DP-01 (reactivación) usa el `is_active` existente; DP-06 (concurrencia en la edición general), si se decidiera un control optimista, podría requerir una columna nueva y una revisión de esta spec | Responsable del producto, vía spec 02 |
 
 ## Diseño conceptual V2 (no forma parte del esquema físico del MVP)
 

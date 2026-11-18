@@ -1008,7 +1008,7 @@ Detenerse al terminar. Esperar revisión y aprobación humana antes de cualquier
 **Qué salió:** Se actualizo el open api, indico el resumen de todos los cambios aplicados, pide aprobar la version.
 
 
-### Prompt 2.A.13: implementar ticket 008
+### Prompt 2.A.13: aprobar open api
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
@@ -1016,4 +1016,349 @@ Detenerse al terminar. Esperar revisión y aprobación humana antes de cualquier
 Queda aprobada la version del api, haz commit y push de los cambios
 ```
 
-**Qué salió:**: Genero la version en 1.0.0 y realizo commit y push
+**Qué salió:**: Genero la version en 1.0.0 y realizo commit y push, indico que claude, readme quedaron desactualizados 
+
+### Prompt 2.A.14: implementar ticket 008
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Corrige CLAUDE.md y README para reflejar openapi.yaml creado
+```
+
+**Qué salió:**: ahora todo el sistema esta actualizado, indica hacer commit y push.
+
+
+## Entrega 2.B — Creacion de spec faltantes antes de la implementacion 
+
+### Prompt 2.B.1: Revision Spec 01
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Realiza una auditoría final de `specs/01_data_models.spec.md` para determinar si está en condiciones de aprobarse como parte del diseño de Entrega 2 de MedSupply AI.
+
+El objetivo es validar consistencia, completitud y trazabilidad. No debes reescribir el documento innecesariamente ni introducir decisiones de diseño nuevas sin autorización.
+
+## 1. Fuentes de verdad
+
+Contrasta la spec con:
+
+- `docs/PRD.md` — versión aprobada v1.2.
+- `docs/ARCHITECTURE.md`.
+- `docs/openapi.yaml`.
+- `specs/02_inventory_system.spec.md`.
+- `CLAUDE.md`.
+- Backlog vigente.
+
+Si encuentras discrepancias, identifica cuál documento debe prevalecer según las responsabilidades definidas. No modifiques automáticamente las otras fuentes.
+
+## 2. Auditoría funcional y de datos
+
+Verifica:
+
+### Entidades y alcance MVP/V2
+- Que las entidades físicas MVP correspondan al diseño aprobado.
+- Que `users`, `customers`, `products`, `orders` y `order_items` estén correctamente definidas.
+- Que `Claim` y `PurchaseOrder` permanezcan exclusivamente como diseño conceptual V2.
+- Que no se introduzcan entidades, tablas o relaciones V2 en el esquema físico MVP.
+
+### Atributos y restricciones
+- Que cada entidad tenga atributos, tipos, PK y FK.
+- Que las restricciones UNIQUE, NOT NULL, CHECK y DEFAULT estén justificadas.
+- Que las relaciones y cardinalidades sean consistentes.
+- Que los índices respondan a consultas reales del sistema.
+- Que no existan atributos duplicados o responsabilidades mal ubicadas.
+
+###  Reglas de negocio
+Verifica especialmente:
+- Stock no negativo.
+- Precio y cantidades válidas.
+- Normalización telefónica RN-12 con prefijo predeterminado +56, preservando prefijos internacionales.
+- Identificación de clientes mediante teléfono normalizado.
+- Conservación del precio histórico en `order_items`.
+- Numeración de pedidos `MED-` seguida de al menos cinco dígitos, sin máximo de longitud y con gaps permitidos.
+- Restauración de stock por cancelación sin duplicar la operación.
+- Estados y transiciones de pedidos.
+- Coherencia de las restricciones físicas con RN-01, RN-03, RN-04, RN-05, RN-09, RN-10 y RN-12.
+
+No conviertas comportamientos de servicios en restricciones de base de datos si no corresponde.
+
+### PostgreSQL y Prisma
+- PostgreSQL 16 como motor en todos los entornos.
+- Compatibilidad de tipos, secuencias, índices y restricciones.
+- Modelo Prisma `Order` mapeado a la tabla física `orders` mediante `@@map("orders")`.
+- Estrategia de numeración de pedidos compatible con PostgreSQL.
+- Coherencia entre el modelo conceptual, el físico y Prisma.
+- Que no existan supuestos heredados de SQLite.
+
+### Coherencia con otras fuentes
+- Contrasta las entidades y campos utilizados por OpenAPI y arquitectura.
+- Verifica que Spec 02 no describa operaciones incompatibles con el modelo.
+- Identifica campos o relaciones requeridos por los flujos que no estén representados.
+- Comprueba que no existan contradicciones entre las reglas documentadas y las restricciones físicas.
+
+## 3. Decisiones pendientes
+Revisa las decisiones abiertas del documento.
+Clasifícalas en:
+- Bloqueantes para aprobar Spec 01.
+- No bloqueantes, que pueden resolverse durante la implementación.
+- Fuera del alcance de esta spec.
+
+No declares aprobada ninguna decisión que no tenga respaldo explícito.
+
+## 4. Correcciones autorizadas
+
+Puedes corregir errores documentales, inconsistencias, referencias rotas y omisiones que se puedan resolver inequívocamente con las fuentes aprobadas.
+Si encuentras una decisión de diseño que requiere intervención humana:
+- No inventes una solución.
+- No la incorpores como aprobada.
+- Documenta la pregunta y sus alternativas.
+- Indica qué otros documentos podrían verse afectados.
+No cambies el alcance MVP/V2 ni agregues requisitos.
+
+## 5. Validación final
+Comprueba:
+1. Integridad de entidades, atributos, PK, FK y cardinalidades.
+2. Coherencia de las restricciones físicas.
+3. Consistencia con PostgreSQL 16 y Prisma.
+4. Trazabilidad con PRD v1.2.
+5. Consistencia con arquitectura y OpenAPI.
+6. Compatibilidad con Spec 02.
+7. Separación efectiva entre MVP y V2.
+8. Ausencia de referencias inexistentes.
+9. Ausencia de contradicciones internas.
+10. Que no se hayan introducido requisitos ni decisiones nuevas.
+
+## 6. Estado de aprobación
+Si todas las validaciones pasan y no quedan decisiones bloqueantes:
+- Actualiza el estado documental de Spec 01 a `Aprobada v1.1 (Entrega 2)`.
+- Conserva la versión v1.1, salvo que las convenciones del repositorio exijan otro incremento.
+- No cambies la versión por simples correcciones editoriales.
+Si existen bloqueantes, conserva `Borrador v1.1 (Entrega 2), pendiente de aprobación` y entrega las preguntas necesarias.
+
+## 7. Informe obligatorio
+Entrega:
+1. Resultado de la auditoría.
+2. Cambios realizados, con secciones afectadas.
+3. Validaciones ejecutadas y resultados.
+4. Decisiones pendientes y cuáles son bloqueantes.
+5. Impacto sobre Spec 02.
+6. Estado de Git antes y después, demostrando que únicamente modificaste el archivo autorizado.
+7. Veredicto explícito: APROBADA o PENDIENTE DE APROBACIÓN.
+No avances a implementación.
+
+```
+
+**Qué salió:**: Indico que el veredicto para esta spec era aprobado, dejo una seccion Puntos abiertos (no bloqueantes)
+
+
+### Prompt 2.B.2: Elaboración de Spec 02: Sistema de inventario
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Actúa como **Software Architect y Business Analyst senior**, especializado en Specification-Driven Development (SDD).
+Tu objetivo es elaborar la especificación funcional `specs/02_inventory_system.spec.md` para MedSupply AI, utilizando la documentación aprobada como fuente de verdad.
+
+Esta fase corresponde exclusivamente al diseño y documentación funcional. **No debes implementar código ni avanzar a otras especificaciones.**
+
+## 1. Contexto y fuentes de verdad
+Antes de redactar, inspecciona y analiza:
+- `CLAUDE.md`
+- `docs/PRD.md`
+- `docs/ARCHITECTURE.md`
+- `docs/openapi.yaml`
+- `specs/01_data_models.spec.md`
+- `backlog/README.md`
+- `backlog/00_habilitadores.md`
+- `backlog/US-01.md` hasta `backlog/US-07.md`
+- Las demás especificaciones existentes que sean relevantes, únicamente como referencia de estilo y consistencia.
+
+Respeta la jerarquía documental y las decisiones aprobadas.
+En caso de contradicción:
+1. No inventes una solución.
+2. Identifica las fuentes y los apartados contradictorios.
+3. Registra el conflicto como una observación pendiente.
+4. No modifiques los documentos fuente para resolverlo.
+
+## 2. Alcance funcional de esta especificación
+La Spec 02 debe describir el dominio de productos e inventario correspondiente al MVP.
+Incluye, según corresponda a los requisitos aprobados:
+- Consulta y visualización del catálogo de productos.
+- Información funcional de los productos.
+- Creación y mantenimiento de productos.
+- Edición de información de productos.
+- Activación y desactivación de productos.
+- Consulta de disponibilidad y stock.
+- Ajustes manuales de stock por parte del operador.
+- Control de concurrencia mediante `expectedStock`.
+- Tratamiento de conflictos cuando el stock haya cambiado.
+- Reglas de integridad y consistencia.
+- Comportamiento ante productos inactivos.
+- Relación del inventario con el flujo de compra conversacional.
+- Reglas de stock durante la confirmación de pedidos, cuando corresponda.
+
+No agregues funcionalidades que no estén respaldadas por el PRD, la arquitectura o el backlog.
+
+### Límites MVP/V2
+- Mantén explícitamente diferenciadas las funcionalidades MVP y V2.
+- No incluyas como implementables en MVP las funcionalidades marcadas V2.
+- No crees endpoints, entidades, campos o reglas nuevas para satisfacer supuestos.
+- Conserva los identificadores existentes.
+
+## 3. Contrato HTTP
+`docs/openapi.yaml` es la fuente única de verdad para los contratos HTTP.
+Para cada operación relacionada con productos e inventario:
+- Referencia su `operationId`.
+- Explica su propósito funcional.
+- Describe las reglas de negocio involucradas.
+- Explica los escenarios de éxito y error.
+- Identifica las precondiciones y efectos secundarios.
+- Relaciona la operación con los requisitos y criterios de aceptación correspondientes.
+No dupliques en esta spec:
+- Estructuras JSON de request.
+- Estructuras JSON de response.
+- Schemas.
+- Códigos HTTP.
+- Definiciones de parámetros.
+Cuando sea necesario, referencia el componente o `operationId` correspondiente de OpenAPI.
+Si detectas una operación necesaria para el comportamiento funcional que no existe en OpenAPI, registra la brecha. No modifiques el contrato.
+
+## 4. Reglas de negocio y trazabilidad
+Identifica y documenta las reglas de negocio relevantes, especialmente las relacionadas con:
+- Productos activos e inactivos.
+- Restricciones de modificación del stock.
+- Ajustes absolutos de stock.
+- Validación de `expectedStock`.
+- Conflictos `409 STOCK_CHANGED`.
+- Stock no negativo.
+- Integridad entre inventario y pedidos.
+- Productos que se desactivan mientras están en un carrito.
+- Productos que no pueden utilizarse al confirmar una compra.
+Utiliza los identificadores existentes del PRD y del backlog.
+Cada regla debe poder rastrearse hasta su requisito, criterio de aceptación, operación HTTP y ticket cuando exista esa relación.
+No inventes identificadores ni reutilices identificadores para conceptos diferentes.
+
+## 5. Estructura esperada del documento
+Adapta la estructura a los estándares existentes del repositorio, procurando incluir:
+1. Identificación y objetivo de la especificación.
+2. Alcance MVP y exclusiones V2.
+3. Actores y responsabilidades.
+4. Conceptos y terminología del dominio.
+5. Reglas de negocio.
+6. Flujos funcionales.
+7. Comportamientos y escenarios alternativos.
+8. Operaciones HTTP relacionadas, referenciadas por `operationId`.
+9. Manejo de errores y situaciones excepcionales.
+10. Integridad y consistencia de datos.
+11. Criterios de aceptación y escenarios verificables.
+12. Matriz de trazabilidad con PRD, OpenAPI y backlog.
+13. Supuestos, restricciones y decisiones pendientes.
+Utiliza tablas cuando faciliten la trazabilidad.
+Los escenarios verificables deben ser suficientemente precisos para convertirse posteriormente en pruebas funcionales o automatizadas.
+
+## 6. Aspectos que requieren especial atención
+No des por sentado lo siguiente:
+- Que un producto inactivo puede agregarse al carrito.
+- Que desactivar un producto elimina automáticamente su stock.
+- Que un ajuste manual de stock puede sobrescribir cambios concurrentes.
+- Que el stock puede modificarse mediante la edición general del producto.
+- Que un producto puede eliminarse físicamente.
+- Que los pedidos existentes pierden su integridad cuando cambia el catálogo.
+- Que la desactivación de un producto permite confirmar una compra previamente iniciada.
+Contrasta cada comportamiento con las decisiones aprobadas.
+Si una situación no está definida, documenta la incertidumbre y evita decidir unilateralmente.
+
+## 7. Restricciones de ejecución
+
+Esta tarea autoriza exclusivamente:
+`specs/02_inventory_system.spec.md`
+
+No modificar:
+- PRD.
+- Arquitectura.
+- OpenAPI.
+- Spec 01.
+- Otras specs.
+- CLAUDE.md.
+- README.
+- Backlog.
+- PROMPTS.md.
+- Código fuente.
+- Migraciones.
+- Seeds.
+- Tests.
+- Configuraciones.
+No ejecutar implementación.
+No crear tickets nuevos.
+No realizar commit ni push.
+
+## 8. Validación obligatoria
+Antes de finalizar:
+1. Verifica que todos los identificadores referenciados existan.
+2. Comprueba que los `operationId` citados existan en `docs/openapi.yaml`.
+3. Comprueba que no se dupliquen contratos HTTP.
+4. Comprueba que no se introduzcan requisitos nuevos.
+5. Comprueba la separación MVP/V2.
+6. Comprueba que no existan contradicciones con PRD, arquitectura y modelo de datos.
+7. Comprueba que los escenarios sean verificables.
+8. Comprueba que la matriz de trazabilidad no tenga referencias inexistentes.
+Si detectas inconsistencias, enuméralas como pendientes; no las resuelvas modificando otras fuentes.
+
+## 9. Informe final
+Al terminar, presenta:
+- Resumen de la especificación creada.
+- Secciones incorporadas.
+- Requisitos y reglas cubiertos.
+- `operationId` referenciados.
+- Tickets relacionados.
+- Escenarios de aceptación documentados.
+- Decisiones pendientes y contradicciones detectadas.
+- Resultado de cada validación.
+- Confirmación de que únicamente se modificó `specs/02_inventory_system.spec.md`.
+- Confirmación de que no se realizó commit ni push.
+**Importante:** esta fase termina cuando la especificación está redactada y auditada. No continúes con implementación. Espera la revisión y aprobación humana.
+```
+
+**Qué salió:**: Creo el archivo de inventory, indico, resumen, decisiones, tambien las inconsitencias encontradas, indico caminos para resolverlas.
+
+### Prompt 2.B.3: Solventar inconvenientes Spec 02
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+# Ajustes de revisión — Spec 02 Sistema de inventario
+
+Realiza una revisión final de `specs/02_inventory_system.spec.md` 
+## Ajustes solicitados
+1. **Cobertura:** incorpora CA-04 en la cabecera de cobertura, ya que está referenciado en F-7 y en la matriz de trazabilidad.
+2. **ESC-08:** ajusta el escenario para verificar que no existe una operación de borrado y que el producto permanece intacto. No impongas un código HTTP que no esté definido en el contrato.
+3. **ESC-28:** ajusta la condición de aceptación para verificar que las solicitudes concurrentes finalizan correctamente, sin errores internos expuestos y con stock consistente. No interpretes los bloqueos internos normales de PostgreSQL como fallos.
+4. **DP-04:** conserva la decisión pendiente. Puedes documentar como alternativa recomendada que el dashboard utilice `listStockAlerts` y relacione sus resultados con `listProducts` mediante el ID del producto. No introduzcas un campo nuevo ni cambies el contrato.
+5. **OBS-02 y OBS-03:** conserva ambas observaciones documentales. No modifiques otras fuentes ni declares aprobaciones que todavía no se hayan confirmado.
+6. Revisa que las decisiones pendientes DP-01 a DP-06 estén correctamente identificadas y que ninguna se presente como una decisión aprobada sin respaldo.
+
+## Validación final
+
+Comprueba:
+- Que los 31 escenarios continúan presentes.
+- Que los IDs y referencias del PRD existen.
+- Que los operationId utilizados existen en `docs/openapi.yaml`.
+- Que la trazabilidad entre requisitos, criterios, tickets y escenarios no se haya deteriorado.
+- Que no se hayan incorporado requisitos nuevos.
+- Que MVP y V2 sigan claramente separados.
+- Que no existan contradicciones internas después de los ajustes.
+
+Entrega un informe con:
+1. Cambios realizados.
+2. Validaciones ejecutadas y resultados.
+3. Decisiones que siguen requiriendo aprobación humana.
+4. Estado de Git antes y después, demostrando que únicamente modificaste el archivo autorizado.
+
+No hagas ninguna implementación.
+
+```
+
+**Qué salió:**: aplico lo solicitado, dio el resumen. pero indica que aun hay decisiones que no estan cerradas.
