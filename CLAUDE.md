@@ -10,7 +10,7 @@ Cada dato vive en un solo archivo. Los demás lo referencian.
 |---|---|
 | Alcance y fases (`MVP`/`V2`), requisitos (`CH-`, `IN-`, `PE-`…), no funcionales (`RNF-`), reglas de negocio (`RN-`), criterios (`CA-`) | [docs/PRD.md](docs/PRD.md) |
 | Componentes, capas, módulos, flujos, API general, entornos, stack y su justificación | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| Contrato de la API: endpoints, payloads, errores y códigos | `docs/openapi.yaml` (pendiente de crear, RNF-02) |
+| Contrato de la API: endpoints, payloads, errores y códigos | [docs/openapi.yaml](docs/openapi.yaml) (RNF-02, aprobado) |
 | Diseño detallado de cada módulo: modelo de datos, FSM, pantallas | `specs/*.spec.md` |
 | Historias de usuario, tickets (`TK-`), estimación, definición de hecho | [backlog/](backlog/README.md) |
 
@@ -47,5 +47,9 @@ Cada dato vive en un solo archivo. Los demás lo referencian.
 - Los commits citan el ticket: `TK-05.3: …`.
 
 ## Comandos
+
+```bash
+npx @redocly/cli@2.73.0 lint docs/openapi.yaml   # valida el contrato OpenAPI (TK-00.8)
+```
 
 Todavía no hay código. Completar esta sección al crear `backend/`, `frontend/` y `docker-compose.yml` (TK-00.1, TK-00.2, TK-00.6).
