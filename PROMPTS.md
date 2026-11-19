@@ -1359,23 +1359,19 @@ Entrega un informe con:
 No hagas ninguna implementación.
 
 ```
-
 **Qué salió:**: aplico lo solicitado, dio el resumen. pero indica que aun hay decisiones que no estan cerradas.
-
 
 ### Prompt 2.B.4: Cierre documental Spec 02
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 ```
 Realiza el cierre documental de `specs/02_inventory_system.spec.md` y actualiza el estado correspondiente en `CLAUDE.md`.
-
 ## Alcance autorizado
 Puedes modificar exclusivamente:
 - `specs/02_inventory_system.spec.md`
 - `CLAUDE.md`
 No modifiques PRD, arquitectura, OpenAPI, Spec 01, otras specs, backlog ni código fuente.
 No realices commits ni push.
-
 ## 1. Actualización de Spec 02
 - Actualiza OBS-02 para reflejar que Spec 01 está aprobada v1.1.
 - Revisa que no existan referencias adicionales que indiquen que Spec 01 sigue en borrador.
@@ -1385,15 +1381,12 @@ No realices commits ni push.
 - No introduzcas requisitos ni decisiones nuevas.
 Si no aparecen nuevas contradicciones, actualiza el estado de Spec 02 a `Aprobada v1.0 (Entrega 2)`.
 Si aparece alguna contradicción bloqueante con Spec 01, conserva el estado pendiente y documenta el problema.
-
 ## 2. Actualización de CLAUDE.md
 Actualiza exclusivamente la referencia al estado de Spec 01 para que indique:
 `Aprobada v1.1 (Entrega 2)`
 Actualiza también el estado de Spec 02 únicamente si su revisión permite aprobarla.
 No cambies otras referencias ni estados documentales.
-
 ## 3. Validación
-
 Comprueba:
 - Coherencia de Spec 02 con Spec 01 aprobada.
 - Referencias y estados documentales correctos.
@@ -1402,16 +1395,13 @@ Comprueba:
 - Separación MVP/V2.
 - Ausencia de contradicciones internas.
 - Que no se hayan introducido decisiones nuevas.
-
 ## 4. Informe
-
 Entrega:
 1. Cambios realizados.
 2. Estado final de Spec 01 y Spec 02.
 3. Decisiones que siguen pendientes.
 4. Validaciones ejecutadas.
 5. Estado de Git antes y después, demostrando que solo modificaste los archivos autorizados.
-
 No avances  a implementación.
 ```
 **Qué salió:**: La spec 02 queda en Aprobada v1.0 (Entrega 2). Al revisarla contra la spec 01 aprobada no apareció ninguna contradicción.
@@ -2036,7 +2026,7 @@ Detente al entregar el informe y espera autorización antes de corregir cualquie
 
 ### Prompt 2.B.44: Resolver H-03 — Idempotencia del seed
 
-**Modelo:** No especificado  
+**Modelo:** Opus 1M xHigh 
 **Herramienta:** Claude Code
 
 ```
@@ -2087,7 +2077,7 @@ Al finalizar, presenta el cambio y las validaciones. Detente y espera mi revisi�
 
 ### Prompt 2.B.45: Resolver H-03 — Idempotencia del seed
 
-**Modelo:** No especificado  
+**Modelo:** Opus 1M xHigh 
 **Herramienta:** Claude Code
 
 ```
@@ -2131,6 +2121,9 @@ Al terminar, informa qué cambió, qué validaste y el estado de Git. Detente y 
 **Qué salió:**: no permitio el cambio ya que esto contradecia las reglas expuestas incialmente.
 
 ### Prompt 2.B.46: Ajustar dependencia de pedidos en TK-00.4
+
+**Modelo:** Opus 1M xHigh 
+**Herramienta:** Claude Code
 ```
 Actualiza exclusivamente `backlog/00_habilitadores.md`, específicamente TK-00.4, para aplicar la alternativa A que acabamos de decidir.
 
@@ -2172,6 +2165,9 @@ Al terminar, informa los cambios y validaciones. No hagas commit ni push y esper
 **Qué salió:**:Se incorporó la alternativa A en backlog/00_habilitadores.md. Los pedidos del seed solo se cargan cuando los productos correspondientes fueron insertados durante esa misma ejecución. Se preservó el comportamiento de clientes de Spec 05, sin cambios en specs, puntos, dependencias ni totales. Validaciones satisfactorias. Sin commit ni push.
 
 ### Prompt 2.B.47: Cerrar H-07 en TK-01.1
+
+**Modelo:** Opus 1M xHigh 
+**Herramienta:** Claude Code
 ```
 
 Revisa `backlog/US-01_acceso_operador.md` y las referencias correspondientes de `specs/05_operator_dashboard.spec.md`.
@@ -2207,6 +2203,9 @@ Al terminar, informa los cambios, las validaciones y el estado de Git. Detente y
 **Qué salió:**:Se añadieron dos criterios verificables a TK-01.1: costo BCrypt predeterminado declarado en una constante y ausencia de contraseñas o hashes en logs y respuestas HTTP, tanto en login exitoso como fallido. Alineado con Spec 05 §12.2, §15.3, DP-08 y ESC-51. Sin cambios en puntos, dependencias ni totales. Sin commit ni push.
 
 ### Prompt 2.B.48: Cerrar H-01 en TK-05.3
+
+**Modelo:** Opus 1M xHigh 
+**Herramienta:** Claude Code
 ```
 Revisa `backlog/US-05_compra_conversacional.md`, específicamente TK-05.3, y contrástalo con `specs/03_conversational_bot.spec.md` y `specs/04_orders_claims.spec.md`.
 
@@ -2280,6 +2279,9 @@ Informa los cambios y validaciones. Detente y espera mi revisión.
 
 
 ### Prompt 2.B.50 Cerrar H-02 en TK-06.1
+
+**Modelo:** Opus 1M xHigh 
+**Herramienta:** Claude Code
 ```
 Revisa TK-06.1 en los archivos de `backlog/` y contrástalo con `specs/04_orders_claims.spec.md` (o el nombre exacto de la Spec 04 existente en el repositorio).
 
@@ -2326,62 +2328,46 @@ Al terminar, informa los cambios, las validaciones y el estado de Git. Detente y
 **Qué salió:**: Se incorporaron tres criterios a TK-06.1: actualización de productos en orden ascendente por productId, reintento completo de la transacción ante P2034 hasta tres veces y pruebas de integración/concurrencia para ESC-28 y ESC-29. Referencias corregidas a D-05. Sin cambios en specs, puntos, dependencias ni totales. Sin commit ni push.
 
 ### Prompt 2.B.51 Completar criterio de orden en TK-06.2
-**Modelo:** No especificado  
+**Modelo:** Opus 1M xHigh 
 **Herramienta:** Claude Code
 ```
 Necesito corregir la observación H-05 de la auditoría de consistencia del backlog.
-
 **Contexto**
-
 La Spec 04, decisión D-01, establece que el listado de pedidos debe ordenarse de forma determinística mediante:
-
 `createdAt DESC, id DESC`
-
 La auditoría detectó que el ticket TK-06.2 no explicita el segundo criterio de ordenamiento.
-
 **Tarea**
-
 1. Revisa la definición de TK-06.2 en `backlog/US-06_seguimiento_pedidos.md`.
 2. Contrasta sus criterios de aceptación con la decisión D-01 de `specs/04_orders_claims.spec.md`.
 3. Incorpora en el apartado **Hecho cuando** que los pedidos se ordenan por `createdAt DESC` y, cuando exista empate, por `id DESC`.
 4. Conserva la terminología y el formato que ya utiliza el backlog.
-
 **Restricciones**
-
 - Modifica exclusivamente `backlog/US-06_seguimiento_pedidos.md`.
 - No modifiques las specs aprobadas ni otros archivos.
 - No agregues paginación, cursores ni comportamientos que no estén definidos en las specs.
 - No cambies puntos, dependencias, prioridad, alcance ni totales del backlog.
 - No hagas commit ni push.
-
 **Validación**
-
 - Comprueba que TK-06.2 refleja exactamente el orden establecido en D-01.
 - Ejecuta `git diff --check`.
 - Revisa el diff para confirmar que el cambio es puntual y que no hay modificaciones accidentales.
 - Confirma que los totales del backlog permanecen iguales: MVP 31 tickets / 96 puntos; V2 11 tickets / 27 puntos; total 42 tickets / 123 puntos.
-
 Al finalizar, informa el archivo modificado, el criterio incorporado, las validaciones realizadas y el estado de Git.
 ```
 **Qué salió:**: H-05 revisada y resuelta. El ajuste es correcto y está bien delimitado. Buena precisión con la referencia: corresponde a DP-01 de la Spec 04, no a D-01. También queda bien asociado el test de integración ESC-32 a TK-06.2.
 
 ### Prompt 2.B.52 Completar búsqueda por número de pedido en TK-06.3
-**Modelo:** No especificado  
+**Modelo:** Opus 1M xHigh 
 **Herramienta:** Claude Code
 ```
 Necesito corregir la observación H-06 de la auditoría de consistencia del backlog.
-
 **Contexto**
-
 La Spec 03, decisión DP-10, define cómo se normaliza el número de pedido para su búsqueda:
 - Eliminar espacios al inicio y al final (`trim`).
 - Convertir el valor a mayúsculas.
 - Utilizar el número de pedido completo.
-
 La Spec 04, decisión D-08, mantiene este contrato. La auditoría detectó que TK-06.3 no explicita estos comportamientos.
-
 **Tarea**
-
 1. Revisa TK-06.3 en `backlog/US-06_seguimiento_pedidos.md`.
 2. Contrasta sus criterios con DP-10 de `specs/03_conversational_bot.spec.md` y D-08 de `specs/04_orders_claims.spec.md`.
 3. Completa el apartado **Hecho cuando** para indicar que la búsqueda:
@@ -2389,123 +2375,513 @@ La Spec 04, decisión D-08, mantiene este contrato. La auditoría detectó que T
    - normaliza el valor a mayúsculas;
    - utiliza el número de pedido completo para localizarlo.
 4. Verifica qué escenario de la Spec 03 cubre este comportamiento y referencia el escenario correspondiente si resulta aplicable.
-
 **Restricciones**
-
 - Modifica exclusivamente `backlog/US-06_seguimiento_pedidos.md`.
 - No modifiques las specs aprobadas ni otros archivos.
 - No introduzcas búsquedas parciales, por subcadenas ni coincidencias aproximadas.
 - No cambies el formato del número de pedido ni agregues reglas de normalización distintas de las ya aprobadas.
 - No cambies puntos, dependencias, prioridad, alcance ni totales del backlog.
 - No hagas commit ni push.
-
 **Validación**
-
 - Comprueba que TK-06.3 refleja DP-10 y D-08 sin contradicciones.
 - Ejecuta `git diff --check`.
 - Revisa el diff para confirmar que el cambio es puntual.
 - Confirma que los totales permanecen iguales: MVP 31 tickets / 96 puntos; V2 11 tickets / 27 puntos; total 42 tickets / 123 puntos.
-
 Al finalizar, informa el archivo modificado, los criterios incorporados, las referencias utilizadas, las validaciones realizadas y el estado de Git.
 ```
 **Qué salió:**: El criterio quedó correctamente distribuido entre las responsabilidades del FSM y el servicio: normalización antes de buscar e igualdad exacta contra order_number.
 
 ### Prompt 2.B.53 Evaluar estimaciones de TK-01.2 y TK-05.4
-**Modelo:** No especificado  
+**Modelo:** Opus 1M xHigh 
 **Herramienta:** Claude Code
 ```
 Necesito evaluar la observación H-08 de la auditoría final del backlog.
-
 **Contexto**
-
 La auditoría identificó dos posibles subestimaciones:
-
 - TK-01.2: 2 puntos. Contempla manejo de respuestas 401 y comportamientos de sesión asociados a DP-05, DP-06, DP-07 y DP-09 de la Spec 05.
 - TK-05.4: 3 puntos. Incorpora validación local del teléfono y las reglas de normalización correspondientes.
-
 **Tarea**
-
 Analiza ambos tickets contrastando:
 - Su descripción y criterios de aceptación actuales.
 - Las responsabilidades y reglas de las specs aprobadas.
 - El trabajo técnico necesario para cumplirlos dentro del MVP.
 - Las dependencias y el trabajo que ya está asignado a otros tickets, para evitar contabilizar tareas dos veces.
-
 Para cada ticket, determina si la estimación actual es razonable, ajustada o insuficiente. Justifica brevemente la evaluación y señala qué parte del trabajo sustenta tu conclusión.
-
 **Restricciones**
-
 - No modifiques ningún archivo.
 - No cambies puntos ni totales.
 - No propongas dividir tickets ni crear nuevos tickets salvo que exista una necesidad funcional real y demostrable.
 - No agregues mecanismos, requisitos ni complejidad que no estén en las specs aprobadas.
 - Evalúa desde la perspectiva de un MVP, no de un producto escalable a gran volumen.
-
 **Resultado esperado**
-
 Presenta una tabla con:
 - Ticket y estimación actual.
 - Complejidad estimada.
 - Evaluación de la estimación.
 - Justificación.
 - Recomendación: mantener o reconsiderar los puntos.
-
 Si recomiendas cambiar puntos, indica el valor sugerido y el impacto exacto sobre los totales del backlog, pero no lo apliques.
-
 El objetivo es tomar una decisión de planificación y cerrar H-08, no abrir una nueva ronda de diseño.
-
 ```
 **Qué salió:**: Analisis de las estimaciones para los tickets dado y recomendacion para aplicar los cambios.
 
 
 ### Prompt 2.B.54 Actualizar estimación de TK-01.2
 
-**Modelo:** No especificado  
+**Modelo:** Opus 1M xHigh 
 **Herramienta:** Claude Code
 ```
 Apruebo la recomendación de la evaluación H-08:
-
 - TK-01.2 pasa de 2 a 3 puntos.
 - TK-05.4 permanece en 3 puntos.
-
 Actualiza exclusivamente las referencias de estimación y totales afectadas:
-
 1. `backlog/US-01_acceso_operador.md`
    - Cambia TK-01.2 de 2 a 3 puntos.
    - Actualiza la suma de puntos de US-01 de 6 a 7.
-
 2. `backlog/README.md`
    - Actualiza los puntos de US-01.
    - Actualiza el total MVP de 96 a 97 puntos.
    - Actualiza el total general de 123 a 124 puntos.
    - Mantén V2 en 11 tickets y 27 puntos.
-
 3. `README.md`
    - Actualiza la referencia al total de 96 puntos del MVP para que refleje 97.
-
 **Restricciones**
 - No modifiques criterios de aceptación, descripciones, dependencias ni otros tickets.
 - No cambies la estimación de TK-05.4.
 - No modifiques las specs aprobadas.
 - No agregues ni elimines tickets.
 - No hagas commit ni push.
-
 **Validación**
 - Verifica que las sumas por historia, fase y backlog sean consistentes.
 - Confirma los totales: MVP 31 tickets / 97 puntos; V2 11 tickets / 27 puntos; total 42 tickets / 124 puntos.
 - Ejecuta `git diff --check`.
 - Revisa el diff y confirma que solo se modificaron los tres archivos autorizados.
 - Informa el estado de Git.
-
 ```
 **Qué salió:**: Se cerraron los puntos pendientes, se indica hacer commit y push e iniciar implementacion
 
 ### Prompt 2.B.55 Actualizar estimación de TK-01.2
 
-**Modelo:** No especificado  
+**Modelo:** Opus 1M xHigh 
 **Herramienta:** Claude Code
 ```
  Con los cambios aplicados se da por finalizado la etapa de diseño 2.B,por lo que haz commit y push de los cambios ingresados
 ```
 
-**Qué salió:**: 
+**Qué salió:**: se hice commit y push de los cambios se finalizo el diseño.
+
+## Entrega 2.C — Creacion de Agentes y flujo de trabajo
+
+### Prompt 2.C.1: Analizar la necesidad de un agente de implementación
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Analiza el estado actual del proyecto MedSupply AI y evalúa cómo podemos utilizar agentes de IA para ejecutar los tickets del backlog de forma controlada.
+Necesitamos un agente capaz de implementar funcionalidades sobre un repositorio existente, utilizando las especificaciones aprobadas como fuente de verdad.
+Antes de proponer una solución:
+- Revisa la estructura y documentación existente.
+- Identifica las restricciones del proyecto.
+- Evalúa los riesgos de delegar la implementación a agentes.
+- Determina qué responsabilidades deberían mantenerse bajo supervisión humana.
+No modifiques archivos ni ejecutes acciones sobre el repositorio. Presenta primero un análisis y una propuesta de organización.
+```
+**Qué salió:**:  Se estableció la necesidad de un flujo de implementación controlado, con responsabilidades delimitadas, supervisión humana y separación entre implementación y validación. El objetivo no era permitir que Claude desarrollara autónomamente, sino construir un mecanismo de ejecución trazable sobre el backlog aprobado.
+
+### Prompt 2.C.2: Auditar el repositorio antes de configurar los agentes
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Realiza una auditoría de solo lectura del repositorio antes de crear la estructura de agentes.
+Verifica:
+- Estructura actual del proyecto.
+- Existencia de código fuente.
+- Documentación funcional y técnica.
+- Especificaciones aprobadas.
+- Backlog y dependencias.
+- Configuración existente de Claude Code.
+Identifica qué elementos están disponibles y cuáles deben crearse para habilitar el flujo de implementación.
+No crees archivos, no modifiques documentación y no ejecutes comandos que alteren el repositorio.
+Entrega un diagnóstico y los prerrequisitos para continuar.
+```
+**Qué salió:**: La auditoría confirmó que el repositorio todavía no contenía código de implementación ni configuración .claude/. Se identificó que las cinco especificaciones estaban aprobadas y que TK-00.8 ya estaba realizado. Esto permitió preparar el entorno de agentes sin asumir que existía infraestructura previa.
+
+### Prompt 2.C.3: Definir la organización de agentes especializados
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Diseña una organización de agentes especializados para implementar MedSupply AI.
+Necesitamos separar las responsabilidades para evitar que un único agente concentre implementación, validación y revisión de seguridad.
+Define:
+- Agente responsable de coordinar el flujo.
+- Agentes especializados por responsabilidad técnica.
+- Agente de QA independiente.
+- Agente de seguridad con capacidades de revisión de solo lectura.
+Establece para cada agente:
+- Objetivo.
+- Responsabilidades.
+- Herramientas necesarias.
+- Alcance de acceso.
+- Restricciones.
+- Condiciones para delegar trabajo.
+La organización debe respetar las especificaciones aprobadas y las exclusiones del MVP establecidas en PRD §4.3.
+Presenta la propuesta antes de crear los archivos.
+```
+**Qué salió:** Se configuró una estructura de seis subagentes especializados. Se estableció la separación entre implementación, QA independiente y revisión de seguridad. Esta distribución permitió evitar que el mismo agente fuera responsable de implementar y aprobar su propio trabajo.
+
+### Prompt 2.C.4: Definir el control de ejecución mediante el tracker
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Necesitamos incorporar un mecanismo centralizado para controlar la ejecución de los tickets.
+Diseña el archivo backlog/TRACKER.md como fuente operativa del estado de ejecución.
+Debe permitir:
+- Identificar los tickets pendientes y completados.
+- Registrar el estado de cada ticket.
+- Controlar las dependencias.
+- Identificar el agente responsable.
+- Evitar que se ejecuten tickets fuera de orden.
+- Mantener trazabilidad de las decisiones y resultados.
+Define también las reglas para actualizar el tracker y evitar que los agentes trabajen sobre tickets que no estén habilitados.
+No permitas que los agentes modifiquen arbitrariamente el orden del backlog.
+```
+**Qué salió**: Se incorporó backlog/TRACKER.md como mecanismo de seguimiento operativo. Se establecieron reglas para controlar los estados, las dependencias y la asignación de responsables, evitando que los agentes seleccionaran tickets de manera autónoma sin respetar el flujo definido.
+
+### Prompt 2.C.5: Establecer reglas de ejecución secuencial
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Define las reglas de ejecución del flujo multiagente.
+La implementación debe realizarse de forma secuencial, respetando las dependencias del backlog.
+Establece las siguientes condiciones:
+- Solo puede existir un ticket en ejecución.
+- El agente debe verificar que el ticket esté pendiente y sea elegible.
+- Debe comprobar las dependencias antes de iniciar.
+- No debe adelantar tickets que todavía no cumplan sus condiciones.
+- Debe registrar los resultados antes de continuar.
+- Si aparece un bloqueo, debe detener el flujo y solicitar intervención.
+Los agentes no deben decidir unilateralmente cambiar el orden de ejecución.
+Documenta estas reglas en la configuración correspondiente.
+```
+
+**Qué salió**: Se estableció un flujo secuencial de ejecución, evitando implementaciones paralelas y cambios arbitrarios en el orden del backlog. La elegibilidad y las dependencias quedaron como condiciones obligatorias antes de iniciar cada ticket.
+
+### Prompt 2.C.6: Incorporar puertas de autorización humana
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Incorpora dos puertas de autorización humana dentro del flujo de implementación.
+La primera puerta debe controlar la autorización para iniciar un ticket:
+- Identificación del ticket.
+- Validación de elegibilidad.
+- Dependencias satisfechas.
+- Agente responsable.
+- Alcance de implementación.
+- Riesgos y exclusiones.
+La segunda puerta debe controlar la aceptación del resultado:
+- Cambios realizados.
+- Pruebas ejecutadas.
+- Resultados de QA.
+- Observaciones pendientes.
+- Cumplimiento de los criterios de aceptación.
+Ningún agente puede superar estas puertas por decisión propia.
+Si el usuario no autoriza continuar, el flujo debe detenerse sin ejecutar la siguiente etapa.
+Define cómo deben comportarse los agentes ante una autorización denegada o una observación pendiente.
+```
+**Qué salió**: Se incorporaron dos puertas de control humano. La primera condiciona el inicio de cada ticket y la segunda permite controlar la aceptación del resultado. Se evitó que los agentes pudieran avanzar automáticamente ante decisiones que requieren aprobación del usuario.
+
+### Prompt 2.C.7: Definir las responsabilidades de QA y seguridad
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Formaliza las responsabilidades de los agentes de QA y seguridad dentro del flujo.
+QA debe realizar una revisión independiente de la implementación:
+- Verificar criterios de aceptación.
+- Revisar pruebas.
+- Identificar defectos.
+- Comprobar contratos y validaciones.
+- Informar observaciones al usuario.
+El agente de seguridad debe operar exclusivamente en modo de lectura:
+- Identificar vulnerabilidades.
+- Revisar configuraciones sensibles.
+- Detectar exposición de secretos.
+- Revisar riesgos de dependencias y permisos.
+- Reportar hallazgos sin modificar archivos.
+Ninguno de estos agentes debe asumir automáticamente la autorización humana.
+Define cómo se comunican los resultados al coordinador y qué condiciones obligan a detener el flujo.
+```
+**Qué salió**: Se formalizó la independencia de QA respecto del agente implementador y se restringió seguridad a revisión de solo lectura. Los hallazgos deben regresar al flujo de coordinación para su evaluación, sin que los agentes puedan aprobarse mutuamente.
+
+### Prompt 2.C.8: Restringir las operaciones Git y los cambios sobre el repositorio
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Incorpora restricciones explícitas sobre las operaciones Git y las modificaciones del repositorio.
+El flujo debe cumplir las siguientes condiciones:
+- No realizar commits automáticamente.
+- No realizar push automáticamente.
+- No modificar archivos fuera del alcance autorizado del ticket.
+- No cambiar el orden del backlog.
+- No modificar especificaciones aprobadas para justificar diferencias de implementación.
+- No continuar si existen bloqueos o autorizaciones pendientes.
+Los cambios deben quedar disponibles para revisión humana antes de cualquier operación de publicación.
+Documenta estas restricciones en las instrucciones de los agentes y en el flujo de trabajo.
+```
+**Qué salió**: Se estableció que los agentes no pueden ejecutar commits ni push automáticamente. También se delimitaron los cambios al alcance autorizado y se mantuvo la revisión humana como condición previa a la publicación.
+
+### Prompt 2.C.9: Incorporar las exclusiones funcionales del MVP
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Revisa las restricciones funcionales del proyecto y asegúrate de que todos los agentes respeten las exclusiones establecidas en PRD §4.3.
+Las instrucciones de los agentes deben impedir:
+- Implementar funcionalidades fuera del MVP.
+- Incorporar características V2 sin autorización.
+- Ampliar el alcance de un ticket por iniciativa propia.
+- Introducir cambios funcionales no respaldados por las especificaciones aprobadas.
+Cuando un ticket o una dependencia parezca requerir una funcionalidad excluida, el agente debe detenerse y consultar al usuario.
+Asegura que estas restricciones sean transversales a todos los agentes.
+```
+**Qué salió**: Las exclusiones del PRD §4.3 quedaron incorporadas como restricciones transversales del flujo. Se estableció que cualquier necesidad fuera del MVP debe escalarse al usuario en lugar de resolverse mediante ampliaciones autónomas.
+
+### Prompt 2.C.10: Validar la configuración integral del flujo multiagente
+
+**Modelo:** Opus 1M xHigh
+Herramienta: Claude Code
+```
+Realiza una revisión integral de la configuración de agentes y del flujo de trabajo.
+Verifica:
+- Existencia y coherencia de los seis subagentes.
+- Responsabilidades y límites de cada uno.
+- Configuración de herramientas y permisos.
+- Reglas de ejecución secuencial.
+- Funcionamiento de las dos puertas humanas.
+- Integración del tracker.
+- Independencia de QA.
+- Restricciones de seguridad de solo lectura.
+- Prohibición de commits y push automáticos.
+- Cumplimiento de las exclusiones del MVP.
+Identifica inconsistencias, instrucciones contradictorias o permisos excesivos.
+No amplíes el alcance funcional ni implementes tickets durante esta revisión.
+Entrega un informe con los hallazgos y las correcciones necesarias.
+```
+**Qué salió**: Se completó la configuración de seis subagentes, el tracker y las reglas de ejecución secuencial. Quedaron establecidos los dos controles humanos, QA independiente, seguridad de solo lectura y ausencia de commits y push automáticos.
+
+# Entrega 2.D — Implementación de tickets
+
+### Prompt 2.D.1: Identificar el siguiente ticket elegible
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Revisa el backlog y determina cuál es el siguiente ticket que cumple las condiciones para iniciar su ejecución.
+Evalúa sus dependencias, estado actual, orden de prioridad y documentación relacionada.
+Todavía no delegues trabajo ni modifiques archivos. Primero presenta tu análisis y justifica cuál debería ser el siguiente ticket.
+```
+**Qué salió:** El coordinador identificó TK-00.1 — [INFRA] Proyecto backend como el siguiente ticket elegible. Comprobó que estaba pendiente, no tenía dependencias bloqueantes y correspondía al siguiente habilitador del backlog. Presentó la recomendación para aprobación humana.
+
+### Prompt 2.D.2: Autorizar la preparación del ticket
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+De acuerdo con el análisis, podemos avanzar con TK-00.1.
+Antes de implementar, prepara la etapa de validación. Delega al agente QA la definición de los escenarios que permitirán comprobar los criterios de aceptación del ticket.
+No autorices todavía la implementación. Primero quiero revisar el resultado de QA.
+```
+**Qué salió:** El coordinador delegó la preparación de los escenarios al agente `qa-bdd-analyst`. Se mantuvo separada la preparación de pruebas de la implementación y se dejó pendiente la aprobación humana para continuar.
+
+### Prompt 2.D.3: Revisar los escenarios de QA
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Revisa el resultado entregado por QA para TK-00.1.
+Comprueba que los escenarios cubran los criterios de aceptación, los errores esperados y los comportamientos relevantes del backend.
+Identifica cualquier supuesto que necesite una decisión humana antes de autorizar la implementación.
+```
+**Qué salió:** QA preparó 22 escenarios, organizados en seis archivos, con un total de 58 pruebas. El coordinador presentó los supuestos y observaciones para revisión humana, sin modificar el contrato ni los escenarios por iniciativa propia.
+
+### Prompt 2.D.4: Resolver las observaciones de QA
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Presenta las observaciones identificadas por QA de forma individual, indicando el comportamiento esperado, la recomendación y las consecuencias de cada alternativa.
+No apliques cambios ni continúes con la implementación hasta recibir mis decisiones.
+```
+**Qué salió:** El coordinador presentó cinco observaciones para resolución humana:
+
+- **O1:** aceptar la observación y registrarla para seguimiento en TK-00.6.
+- **O2:** corregir el tratamiento de parámetros de ruta mal codificados para responder con 422.
+- **O3:** completar la documentación operativa en `CLAUDE.md` y retirar el archivo `.gitkeep` que ya no correspondía.
+- **O4:** incorporar `npm ci` como paso de instalación reproducible.
+- **O5:** aceptar la observación sin introducir cambios adicionales.
+
+### Prompt 2.D.5: Autorizar las decisiones de QA y la implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Aprobar las decisiones O1 a O5 según lo acordado:
+- O1: aceptar y dar seguimiento en TK-00.6.
+- O2: corregir el comportamiento de los parámetros mal codificados.
+- O3: completar `CLAUDE.md` y eliminar `.gitkeep`.
+- O4: incorporar `npm ci`.
+- O5: aceptar sin cambios.
+Con estas decisiones, autorizo la implementación de TK-00.1.
+Delega el trabajo a `backend-engineer`. Mantén los escenarios de QA y el contrato aprobado sin modificaciones. Respeta el límite del parser JSON inferior a 1 MB y evita exponer secretos.
+El coordinador debe supervisar el resultado, pero no sustituir al agente de implementación.
+```
+**Qué salió:** El coordinador recibió la autorización y delegó la implementación a `backend-engineer`. El agente trabajó sobre el scaffold del backend con Express y TypeScript, respetando las decisiones aprobadas, los límites del ticket y los escenarios de QA. El coordinador mantuvo la responsabilidad de seguimiento y coordinación.
+
+### Prompt 2.D.6: Revisar el resultado de implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Revisa el informe  entregado y comprueba que los cambios realizados correspondan al alcance de TK-00.1 y a las decisiones aprobadas.
+Verifica qué pruebas se ejecutaron, qué resultados se obtuvieron y si existen observaciones pendientes.
+No cierres el ticket todavía.
+```
+**Qué salió:** El coordinador recibió el resultado de `backend-engineer` y revisó el cumplimiento del alcance. Se confirmó la implementación de la configuración validada con Zod, la aplicación Express, el endpoint de salud, los middlewares de validación y el manejo centralizado de errores. Las observaciones identificadas durante las pruebas quedaron pendientes de resolución.
+
+### Prompt 2.D.7: Revisar la corrección de parámetros mal codificados
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+QA identificó un comportamiento incorrecto en el tratamiento de parámetros de ruta mal codificados.
+Revisa el hallazgo y solicita al agente de implementación que lo corrija de acuerdo con la decisión O2.
+La respuesta debe ser 422 con `VALIDATION_ERROR`, mientras que las rutas inexistentes deben conservar el 404.
+Después solicita la validación de los casos afectados.
+```
+**Qué salió:** El coordinador gestionó la corrección mediante `backend-engineer`. Se incorporó el tratamiento adecuado de parámetros mal codificados y la prueba `malformed-params.test.ts`. QA verificó casos como `%E0`, `%`, `%zz`, `%C3%28` y `12%E0`, confirmando que los errores de codificación respondieran con 422 y que las rutas inexistentes conservaran el 404.
+
+### Prompt 2.D.8: Autorizar la revisión independiente de seguridad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Autoriza una revisión de seguridad independiente mediante `security-engineer`.
+La revisión debe ser de solo lectura: identifica riesgos, evalúa su impacto y presenta recomendaciones. No permitas que el agente modifique archivos ni amplíe el alcance del ticket.
+```
+**Qué salió:** El coordinador delegó la revisión a `security-engineer`. El agente analizó la implementación y presentó tres observaciones: SEC-01, SEC-02 y SEC-03. Los hallazgos fueron presentados al usuario para tomar las decisiones correspondientes.
+
+### Prompt 2.D.9: Resolver los hallazgos de seguridad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Presenta los tres hallazgos de seguridad con su riesgo, recomendación y posible tratamiento.
+Necesito decidir cuáles deben corregirse ahora, cuáles pueden aceptarse y cuáles deben trasladarse a otro ticket.
+No realices cambios hasta recibir mi aprobación.
+```
+
+**Qué salió:** El coordinador presentó las siguientes observaciones:
+- **SEC-01:** exposición del encabezado `X-Powered-By` de Express. Se recomendó deshabilitarlo.
+- **SEC-02:** riesgo asociado a dependencias de desarrollo. Se evaluó como riesgo temporal aceptable, sin degradar Jest.
+- **SEC-03:** manejo y registro de errores 500 y errores de `listen()`. Se recomendó trasladar su tratamiento a TK-00.3.
+
+### Prompt 2.D.10: Autorizar el tratamiento de los hallazgos
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Aprobar el siguiente tratamiento:
+- SEC-01: corregir la exposición de `X-Powered-By`.
+- SEC-02: aceptar temporalmente el riesgo.
+- SEC-03: trasladar a TK-00.3.
+Autoriza únicamente la corrección de SEC-01 mediante `backend-engineer`. Mantén las otras dos decisiones como están acordadas.
+Después solicita la comprobación correspondiente y confirma que no se hayan introducido cambios fuera del alcance.
+```
+
+**Qué salió:** El coordinador delegó la corrección de SEC-01. Se incorporó `app.disable('x-powered-by')` y una prueba automatizada para verificar que el encabezado no apareciera en las respuestas. SEC-02 quedó como riesgo residual aceptado y SEC-03 se reservó para TK-00.3.
+
+### Prompt 2.D.11: Validar integralmente la implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Con las correcciones realizadas, solicita a QA una nueva ejecución integral de los escenarios de TK-00.1.
+Comprueba también typecheck y lint. Revisa que los resultados correspondan a la versión final de la implementación.
+No cierres el ticket ni prepares commits todavía. Presenta los resultados para mi revisión.
+```
+**Qué salió:** El coordinador solicitó la validación final a QA. Se obtuvo un resultado de 72/72 pruebas aprobadas, incluyendo los escenarios originales y las pruebas incorporadas durante las correcciones. Typecheck y lint finalizaron sin errores. Se verificó el comportamiento con Node 26.13.1 y que los archivos ajenos al alcance permanecieran intactos.
+
+### Prompt 2.D.12: Autorizar la preparación documental y el commit A
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+La validación técnica está aprobada.
+Prepara el primer commit correspondiente a la preparación documental y configuración inicial del ticket.
+Antes de ejecutarlo, revisa el diff y confirma qué archivos serán incluidos. Mantén separados los cambios documentales de la implementación del backend.
+No realices push.
+```
+**Qué salió:** El coordinador preparó y ejecutó el commit A, `8a1b861`, correspondiente a la preparación documental inicial. Se conservó la separación respecto del commit de implementación. No se realizó push.
+
+### Prompt 2.D.13: Autorizar el commit de implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Prepara ahora el commit B, correspondiente exclusivamente a la implementación de TK-00.1.
+Revisa el diff y confirma que no se incorporen archivos ajenos al alcance ni cambios de documentación que deban permanecer separados.
+Una vez confirmado el contenido, ejecuta el commit. No realices push.
+```
+**Qué salió:** El coordinador revisó el contenido y ejecutó el commit B, `c0e2423`, correspondiente a la implementación del backend. Los commits A y B quedaron separados y registrados en la rama `feature/entrega-2`. No se realizó push.
+
+### Prompt 2.D.14: Resolver la actualización documental del alcance
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Durante la revisión del alcance documental identificamos que RNF-09 y las referencias operativas a `PROMPTS.md` no deben formar parte de los requisitos ni del Definition of Done del MVP.
+Analiza el impacto de retirar RNF-09 y sus referencias en la documentación del proyecto.
+No modifiques archivos todavía. Presenta los documentos afectados y las modificaciones necesarias.
+```
+**Qué salió:** El coordinador identificó los documentos que requerían ajustes. Se determinó retirar RNF-09 del PRD, eliminar las referencias operativas a `PROMPTS.md` y actualizar el alcance documental sin modificar código, pruebas ni especificaciones técnicas aprobadas.
+
+### Prompt 2.D.15: Autorizar la actualización documental
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Aprobamos la eliminación de RNF-09 y la actualización de las referencias documentales identificadas.
+Autoriza los cambios exclusivamente en los documentos afectados. Mantén `PROMPTS.md` fuera del proyecto, de los análisis técnicos y de los commits.
+Actualiza la versión del PRD y revisa que las referencias restantes sean coherentes.
+Prepara un commit separado y no realices push.
+```
+**Qué salió:** Se actualizaron cinco archivos: `CLAUDE.md`, `README.md`, `backlog/README.md`, `docs/ARCHITECTURE.md` y `docs/PRD.md`. El PRD pasó a la versión 1.3 y RNF-09 fue retirado. Se eliminaron las referencias operativas a `PROMPTS.md` sin modificar código, tests, specs ni `openapi.yaml`. Los cambios quedaron registrados en el commit `cf02b2f`. No se realizó push.
+
+### Prompt 2.D.16: Autorizar el cierre de TK-00.1
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+La implementación, QA, seguridad y documentación ya fueron revisadas.
+Prepara el cierre formal de TK-00.1 en el tracker.
+Actualiza exclusivamente la entrada correspondiente al ticket, registrando el estado final, el commit de implementación y la fecha de aprobación.
+No modifiques otros tickets, no inicies TK-00.2 y no realices push.
+```
+**Qué salió:** El coordinador actualizó exclusivamente `backlog/TRACKER.md`, registrando TK-00.1 como `Hecho`, con el commit de implementación `c0e2423` y la fecha 2026-11-19. El cierre quedó registrado en el commit `6f0a70f`. El ticket finalizó y TK-00.2 permaneció sin iniciar.
+
+## Resultado de TK-00.1
+
+El ticket se completó mediante un flujo coordinado de agentes especializados y decisiones humanas:
+
+- El coordinador evaluó la elegibilidad y organizó la ejecución.
+- `qa-bdd-analyst` preparó y validó los escenarios de prueba.
+- `backend-engineer` implementó el backend y ejecutó las correcciones autorizadas.
+- `security-engineer` realizó la revisión independiente de seguridad.
+- El usuario aprobó las alternativas, aceptó riesgos y autorizó las acciones relevantes.
+- El coordinador mantuvo la trazabilidad de las delegaciones, resultados y cierre.
