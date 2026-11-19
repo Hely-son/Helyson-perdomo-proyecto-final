@@ -19,7 +19,7 @@ Seguimiento operativo del MVP. Solo registra estado: la definición de cada tick
 |---|---|---|---|---|
 | TK-00.8 | Hecho | — | `1cc966d`, `d646368` | 2026-11-18 |
 | TK-00.1 | Hecho | — | `c0e2423` | 2026-11-19 |
-| TK-00.2 | Pendiente de aprobación humana | usuario | — | — |
+| TK-00.2 | Hecho | — | `f99cb47` | 2026-11-19 |
 | TK-00.6 | Pendiente | — | — | — |
 | TK-00.3 | Pendiente | — | — | — |
 | TK-00.5 | Pendiente | — | — | — |
