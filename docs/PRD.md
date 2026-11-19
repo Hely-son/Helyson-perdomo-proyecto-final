@@ -2,7 +2,7 @@
 
 | Versión | Estado | Fecha |
 |---|---|---|
-| 1.2 (MVP Entrega 2) | Aprobado por el responsable del proyecto para elaborar las specs de la Entrega 2 | 2026-11-18 |
+| 1.3 (MVP Entrega 2) | Aprobado por el responsable del proyecto para elaborar las specs de la Entrega 2 | 2026-11-19 |
 
 Este documento define **qué** hace el producto y **por qué**. El **cómo** (esquemas, API, máquina de estados, pantallas) vive en `specs/` y en el contrato `docs/openapi.yaml`. Todos los requisitos y reglas tienen ID para poder referenciarlos sin copiarlos.
 
@@ -15,6 +15,7 @@ Este documento define **qué** hace el producto y **por qué**. El **cómo** (es
 | 1.0 | 2026-09-12 | Versión inicial (Entrega 1). |
 | 1.1 | 2026-11-18 | Reducción del MVP según la evaluación de la Entrega 1: clasificación `MVP`/`V2` de requisitos, reglas y criterios; CL-01, CH-09, CH-10, RE, RP, RN-06, RN-07, RN-11, CA-02, CA-08, CA-09 y CA-10 pasan a V2. IN-03, PE-01, CH-03, CH-08 y RN-05 se dividen por fase. RN-04 pasa de "consecutivo" a "único y creciente". Nuevos: CL-03, RN-12, CA-12, CA-13 y RNF-01..09. CA-01 se limita a alertas y CA-06 incluye clientes desactivados. IN-02 incorpora el control de concurrencia del ajuste. |
 | 1.2 | 2026-11-18 | Cinco decisiones funcionales: producto desactivado antes de confirmar (RN-02, CH-06, CA-14); cambio de precio entre resumen y confirmación (RN-03, CH-06, CA-15); formato de número de pedido sin límite de dígitos (RN-04); expiración de la sesión de chat (CH-11, CA-16); expiración de la sesión del operador (AU-03, CA-11, RNF-08). Supuesto del carrito actualizado. |
+| 1.3 | 2026-11-19 | RNF-09 se retira del alcance: el registro del uso de IA no es un requisito del proyecto. |
 
 ## 1. Problema
 
@@ -63,7 +64,7 @@ Las entidades `Claim` y `PurchaseOrder` son de V2 y no forman parte del esquema 
 ### 4.3 Fuera del producto
 
 - Integración real con WhatsApp (solo simulador web).
-- Funciones de IA en el producto: el bot es un menú determinista. La IA se usa únicamente para desarrollar (RNF-09).
+- Funciones de IA en el producto: el bot es un menú determinista. La IA se usa únicamente para desarrollar.
 - Pagos, facturación e impuestos.
 - Logística de envíos: el operador cambia los estados a mano.
 - Lotes, fechas de vencimiento y registro sanitario.
@@ -181,7 +182,6 @@ Todos son `MVP`. Cada uno indica cómo se verifica.
 | **RNF-06** | Un pipeline de CI se ejecuta en cada push y pull request y corre lint, typecheck y todos los tests automatizados, incluidos los de RNF-04, contra un servicio PostgreSQL real. | El pipeline falla si falla cualquiera de esos pasos; su historial queda visible en el repositorio remoto. |
 | **RNF-07** | El backend se organiza en módulos y capas con responsabilidades separadas. Las reglas `RN-` se aplican solo en la capa de servicios; ni los controladores ni el frontend las aplican. Un módulo usa a otro solo a través de su servicio. | Revisión de código en cada pull request y tests de servicio que cubren cada regla `RN-` del MVP. |
 | **RNF-08** | Seguridad básica: las contraseñas se guardan solo como hash con sal, nunca en texto plano, y el hash no se expone en la API. Los tokens de sesión expiran según AU-03. Un login fallido devuelve un mensaje genérico. Los secretos (clave de firma de tokens, credenciales de base de datos y del operador del seed) se leen de variables de entorno y no se versionan; el repositorio solo incluye un archivo de ejemplo sin valores reales. | Tests de integración del login y de rutas protegidas (CA-11), y revisión de que el repositorio no contiene secretos. |
-| **RNF-09** | El uso de IA en el ciclo de desarrollo es trazable y verificable en implementación, testing, despliegue y mantenimiento. Cada uso relevante se registra en `PROMPTS.md` con el ticket asociado, la herramienta y el modelo, el resultado y la validación humana realizada. Todo código generado con IA pasa los mismos tests y la revisión humana que el resto; la IA no sustituye la aprobación humana de specs ni de cambios. | `PROMPTS.md` contiene entradas para cada una de las cuatro fases, que referencian tickets y commits verificables en el historial de git. |
 
 ## 9. Criterios de aceptación
 

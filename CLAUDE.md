@@ -55,7 +55,7 @@ El responsable sale de la capa del ticket. Si el contenido no coincide con la ca
 5. `En QA`: `qa-bdd-analyst` verifica de forma independiente y revisa la regresión.
 6. `En revisión de seguridad`, cuando corresponda.
 7. La coordinadora comprueba punto por punto la definición de hecho de `backlog/README.md`.
-8. **Puerta 2** (`Pendiente de aprobación humana`): presentar archivos modificados, comandos ejecutados con su salida, cobertura de `CA-` y `ESC-`, veredictos de QA y de seguridad, y un borrador de la entrada de `PROMPTS.md`.
+8. **Puerta 2** (`Pendiente de aprobación humana`): presentar archivos modificados, comandos ejecutados con su salida, cobertura de `CA-` y `ESC-`, y veredictos de QA y de seguridad.
 9. Solo con aprobación explícita del cierre: commit `TK-XX.N: …`, que lo hace el usuario o la coordinadora si el usuario lo autoriza en ese ticket. Luego `Hecho`, con el hash y la fecha de aprobación.
 
 **Ajustes.** Si QA, seguridad o el usuario encuentran problemas, el ticket pasa a `Requiere ajustes`. La coordinadora devuelve el trabajo al especialista responsable con las observaciones completas, repite las validaciones afectadas y vuelve a la puerta 2.
@@ -65,7 +65,7 @@ El responsable sale de la capa del ticket. Si el contenido no coincide con la ca
 - La coordinadora no implementa, no escribe tests y no aprueba. Ningún agente aprueba su propio trabajo ni verifica lo que escribió.
 - Solo la coordinadora actualiza el tracker. No cambia versiones ni estados documentales de las specs.
 - Ante una contradicción con una spec, el PRD o el contrato, o una decisión no documentada (por ejemplo, versiones de dependencias): `Bloqueado` y preguntar. Nadie modifica el contrato aprobado por su cuenta.
-- `PROMPTS.md` lo edita solo el usuario. La coordinadora entrega el borrador.
+- `PROMPTS.md` lo edita solo el usuario y solo se incluye en un commit cuando el usuario lo autoriza expresamente.
 - Skills permitidos: `superpowers:test-driven-development`, `superpowers:verification-before-completion`, `superpowers:requesting-code-review`, `security-review` y `frontend-design` (subordinado a las specs y a Ant Design). Excluidos, porque contradicen este flujo: `brainstorming`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `dispatching-parallel-agents`, `using-git-worktrees` y `finishing-a-development-branch`.
 - Contexto de dominio de todos los agentes: PRD §4 (alcance y exclusiones), §6, §7 y §9, más la spec del ticket.
 

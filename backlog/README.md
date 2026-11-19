@@ -24,7 +24,7 @@ El seguimiento operativo (estado de cada ticket `MVP`, responsable, commit y apr
 
 **Dependencias entre historias y entre tickets.** Las dependencias entre historias (columna "Depende de" del resumen) representan el orden general de ejecución. Las dependencias explícitas entre tickets pueden establecer excepciones puntuales: un ticket independiente de una historia posterior puede adelantarse cuando lo necesita un ticket de una historia anterior. Esa excepción no adelanta el resto de la historia ni modifica su dependencia general. Caso vigente: TK-04.1 (US-04) se ejecuta antes que TK-03.3 (US-03), en cuanto sus propias dependencias estén satisfechas, y TK-03.3 conserva su dependencia explícita de TK-04.1. US-04 sigue dependiendo de US-03.
 
-**Cobertura de los no funcionales.** RNF-03 y RNF-04 se cubren en TK-05.3 y TK-05.5. El contrato de RNF-02 se construye en TK-00.8 y su cumplimiento se exige en la definición de hecho de cada ticket, igual que RNF-07 y el registro de RNF-09.
+**Cobertura de los no funcionales.** RNF-03 y RNF-04 se cubren en TK-05.3 y TK-05.5. El contrato de RNF-02 se construye en TK-00.8 y su cumplimiento se exige en la definición de hecho de cada ticket, igual que RNF-07.
 
 ## Estimación
 
@@ -62,6 +62,5 @@ Un ticket está terminado cuando:
 2. Sus tests de unidad e integración se escribieron antes que la implementación y pasan contra PostgreSQL, junto con lint y typecheck, también en CI (RNF-06).
 3. Los criterios `CA-` que cubre están automatizados.
 4. Los endpoints que crea o modifica figuran en `docs/openapi.yaml` y cumplen ese contrato (RNF-02).
-5. El uso de IA en el ticket quedó registrado en `PROMPTS.md` con el ID del ticket (RNF-09).
-6. El commit cita el ID del ticket (ej. `TK-05.3: confirmación atómica de pedido`).
-7. Si cambió el comportamiento, la spec quedó actualizada en el mismo cambio.
+5. El commit cita el ID del ticket (ej. `TK-05.3: confirmación atómica de pedido`).
+6. Si cambió el comportamiento, la spec quedó actualizada en el mismo cambio.

@@ -1,6 +1,6 @@
 # Arquitectura — MedSupply AI
 
-Qué construye el sistema: [PRD](PRD.md) v1.2. Modelo de datos: [spec 01](../specs/01_data_models.spec.md). Contrato de la API: definido de forma centralizada en `docs/openapi.yaml` (RNF-02); es el contrato base aprobado para la Entrega 2 y conserva aspectos provisionales pendientes de revisión, documentados en OBS-03 de la spec 03. Este documento define **cómo se organiza** el sistema.
+Qué construye el sistema: [PRD](PRD.md) v1.3. Modelo de datos: [spec 01](../specs/01_data_models.spec.md). Contrato de la API: definido de forma centralizada en `docs/openapi.yaml` (RNF-02); es el contrato base aprobado para la Entrega 2 y conserva aspectos provisionales pendientes de revisión, documentados en OBS-03 de la spec 03. Este documento define **cómo se organiza** el sistema.
 
 Cada módulo, endpoint y pantalla lleva la fase del PRD: `MVP` se construye en este ciclo; `V2` queda documentado para orientar el diseño, pero no se implementa ni se crea su esquema.
 
@@ -165,7 +165,7 @@ Una sola SPA con dos áreas:
 | Testing | Jest + Supertest · Jest · Playwright | Jest + Supertest: unit e integración de la API contra PostgreSQL real. Jest: unit de la lógica del frontend, sin renderizar componentes. Playwright: E2E de los criterios `CA-` del MVP. |
 | Contenedores | Docker Compose | Entorno local y despliegue de la entrega reproducibles (RNF-05). |
 | CI | GitHub Actions | Lint, typecheck y tests en cada push y pull request contra PostgreSQL real (RNF-06). |
-| Metodología | SDD con Claude Code | Specs aprobadas antes de generar código (ver [CLAUDE.md](../CLAUDE.md)). Uso de IA registrado en `PROMPTS.md` (RNF-09). |
+| Metodología | SDD con Claude Code | Specs aprobadas antes de generar código (ver [CLAUDE.md](../CLAUDE.md)). |
 
 ## Estructura del repositorio
 
@@ -178,8 +178,7 @@ Una sola SPA con dos áreas:
 ├── .github/workflows/    Pipeline de CI
 ├── docker-compose.yml    PostgreSQL, backend y frontend
 ├── .env.example          Variables de entorno sin valores reales
-├── CLAUDE.md             Reglas para el agente
-└── PROMPTS.md            Registro de prompts (RNF-09)
+└── CLAUDE.md             Reglas para el agente
 ```
 
 ## Entornos
