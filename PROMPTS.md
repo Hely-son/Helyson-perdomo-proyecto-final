@@ -190,7 +190,6 @@ Estimación: puntos Fibonacci (1, 2, 3, 5, 8) por ticket, sumados por historia, 
 
 ```
 Actúa como arquitecto de software senior y revisor de proyectos bajo metodología Spec-Driven Development (SDD).
-Necesito preparar MedSupply AI para incorporar las observaciones de una evaluación académica de su primera entrega.
 Antes de realizar cambios, inspecciona el repositorio y contrasta los documentos existentes.
 
 Contexto documental
@@ -213,7 +212,7 @@ Identificar tickets sin trazabilidad a requisitos, reglas o criterios de aceptac
 Revisar dependencias y estimaciones.
 Identificar decisiones técnicas incompletas o riesgos de implementación.
 Identificar el impacto de reducir el alcance del MVP.
-Verificar qué partes de la evaluación académica ya están cubiertas y cuáles faltan.
+Verificar qué partes ya están cubiertas y cuáles faltan.
 
 Observaciones de evaluación que debes considerar
 Reducir el MVP a compra conversacional con validación de stock, creación de pedidos y dashboard mínimo.
@@ -1606,3 +1605,907 @@ Herramienta: Claude Code
 Se da por aprobada la spec 3, actualiza el claude y readme para que consideren esta aprobacion, despues commit y push 
 ```
 **Qué salió:**:Spec 3 pasa a aprobado, claude y readme actualizado, recomienda seguir con la spec 4.
+
+### Prompt 2.B.15: Inicializar Spec 04
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Vamos a elaborar `specs/04_orders_and_claims.spec.md` para el módulo de pedidos y reclamos de MedSupply AI (Entrega 2), dejándola inicialmente en estado "Borrador v1.0 (Entrega 2), pendiente de aprobación".
+- Lee y analiza: `docs/PRD.md` (v1.2), `docs/ARCHITECTURE.md`, `docs/openapi.yaml`, `specs/01_data_models.spec.md` (v1.1), `specs/02_inventory_system.spec.md` (v1.1), `specs/03_conversational_bot.spec.md` (v1.0) y `backlog/README.md` (especialmente US-05, US-06 y US-07).
+- Crea el archivo `specs/04_orders_and_claims.spec.md` con las secciones 1 a 4:
+  1. Estado y metadatos.
+  2. Objetivo.
+  3. Alcance MVP/V2 y exclusiones.
+  4. Actores y responsabilidades (delimitando claramente la frontera con Spec 01, Spec 02, Spec 03 y Spec 05, sin duplicar reglas ni implementar código).
+- No modifiques ningún otro archivo del repositorio ni realices commits.
+```
+**Qué salió:**: Creación de specs/04_orders_claims.spec.md con su encabezado oficial de borrador y las primeras 4 secciones redactadas respetando estrictamente las fronteras arquitectónicas con las Specs 01–03.
+
+### Prompt 2.B.16: Especificar modelo conceptual, estados y reglas de negocio de Pedidos (MVP)
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Edita `specs/04_orders_and_claims.spec.md` para desarrollar las secciones 5, 6 y 7 enfocadas en el dominio `orders` (MVP):
+- Investiga y aplica los requisitos del PRD: RN-02, RN-03, RN-04, RN-05, PE, CH-07, CH-08, CH-09, RNF-03 y RNF-04.
+- Define el modelo conceptual, estados del pedido y transiciones permitidas.
+- Documenta las reglas de negocio y flujos funcionales: creación de pedido, persistencia de precio histórico de ítems, generación de número `MED-` (mínimo 5 dígitos, sin máximo, permitiendo saltos), consulta de pedidos, seguimiento desde chat, gestión de estados desde dashboard y cancelación desde estados permitidos con restitución exacta de stock una sola vez.
+- Respeta la frontera con Spec 03 (Spec 03 decide cuándo se confirma y maneja sesión en memoria; Spec 04 gobierna la creación efectiva del pedido).
+```
+**Qué salió:**:  Las secciones 5, 6 y 7 redactadas en specs/04_orders_claims.spec.md con todo el ciclo de vida, estados y reglas de negocio de pedidos para el MVP.
+
+### Prompt 2.B.17: Documentar contrato OpenAPI, transacciones PostgreSQL y errores (Spec 04)
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Edita `specs/04_orders_and_claims.spec.md` para desarrollar las secciones 8, 9 y 10:
+- Contrato API (Sección 8): Mapea las operaciones `GET /orders`, `GET /orders/{id}` y `PATCH /orders/{id}/status` usando sus `operationId` reales de `docs/openapi.yaml` (sin duplicar payloads ni modificar OpenAPI).
+- Errores y excepciones (Sección 9): Define errores de negocio, validaciones y transiciones inválidas.
+- Integridad, transacciones y concurrencia (Sección 10): Detalla la atomicidad en PostgreSQL (creación de pedido, ítems y descuento de stock en una sola transacción con rollback ante fallos previos al COMMIT), prevención de sobreventa concurrente y no duplicación al restituir stock.
+- Distingue expresamente: (1) atomicidad en PostgreSQL, (2) coordinación con la sesión en memoria (respetando la decisión C1 de Spec 03 y su riesgo residual) y (3) garantías que el MVP no ofrece (idempotencia entre instancias).
+```
+**Qué salió:**: Las secciones 8, 9 y 10 completadas en la especificación, garantizando rigor transaccional y coherencia total con OpenAPI y la decisión C1 de la Spec 03.
+
+### Prompt 2.B.18: Incorporar diseño conceptual del dominio Claims para V2 (Spec 04)
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Edita `specs/04_orders_and_claims.spec.md` para redactar la sección 15 (Diseño conceptual V2 de reclamos):
+- Documenta conceptualmente el dominio `claims`: objetivo, actores, ciclo de vida, estados, transiciones, reglas de negocio, flujo de resolución y relación con pedidos y clientes.
+- Vincula los requisitos RE y CH-10, además de la trazabilidad con US-07 y sus tickets.
+- Cumple estrictamente las restricciones: Claims queda fuera del MVP; no definir tablas físicas en PostgreSQL, modelos Prisma ni endpoints en OpenAPI, ni incluirlo en el menú del bot MVP.
+```
+**Qué salió:**: La sección de diseño conceptual de reclamos (claims) redactada y aislada explícitamente como alcance exclusivo de V2.
+
+### Prompt 2.B.19: Completar escenarios, matriz de trazabilidad y decisiones pendientes (Spec 04)
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Edita `specs/04_orders_and_claims.spec.md` para desarrollar las secciones 11, 12, 13 y 14:
+- Sección 11 (Escenarios de aceptación): Crea escenarios numerados y verificables siguiendo la convención de las Specs 01–03.
+- Sección 12 (Trazabilidad): Construye la matriz completa cruzando Requisitos PRD, Reglas de negocio, Escenarios de aceptación, OperationIds, Historias (US-05, US-06, US-07), Tickets responsables y Fase (MVP/V2), verificando que no haya duplicidad de responsabilidades con Spec 03.
+- Sección 13 (Decisiones pendientes): Registra cualquier ambigüedad detectada detallando alternativas, recomendación justificada e impacto (sin aprobarlas ni inventar decisiones).
+- Sección 14 (Observaciones y limitaciones conocidas): Documenta brechas o restricciones técnicas encontradas.
+```
+**Qué salió:**: La especificación specs/04_orders_and_claims.spec.md 100% completa en estado de borrador, con trazabilidad total y decisiones pendientes formalizadas.
+
+### Prompt 2.B.20: Validar Spec 04 y generar el informe final para revisión
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Sin modificar ningún archivo adicional, sin hacer commits y manteniendo `specs/04_orders_and_claims.spec.md` como "Borrador v1.0 (Entrega 2), pendiente de aprobación", realiza una validación cruzada completa y entrega el informe final con exactamente estos 10 puntos:
+1. Archivos consultados.
+2. Resumen de la especificación creada.
+3. Alcance MVP y V2.
+4. Matriz de trazabilidad y cobertura.
+5. Escenarios de aceptación creados.
+6. Decisiones pendientes, con alternativas y recomendación.
+7. Observaciones o contradicciones encontradas.
+8. Resultado de la validación cruzada con Specs 01–03.
+9. Resultado de la validación contra OpenAPI y backlog.
+10. Diff y estado de Git (`git status` y resumen de cambios demostrando que solo se creó/modificó `specs/04_orders_and_claims.spec.md`).
+Detente y espera revisión humana.
+```
+**Qué salió:**: El informe final de 10 puntos listo, junto con la comprobación de git status demostrando que solo se tocó el archivo autorizado, tambien indico decisiones que debe tomar el usuario para cerrar la spec 4
+
+### Prompt 2.B.21: Integrar decisiones aprobadas y revisiones de coherencia en Spec 04
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Modifica exclusivamente el archivo `specs/04_orders_claims.spec.md` (sin alterar PRD, arquitectura, OpenAPI, backlog, CLAUDE.md ni Specs 01–03, y manteniendo el estado en "Borrador v1.0 (Entrega 2), pendiente de aprobación") para aplicar lo siguiente:
+1. Documentar DP-01 (Ordenamiento: createdAt DESC, id DESC) como resuelta, aclarando que garantiza orden determinista pero sin prometer páginas inmutables frente a inserciones concurrentes.
+2. Documentar DP-02 (Dashboard: backend como autoridad de transiciones; frontend con mapa visual estático; manejo de error 409 INVALID_ORDER_TRANSITION recargando el pedido) como resuelta.
+3. Revisar y ajustar D-04 (Resultado y COMMIT) para reflejar con precisión las limitaciones de la decisión C1 de Spec 03 sin prometer garantías imposibles tras el COMMIT.
+4. Afinar D-08 (Consulta desde el chat) para alinearla estrictamente con Spec 03 D-10 (número completo, espacios recortados, mayúsculas normalizadas, comparación exacta, filtrado estricto por cliente propietario sin búsquedas parciales ni de otros clientes).
+5. Explicitación de la prioridad de rechazos en D-02 (1. Inactivo -> 2. Stock insuficiente -> 3. Precio modificado), consistente con Spec 03 DP-03.
+6. Ajustar las observaciones: mantener abiertas OBS-01 y OBS-02, conservar OBS-03 a OBS-05, y eliminar OBS-06 si solo correspondía al nombre del archivo.
+7. Verificar que los 36 escenarios mantengan sus IDs y trazabilidad. Ejecuta `git diff --check` y valida que solo se modificó el archivo autorizado.
+```
+**Qué salió:**: La actualización de la Spec 04 incorporando formalmente las decisiones resueltas (DP-01, DP-02), la precisión de las reglas transaccionales y de consulta, y la depuración de observaciones, manteniendo el repositorio limpio y en estado de borrador.
+
+### Prompt 2.B.22: Formalizar aprobación de Spec 04, ajustar ESC-32 y actualizar CLAUDE.md
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Realiza el cierre formal de la especificación de pedidos y reclamos realizando exclusivamente estas modificaciones:
+1. En `specs/04_orders_claims.spec.md`:
+   - Ajusta el escenario ESC-32 para expresar textualmente: "Al repetir la misma consulta sobre el mismo conjunto de pedidos, sin inserciones ni modificaciones entre consultas, se obtiene el mismo orden."
+   - Actualiza la línea de estado de la especificación a: `Aprobada v1.0 (Entrega 2). Fecha de aprobación: 2026-11-18.`
+2. En `CLAUDE.md`:
+   - Actualiza únicamente la fila correspondiente a `specs/04_orders_claims.spec.md` en la tabla de especificaciones para reflejar el dominio de pedidos y reclamos, la separación MVP/V2 y el estado `Aprobada v1.0 (Entrega 2), 2026-11-18`. No modifiques ninguna otra fila.
+3. Validaciones obligatorias:
+   - Comprueba que ESC-32 mantenga su ID y que los 36 escenarios (ESC-01 a ESC-36) sigan intactos.
+   - Verifica mediante `git diff --check` y hashes que ningún otro archivo del repositorio fue alterado.
+   - Presenta el diff completo, el estado de Git y el informe de validación final. No hagas commit ni push, y no avances a la Spec 05.
+```
+**Qué salió:**:  El ajuste del escenario de prueba ESC-32, la actualización oficial de la versión y fecha de aprobación en la cabecera de la Spec 04, la sincronización de la tabla en CLAUDE.md y el informe final con los diffs correspondientes sin comprometer cambios en Git.
+
+### Prompt 2.B.23: Iniciar la especificación de clientes
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Revisa CLAUDE.md y el backlog para identificar el nombre correcto de la Spec 05. Analiza el PRD, la arquitectura y las especificaciones anteriores.
+
+Crea el borrador de la especificación de clientes, respetando el alcance MVP/V2 y las responsabilidades de cada módulo. No modifiques otros archivos ni hagas commits.
+```
+**Qué salió:** Claude identificó `specs/05_operator_dashboard.spec.md` como nombre canónico y creó el borrador. Desarrolló el dominio de clientes y dejó acceso del operador y pantallas como secciones pendientes.
+**Decisión de alcance:** Se acordó desarrollar clientes (RN-12, CL-02 y CL-03), dejando autenticación y dashboard para una etapa posterior dentro del mismo documento.
+
+### Prompt 2.B.24:  Definir las reglas de normalización telefónica
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Revisa las decisiones pendientes DP-01 a DP-04 de la Spec 05. Propón reglas concretas para separadores, prefijos internacionales, longitud de los teléfonos e identificación de clientes en el seed.
+
+Compara las alternativas con RN-12 y el modelo de datos. No modifiques archivos hasta tener las decisiones aprobadas.
+```
+**Qué salió:** Se identificaron las ambigüedades de normalización y las colisiones de teléfonos. Posteriormente se simplificó la propuesta para ajustarla al alcance real del MVP.
+
+## Prompt 2.B.25: Simplificar la normalización y el seed
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Simplifica la normalización para el MVP. El simulador mostrará +56 como prefijo fijo y el usuario ingresará nueve dígitos.
+
+Rechaza números incompletos o con dígitos adicionales, sin completar números automáticamente. Conserva los prefijos internacionales que vengan con + explícito.
+
+Utiliza la misma función para el seed y el chat. Mantén el seed con fixtures ficticios, sin mecanismos complejos de importación ni recuperación.
+```
+**Qué salió:** Se simplificaron las reglas de normalización y el comportamiento del seed. Las decisiones DP-01 a DP-04 quedaron resueltas con una implementación conceptual acotada al MVP.
+
+### Prompt 2.B.26: Separar validación local y validación del backend
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Aclara en la Spec 05 que la validación de los nueve dígitos ocurre primero en el simulador, antes de llamar al backend.
+
+El backend debe volver a validar el teléfono y mantener las respuestas conversacionales ya definidas en Spec 03. Los mensajes sobre dígitos faltantes pertenecen al campo de entrada, no al bot.
+
+Actualiza OBS-07 si la separación resuelve la inconsistencia.
+```
+**Qué salió:** Se documentaron los dos niveles de validación y OBS-07 quedó cerrada. Se mantuvo intacto el contrato conversacional.
+
+### Prompt 2.B.27: Alinear ESC-06 de la Spec 03
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Revisa ESC-06 de la Spec 03. El escenario utiliza un número internacional sin prefijo explícito, pero la normalización vigente exige el + para conservar códigos internacionales.
+
+Corrige el ejemplo utilizando un prefijo + explícito. Conserva el ID y el propósito del escenario. Versiona la especificación como borrador v1.1 y actualiza su referencia en CLAUDE.md.
+```
+**Qué salió:** ESC-06 se corrigió sin modificar el comportamiento conversacional. La Spec 03 pasó a borrador v1.1, conservando el historial de la v1.0.
+
+### Prompt 2.B.28: Formalizar Spec 03 v1.1 y actualizar referencias
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Formaliza la aprobación de la Spec 03 v1.1 con fecha 2026-11-18. Cierra OBS-06 de la Spec 05, ya que ESC-06 está alineada con la normalización vigente.
+
+Actualiza las referencias de estado en CLAUDE.md y README.md, sin modificar las demás especificaciones.
+```
+**Qué salió:** Spec 03 quedó aprobada v1.1 y OBS-06 de Spec 05 se cerró. Se actualizaron las referencias documentales.
+
+### Prompt 2.B.29: Completar acceso del operador y dashboard
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Completa las secciones pendientes de la Spec 05: acceso del operador y pantallas del dashboard.
+
+Utiliza los requisitos AU, CA-11 y RNF-08, junto con la arquitectura y OpenAPI. Documenta el login, JWT, protección de rutas, navegación y estados de las pantallas.
+
+Respeta las responsabilidades de inventario y pedidos de las Specs 02 y 04. No agregues endpoints ni funcionalidades V2 al MVP.
+```
+
+**Qué salió:** Se desarrollaron las secciones de autenticación y dashboard, con trazabilidad hacia las historias y tickets correspondientes.
+
+## Prompt 2.B.30: Resolver decisiones del acceso y navegación
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Resuelve las decisiones pendientes DP-05 a DP-09 de la Spec 05.
+
+Define el comportamiento ante expiración local del JWT, acceso a /login con sesión válida, rutas desconocidas, costo de BCrypt y presentación del nombre del operador.
+
+Distingue UNAUTHORIZED de INVALID_CREDENTIALS por el código de error. Conserva el contrato API.
+```
+
+**Qué salió:** Las cinco decisiones quedaron resueltas. Se añadieron escenarios para expiración, navegación y presentación del operador, alcanzando ESC-51.
+
+### Prompt 2.B.31: Formalizar aprobación de Spec 05 v1.0
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Formaliza la aprobación de la Spec 05 v1.0 con fecha 2026-11-18.
+
+Actualiza su estado en CLAUDE.md y README.md. Cierra OBS-09, manteniendo abiertas las alineaciones de backlog que todavía no se han resuelto.
+```
+**Qué salió:** La Spec 05 quedó aprobada v1.0, incluyendo clientes, autenticación y dashboard. Se sincronizaron sus referencias documentales.
+
+### Prompt 2.B.32: Resolver el resaltado de stock crítico**
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Analiza DP-04 de la Spec 02. Necesitamos definir cómo destacar los productos con stock crítico en la tabla del dashboard.
+
+Compara las alternativas utilizando los contratos existentes. Prioriza reutilizar listProducts y listStockAlerts, sin duplicar RN-09 en el frontend ni modificar OpenAPI.
+```
+**Qué salió:** Claude recomendó cruzar ambas respuestas por el ID del producto. Se identificaron los riesgos de lecturas en momentos diferentes y la dependencia de planificación entre TK-03.3 y TK-04.1.
+
+### Prompt 2.B.33: Aplicar DP-04 y alinear el dashboard
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Aplica la alternativa aprobada para DP-04: el frontend debe cruzar listProducts con listStockAlerts y resaltar por identificador.
+
+Actualiza las Specs 02 y 05, incorpora los escenarios necesarios y alinea TK-03.3 con TK-04.1 como dependencia. No modifiques OpenAPI.
+```
+**Qué salió:** DP-04 quedó resuelta en el diseño. Se añadieron ESC-52 a ESC-55 en Spec 05, se actualizó TK-03.3 y ambas especificaciones pasaron a nuevos borradores: Spec 02 v1.2 y Spec 05 v1.1.
+
+### Prompt 2.B.34: Documentar excepción de planificación entre historias
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Documenta que TK-03.3 depende de TK-04.1, aunque ambos pertenezcan a historias con un orden general diferente.
+
+Mantén los tickets en sus historias originales y explica en el backlog que TK-04.1 puede ejecutarse anticipadamente, sin adelantar el resto de US-04.
+```
+
+**Qué salió:** Se documentó la excepción en US-03 y en el README del backlog. Se verificó que no existieran ciclos ni cambios en los totales.
+
+### Prompt 2.B.35: Corregir inconsistencias de US-03
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Revisa OBS-04 de la Spec 02. Corrige en US-03 la referencia del criterio de aceptación sobre precios y agrega RN-09 a la cabecera de la historia.
+
+No modifiques tickets, puntos ni dependencias. Cierra OBS-04 solamente si ambos asuntos quedan resueltos.
+```
+**Qué salió:** Se corrigió la atribución de las validaciones de precio, stock y mínimo, se agregó RN-09 a la cabecera de US-03 y OBS-04 quedó cerrada.
+
+### Prompt 2.B.36: Alinear TK-02.4, TK-00.4 y TK-01.2
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Alinea los tickets TK-02.4, TK-00.4 y TK-01.2 con las reglas de las Specs 03 y 05.
+
+Actualiza sus criterios para reflejar la normalización telefónica, el seed simplificado y la diferenciación entre UNAUTHORIZED e INVALID_CREDENTIALS.
+
+Conserva IDs, puntos y dependencias.
+```
+**Qué salió:** Los tres tickets quedaron alineados. Se cerraron OBS-03, OBS-04 y OBS-08 de Spec 05.
+
+### Prompt 2.B.37: Completar TK-05.4 y el alcance de TK-01.2
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+```
+Completa TK-05.4 con la validación local del teléfono: prefijo fijo +56, nueve dígitos, mensajes de error y bloqueo del envío ante entradas inválidas.
+
+Completa TK-01.2 con las decisiones de expiración JWT, rutas desconocidas, acceso a /login con sesión válida y nombre del operador.
+
+No modifiques las especificaciones.
+```
+**Qué salió:** Ambos tickets quedaron alineados con Spec 05. Durante la revisión se detectó que faltaba un escenario que verificara específicamente la validación local del teléfono en el simulador.
+
+### Prompt 2.B.38: Incorporar ESC-56 al simulador
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Agrega ESC-56 a la Spec 05 para verificar la validación local del teléfono en el simulador.
+
+Comprueba el prefijo +56, los nueve dígitos nacionales, los mensajes para entradas incompletas o excesivas y que no se invoque startChatSession cuando el teléfono sea inválido.
+
+Mantén separados el comportamiento del simulador, la normalización del backend y la conversación de Spec 03.
+```
+**Qué salió:** Se incorporó ESC-56 y se actualizaron las matrices de trazabilidad y cobertura. Los 55 escenarios anteriores conservaron sus IDs y contenido.
+
+### Prompt 2.B.39: Revisar decisiones pendientes de inventario
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```
+Analiza DP-01, DP-02 y DP-06 de la Spec 02.
+
+Revisa la reactivación de productos, las operaciones sobre productos inactivos y la concurrencia de updateProduct.
+
+Contrasta las alternativas con el PRD, PostgreSQL, el modelo de datos y OpenAPI. Recomienda una solución compatible con el MVP, sin modificar archivos.
+```
+**Qué salió:** Se recomendaron tres decisiones: sin reactivación en MVP (A), permitir edición y ajuste de stock sobre productos inactivos sin reactivarlos (C), y utilizar actualizaciones parciales con last-write-wins para las modificaciones generales (A).
+
+### Prompt 2.B.40: Aplicar DP-01, DP-02 y DP-06
+
+Modelo: Opus 1M xHigh
+Herramienta: Claude Code
+
+```text
+Aplica DP-01 (A), DP-02 (C) y DP-06 (A) en la Spec 02.
+
+Actualiza las reglas, flujos y escenarios de aceptación. Alinea la Spec 05 para permitir editar y ajustar productos inactivos sin ofrecer reactivación.
+
+Actualiza TK-03.1, TK-03.2 y TK-03.3 con los comportamientos aprobados. Conserva el contrato API, el modelo de datos y las estimaciones.
+```
+**Qué salió:** Se resolvieron las tres decisiones en Spec 02, incorporando ESC-32 a ESC-37 para inventario y concurrencia, y ESC-57 para el comportamiento de productos inactivos en el dashboard. Los tres tickets quedaron alineados, manteniendo sus puntos y dependencias.
+
+
+### Prompt 2.B.41: Formalizar aprobación de las specs 02 y 05
+
+**Modelo:** Opus 1M xHigh 
+**Herramienta:** Claude Code
+
+```
+Formaliza la aprobación de las specs 02 y 05.
+
+La spec 02 debe quedar aprobada en su versión 1.2 y la spec 05 en su versión 1.1, ambas con fecha 2026-11-18.
+
+Conserva el historial de las versiones anteriores y actualiza únicamente las referencias necesarias en las propias specs, CLAUDE.md y README.md para que los cinco documentos reflejen correctamente su estado de aprobación.
+
+No cambies decisiones, requisitos, escenarios ni observaciones. Tampoco cierres o reabras observaciones.
+
+Verifica las versiones, la trazabilidad de escenarios, los estados de las observaciones, los totales del backlog y las referencias cruzadas.
+
+Revisa los diffs completos y confirma que solo se modificaron los archivos autorizados. No hagas commit ni push.
+```
+**Qué salió:**: Se formalizó la aprobación de Spec 02 v1.2 y Spec 05 v1.1. Se conservaron los historiales anteriores y se actualizaron CLAUDE.md y README.md para reflejar las cinco specs aprobadas. Las observaciones y los totales del backlog permanecieron sin cambios.
+
+
+### Prompt 2.B.42: Corregir referencias desactualizadas de aprobación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```text
+Revisa las referencias internas de las specs 02 y 05 que todavía indican que la versión 1.2 de la spec 02 está pendiente de aprobación.
+
+Corrige exclusivamente las cuatro referencias identificadas:
+- Spec 02, introducción de §13.2.
+- Spec 05, sección Fuentes.
+- Spec 05, §12.3.
+- Spec 05, §13.3.
+
+Actualiza los textos para que reflejen que la spec 02 v1.2 ya está aprobada.
+
+No modifiques decisiones, requisitos, escenarios, observaciones, versiones ni estados de aprobación.
+
+Ejecuta git diff --check y revisa los cambios para confirmar que solo se modificaron esos cuatro fragmentos.
+
+No hagas commit ni push.
+```
+
+**Qué salió:**: Se corrigieron las cuatro referencias. Las specs 02 y 05 conservaron sus estados de aprobación y fechas. La validación confirmó que no quedaron referencias a «pendiente de aprobación» ni a «Borrador v1.2» en ambas especificaciones.
+
+### Prompt 2.B.43: Auditoría final de consistencia documental preimplementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Realiza una auditoría integral de consistencia documental antes de comenzar la implementación del MVP.
+
+Contrasta las cinco specs aprobadas con CLAUDE.md, README.md y todos los documentos del backlog.
+
+Revisa especialmente:
+- Versiones y estados de aprobación.
+- Trazabilidad entre requisitos, reglas, escenarios y tickets.
+- Consistencia de contratos, entidades, endpoints y errores entre dominios.
+- Resoluciones de decisiones y observaciones.
+- Dependencias entre historias y tickets, incluyendo la excepción TK-04.1 / TK-03.3.
+- Separación entre alcance MVP y V2.
+- Preparación real de cada ticket MVP para comenzar su implementación.
+
+Identifica contradicciones, dependencias faltantes, requisitos sin cobertura y tickets que no tengan información suficiente para desarrollarse.
+
+Distingue los problemas reales de las limitaciones y riesgos que ya están documentados y aceptados.
+
+Entrega un informe con resumen ejecutivo, matriz de hallazgos priorizados, trazabilidad, dependencias, preparación de tickets y recomendaciones.
+
+Esta tarea es exclusivamente de auditoría: no modifiques archivos, no cambies decisiones ni estados, no cierres observaciones y no agregues tickets.
+
+Verifica también el estado de Git y diferencia los cambios anteriores de cualquier modificación realizada durante la auditoría.
+
+Detente al entregar el informe y espera autorización antes de corregir cualquier hallazgo.
+```
+
+**Qué salió:**: no encontró contradicciones funcionales entre las cinco specs. Los problemas detectados son principalmente omisiones en los criterios de aceptación del backlog frente a decisiones que ya están aprobadas.
+
+### Prompt 2.B.44: Resolver H-03 — Idempotencia del seed
+
+**Modelo:** No especificado  
+**Herramienta:** Claude Code
+
+```
+Confirmo la siguiente decisión técnica para el seed del MVP:
+1. Clientes:
+   - Mantener el comportamiento de idempotencia ya definido en la spec 05.
+   - Usar tax_id y respetar las reglas existentes para duplicados y conflictos.
+2. Productos:
+   - Insertar los fixtures únicamente cuando la tabla de productos esté vacía.
+   - Si ya existen registros, no insertar nuevamente los fixtures ni modificar los datos existentes.
+3. Pedidos:
+   - Insertar los fixtures únicamente cuando la tabla de pedidos esté vacía.
+   - Si ya existen registros, no insertar nuevamente los fixtures ni modificar los datos existentes.
+4. Independencia:
+   - Evaluar cada tabla por separado. Que una tabla tenga registros no debe impedir cargar los fixtures de otra que esté vacía.
+5. Transacciones:
+   - Cada conjunto de fixtures debe cargarse de manera transaccional, evitando cargas parciales.
+6. Relaciones:
+   - Respetar las relaciones existentes entre clientes, productos, pedidos y detalles de pedidos.
+   - Respetar el modelo de datos y las reglas de integridad ya aprobadas.
+   - No introducir efectos adicionales sobre el stock que contradigan las decisiones existentes.
+
+Actualiza exclusivamente el ticket TK-00.4 en backlog/00_habilitadores.md para incorporar estos criterios en su descripción y en su sección "Hecho cuando".
+
+Antes de editar, revisa el contenido actual del ticket y las referencias pertinentes de las specs 01 y 05 para asegurar que la redacción sea compatible con lo aprobado.
+
+Restricciones:
+- No modifiques las cinco specs aprobadas.
+- No cambies el modelo de datos, las entidades ni las reglas de negocio.
+- No agregues tablas, columnas, claves naturales ni endpoints.
+- No alteres otros tickets, dependencias, estimaciones o totales del backlog.
+- No cambies el comportamiento de seed de clientes.
+- No hagas commit ni push.
+
+Validaciones:
+1. El ticket debe dejar inequívoco el comportamiento para clientes, productos y pedidos.
+2. La idempotencia debe ser independiente por tabla.
+3. Debe quedar explícito que los registros existentes no se sobrescriben.
+4. Los fixtures deben respetar las relaciones y restricciones del modelo.
+5. Comprueba que el ticket siga siendo coherente con las specs aprobadas.
+6. Ejecuta git diff --check y revisa el diff completo.
+7. Confirma que únicamente cambió backlog/00_habilitadores.md y que los totales del backlog permanecen iguales.
+
+Al finalizar, presenta el cambio y las validaciones. Detente y espera mi revisión.
+```
+
+**Qué salió:** : Se hicieron las modficaciones esperada, pero se encontro problemas referentes a los identificadores de productos.
+
+### Prompt 2.B.45: Resolver H-03 — Idempotencia del seed
+
+**Modelo:** No especificado  
+**Herramienta:** Claude Code
+
+```
+Revisa `backlog/00_habilitadores.md`, específicamente TK-00.4, y verifica en `specs/01_*.spec.md` cómo se generan y asignan los identificadores de productos.
+
+Quiero resolver la ambigüedad sobre cómo identificar los productos del seed cuando la tabla de productos ya contiene registros, pero la tabla de pedidos está vacía y debe cargarse.
+
+**Decisión propuesta:** utilizar UUID deterministas para identificar los productos del fixture y referenciarlos desde los ítems de los pedidos.
+
+Antes de modificar el ticket:
+
+1. Comprueba si el modelo de datos y las reglas aprobadas de la Spec 01 permiten asignar explícitamente el UUID al insertar un producto.
+2. Comprueba que esta estrategia no contradice la generación de identificadores ni ninguna restricción del modelo aprobado.
+3. Si es compatible, incorpora en TK-00.4 estas condiciones:
+   - Cada producto del fixture tiene un UUID determinista y estable.
+   - Al insertar productos porque la tabla está vacía, se utilizan esos UUID.
+   - Si la tabla ya contiene registros, no se insertan ni modifican productos.
+   - Al cargar pedidos, cada producto del fixture se localiza por su UUID determinista.
+   - Se verifica que el producto encontrado corresponda al fixture esperado.
+   - Si falta algún producto o existe una inconsistencia, se aborta la transacción completa de pedidos e ítems.
+   - Los ítems de los pedidos referencian los UUID de los productos, nunca sus nombres.
+4. Si la Spec 01 no permite esta estrategia, no improvises otra ni modifiques la spec. Detente y explícame la incompatibilidad y las alternativas.
+
+**Restricciones:**
+- Modifica exclusivamente `backlog/00_habilitadores.md`.
+- No modifiques ninguna spec aprobada.
+- No agregues tablas, columnas, claves naturales ni endpoints.
+- No cambies el comportamiento de carga de clientes definido en Spec 05 §7.3.
+- No cambies puntos, dependencias, fases ni totales del backlog.
+- No realices commit ni push.
+
+**Validaciones:**
+- Revisa el diff completo.
+- Ejecuta `git diff --check` sobre el archivo.
+- Comprueba que el ticket no contradiga las Specs 01 y 05.
+- Confirma que la identificación de productos es inequívoca incluso cuando la tabla ya contiene registros.
+- Verifica que solo cambió el archivo autorizado y que los totales siguen siendo MVP 31/96, V2 11/27 y total 42/123.
+
+Al terminar, informa qué cambió, qué validaste y el estado de Git. Detente y espera mi revisión.
+```
+**Qué salió:**: no permitio el cambio ya que esto contradecia las reglas expuestas incialmente.
+
+### Prompt 2.B.46: Ajustar dependencia de pedidos en TK-00.4
+```
+Actualiza exclusivamente `backlog/00_habilitadores.md`, específicamente TK-00.4, para aplicar la alternativa A que acabamos de decidir.
+
+**Decisión aprobada:**
+
+La carga de productos y pedidos mantiene condiciones independientes, con una excepción por integridad referencial: los pedidos del fixture solo se cargan cuando los productos correspondientes se insertaron durante la misma ejecución del seed.
+
+Ajusta las condiciones del ticket:
+
+1. Mantén la idempotencia de clientes por `tax_id`, conforme a Spec 05 §7.3. No modifiques sus condiciones A a D.
+2. Los productos se insertan únicamente cuando su tabla está vacía, en una única transacción. Si ya existen productos, no se insertan ni modifican.
+3. Los pedidos se insertan únicamente cuando su tabla está vacía, en una única transacción junto con sus ítems.
+4. Para cargar los pedidos, todos los productos del fixture deben haberse insertado correctamente durante esa misma ejecución del seed. Los ítems utilizarán los identificadores enteros generados por la base de datos en esa ejecución.
+5. Si la tabla de productos ya tenía registros antes de ejecutar el seed, pero la tabla de pedidos está vacía, se omite la carga de pedidos y se informa claramente que no se cargaron porque los productos del fixture no fueron insertados en esa ejecución.
+6. Si la tabla de pedidos ya contiene registros, no se insertan ni modifican pedidos ni ítems.
+7. Si falla la resolución de alguna referencia o la inserción de pedidos o ítems, se revierte la transacción completa de pedidos e ítems.
+8. Mantén el orden de carga: clientes, productos y pedidos con sus ítems.
+9. Conserva todas las restricciones de fixtures ya definidas en Spec 01: una línea por producto en cada pedido, cantidades y precios positivos, total calculado correctamente, número asignado por la secuencia de base de datos, pedidos en los estados de RN-05, al menos dos clientes y uno en PROCESSING. Los pedidos del seed no descuentan stock.
+
+**Restricciones:**
+- No modificar ninguna spec aprobada.
+- No cambiar el modelo de datos ni OpenAPI.
+- No agregar tablas, columnas, claves naturales ni endpoints.
+- No utilizar UUID ni IDs explícitos para productos.
+- No buscar productos existentes por nombre o combinación de atributos.
+- No modificar puntos, dependencias, fases ni totales del backlog.
+- No realizar commit ni push.
+
+**Validaciones:**
+- Verifica coherencia con Spec 01 y Spec 05 §7.3.
+- Confirma que no se sobrescriben registros existentes.
+- Confirma que los pedidos nunca se cargan con referencias a productos no identificados inequívocamente.
+- Revisa el diff completo y ejecuta `git diff --check` sobre el archivo.
+- Confirma que solo cambió `backlog/00_habilitadores.md`.
+- Verifica que los totales siguen siendo MVP 31/96, V2 11/27 y total 42/123.
+
+Al terminar, informa los cambios y validaciones. No hagas commit ni push y espera mi revisión.
+```
+**Qué salió:**:Se incorporó la alternativa A en backlog/00_habilitadores.md. Los pedidos del seed solo se cargan cuando los productos correspondientes fueron insertados durante esa misma ejecución. Se preservó el comportamiento de clientes de Spec 05, sin cambios en specs, puntos, dependencias ni totales. Validaciones satisfactorias. Sin commit ni push.
+
+### Prompt 2.B.47: Cerrar H-07 en TK-01.1
+```
+
+Revisa `backlog/US-01_acceso_operador.md` y las referencias correspondientes de `specs/05_operator_dashboard.spec.md`.
+
+Quiero corregir H-07 del último diagnóstico: TK-01.1 no refleja explícitamente en sus criterios de aceptación dos condiciones que ya están definidas en la Spec 05:
+
+- El costo BCrypt debe configurarse mediante una constante.
+- Las contraseñas y los hashes nunca deben registrarse en logs.
+
+Incorpora ambas condiciones en el apartado "Hecho cuando" de TK-01.1, manteniendo la trazabilidad con la Spec 05 §12.2, DP-08 y ESC-51.
+
+**Criterio de alcance MVP:**
+- No agregues mecanismos de seguridad que no estén exigidos por las specs aprobadas.
+- No introduzcas rotación de credenciales, políticas de contraseñas, rate limiting, auditoría avanzada ni abstracciones adicionales.
+- No amplíes el alcance de autenticación.
+- Limítate a hacer explícitos los dos requisitos existentes en el ticket.
+
+**Restricciones:**
+- Modifica exclusivamente `backlog/US-01_acceso_operador.md`.
+- No modifiques ninguna spec aprobada.
+- No cambies puntos, dependencias, fases ni totales del backlog.
+- No realices commit ni push.
+
+**Validaciones:**
+1. Comprueba que ambas condiciones quedan expresadas claramente y son verificables.
+2. Verifica su coherencia con Spec 05 §12.2, DP-08 y ESC-51.
+3. Revisa el diff completo y ejecuta `git diff --check` sobre el archivo.
+4. Confirma que solo cambió el archivo autorizado.
+5. Confirma que los totales permanecen en MVP 31/96, V2 11/27 y total 42/123.
+
+Al terminar, informa los cambios, las validaciones y el estado de Git. Detente y espera mi revisión.
+```
+**Qué salió:**:Se añadieron dos criterios verificables a TK-01.1: costo BCrypt predeterminado declarado en una constante y ausencia de contraseñas o hashes en logs y respuestas HTTP, tanto en login exitoso como fallido. Alineado con Spec 05 §12.2, §15.3, DP-08 y ESC-51. Sin cambios en puntos, dependencias ni totales. Sin commit ni push.
+
+### Prompt 2.B.48: Cerrar H-01 en TK-05.3
+```
+Revisa `backlog/US-05_compra_conversacional.md`, específicamente TK-05.3, y contrástalo con `specs/03_conversational_bot.spec.md` y `specs/04_orders_claims.spec.md`.
+
+Quiero resolver H-01 del último diagnóstico.
+
+**Problema identificado:**
+
+La Spec 04, decisión D-01, establece que cuando el backend devuelve `STOCK_INSUFFICIENT`, la respuesta debe incluir el stock disponible. La Spec 03 necesita ese dato para que el bot pueda ofrecer al cliente ajustar la cantidad solicitada.
+
+Actualmente, los criterios de TK-05.3 contemplan el precio actualizado para `PRICE_CHANGED`, pero no exigen explícitamente el stock disponible para `STOCK_INSUFFICIENT`.
+
+**Cambio solicitado:**
+
+1. Incorpora en "Hecho cuando" de TK-05.3 una condición que exija que la respuesta `STOCK_INSUFFICIENT` incluya el stock disponible del producto.
+2. Asegura que el criterio sea verificable mediante una prueba del contrato o de integración.
+3. Mantén la trazabilidad con la decisión D-01 de la Spec 04 y los escenarios correspondientes de la Spec 03.
+4. Si el contrato ya define el nombre exacto del campo, utiliza ese nombre. No inventes ni modifiques nombres de propiedades.
+
+**Alcance MVP:**
+- No agregues endpoints, errores ni campos nuevos al contrato.
+- No implementes lógica adicional de inventario en el bot.
+- No cambies las reglas de negocio ni el comportamiento aprobado.
+- Limítate a reflejar en el ticket el dato que el contrato ya exige.
+
+**Restricciones:**
+- Modifica exclusivamente `backlog/US-05_compra_conversacional.md`.
+- No modifiques specs aprobadas, OpenAPI ni otros tickets.
+- No cambies puntos, dependencias, fases ni totales del backlog.
+- No realices commit ni push.
+
+**Validaciones:**
+1. Confirma que el campo exigido existe en el contrato aprobado.
+2. Verifica coherencia con Spec 04 D-01 y los escenarios aplicables de Spec 03.
+3. Revisa el diff completo y ejecuta `git diff --check` sobre el archivo.
+4. Confirma que solo cambió el archivo autorizado.
+5. Verifica que los totales siguen siendo MVP 31/96, V2 11/27 y total 42/123.
+
+Si encuentras una contradicción o el contrato no permite precisar el campo, detente y explícame el problema sin modificar otros archivos.
+
+Al terminar, informa los cambios y validaciones. No hagas commit ni push y espera mi revisión.
+```
+**Qué salió:**: se presentaron dos alternativas para cerrar este punto
+
+
+### Prompt 2.B.49: Cerrar H-01 en TK-05.3 Aplicar opción A
+```
+Aplica la opción A para resolver H-01 en TK-05.3 de `backlog/US-05_compra_conversacional.md`.
+
+Añade al apartado "Hecho cuando" el criterio acordado:
+
+- Cada ítem rechazado por `STOCK_INSUFFICIENT` incluye el stock disponible leído dentro de la transacción (spec 04, D-01). El motor conversacional utiliza ese valor en `RESOLVE_STOCK` para ofrecer ajustar la cantidad solicitada. Se verifica mediante pruebas de integración contra PostgreSQL para ESC-04 (stock disponible 1) y ESC-07 (rechazo con stock disponible), de la spec 04.
+
+**Restricciones:**
+- Modifica exclusivamente `backlog/US-05_compra_conversacional.md`.
+- No inventes un nombre de propiedad ni modifiques el contrato interno.
+- No modifiques specs aprobadas ni OpenAPI.
+- No agregues endpoints, errores o funcionalidades.
+- No cambies puntos, dependencias, fases ni totales.
+- No hagas commit ni push.
+
+**Validaciones:**
+1. Comprueba la coherencia con Spec 04 D-01, ESC-04 y ESC-07.
+2. Comprueba la relación con RESOLVE_STOCK de Spec 03.
+3. Revisa el diff completo y ejecuta `git diff --check`.
+4. Confirma que solo cambió el archivo autorizado.
+5. Confirma que los totales permanecen en MVP 31/96, V2 11/27 y total 42/123.
+
+Informa los cambios y validaciones. Detente y espera mi revisión.
+```
+**Qué salió:**: Se incorporó a TK-05.3 el requisito de incluir el stock disponible en cada rechazo STOCK_INSUFFICIENT, leído dentro de la transacción. Se vinculó con Spec 04 D-01, ESC-04 y ESC-07, y con RESOLVE_STOCK de Spec 03. Sin modificaciones en specs ni OpenAPI. Totales del backlog preservados. Sin commit ni push.
+
+
+### Prompt 2.B.50 Cerrar H-02 en TK-06.1
+```
+Revisa TK-06.1 en los archivos de `backlog/` y contrástalo con `specs/04_orders_claims.spec.md` (o el nombre exacto de la Spec 04 existente en el repositorio).
+
+Quiero resolver H-02 del diagnóstico de consistencia previo a la implementación.
+
+**Problema identificado:**
+
+TK-06.1 no refleja explícitamente tres condiciones que ya están definidas en la Spec 04:
+
+1. Los productos afectados deben bloquearse en orden ascendente por `productId`.
+2. Se debe contemplar el reintento ante el error de concurrencia PostgreSQL `P2034`.
+3. Deben existir pruebas para:
+   - ESC-28: cancelación que repone stock de un producto inactivo.
+   - ESC-29: cancelación concurrente con confirmación de pedido.
+
+**Cambio solicitado:**
+
+Incorpora estas condiciones en los criterios de aceptación de TK-06.1, manteniendo la trazabilidad con la decisión DP-05 y los escenarios ESC-28 y ESC-29 de la Spec 04.
+
+Antes de redactar, verifica el mecanismo exacto de bloqueo y reintento descrito en la especificación. No inventes cantidad de reintentos, políticas de espera, nuevas estrategias de concurrencia ni comportamientos que la spec no establezca.
+
+**Alcance MVP:**
+- Reflejar únicamente el comportamiento ya aprobado.
+- No agregar mecanismos de concurrencia adicionales.
+- No modificar el modelo de datos ni los contratos.
+- No ampliar el alcance de cancelación o reposición de stock.
+
+**Restricciones:**
+- Identifica el archivo que contiene TK-06.1 y modifica exclusivamente ese archivo.
+- No modifiques specs aprobadas.
+- No cambies puntos, dependencias, fases ni totales.
+- No realices commit ni push.
+
+**Validaciones:**
+1. Comprueba coherencia con DP-05, ESC-28 y ESC-29.
+2. Confirma que el orden de bloqueo es ascendente por `productId`.
+3. Confirma que el tratamiento de P2034 coincide con la spec.
+4. Revisa el diff completo y ejecuta `git diff --check` sobre el archivo.
+5. Confirma que solo cambió el archivo autorizado.
+6. Verifica que los totales permanecen en MVP 31/96, V2 11/27 y total 42/123.
+
+Al terminar, informa los cambios, las validaciones y el estado de Git. Detente y espera mi revisión.
+```
+**Qué salió:**: Se incorporaron tres criterios a TK-06.1: actualización de productos en orden ascendente por productId, reintento completo de la transacción ante P2034 hasta tres veces y pruebas de integración/concurrencia para ESC-28 y ESC-29. Referencias corregidas a D-05. Sin cambios en specs, puntos, dependencias ni totales. Sin commit ni push.
+
+### Prompt 2.B.51 Completar criterio de orden en TK-06.2
+**Modelo:** No especificado  
+**Herramienta:** Claude Code
+```
+Necesito corregir la observación H-05 de la auditoría de consistencia del backlog.
+
+**Contexto**
+
+La Spec 04, decisión D-01, establece que el listado de pedidos debe ordenarse de forma determinística mediante:
+
+`createdAt DESC, id DESC`
+
+La auditoría detectó que el ticket TK-06.2 no explicita el segundo criterio de ordenamiento.
+
+**Tarea**
+
+1. Revisa la definición de TK-06.2 en `backlog/US-06_seguimiento_pedidos.md`.
+2. Contrasta sus criterios de aceptación con la decisión D-01 de `specs/04_orders_claims.spec.md`.
+3. Incorpora en el apartado **Hecho cuando** que los pedidos se ordenan por `createdAt DESC` y, cuando exista empate, por `id DESC`.
+4. Conserva la terminología y el formato que ya utiliza el backlog.
+
+**Restricciones**
+
+- Modifica exclusivamente `backlog/US-06_seguimiento_pedidos.md`.
+- No modifiques las specs aprobadas ni otros archivos.
+- No agregues paginación, cursores ni comportamientos que no estén definidos en las specs.
+- No cambies puntos, dependencias, prioridad, alcance ni totales del backlog.
+- No hagas commit ni push.
+
+**Validación**
+
+- Comprueba que TK-06.2 refleja exactamente el orden establecido en D-01.
+- Ejecuta `git diff --check`.
+- Revisa el diff para confirmar que el cambio es puntual y que no hay modificaciones accidentales.
+- Confirma que los totales del backlog permanecen iguales: MVP 31 tickets / 96 puntos; V2 11 tickets / 27 puntos; total 42 tickets / 123 puntos.
+
+Al finalizar, informa el archivo modificado, el criterio incorporado, las validaciones realizadas y el estado de Git.
+```
+**Qué salió:**: H-05 revisada y resuelta. El ajuste es correcto y está bien delimitado. Buena precisión con la referencia: corresponde a DP-01 de la Spec 04, no a D-01. También queda bien asociado el test de integración ESC-32 a TK-06.2.
+
+### Prompt 2.B.52 Completar búsqueda por número de pedido en TK-06.3
+**Modelo:** No especificado  
+**Herramienta:** Claude Code
+```
+Necesito corregir la observación H-06 de la auditoría de consistencia del backlog.
+
+**Contexto**
+
+La Spec 03, decisión DP-10, define cómo se normaliza el número de pedido para su búsqueda:
+- Eliminar espacios al inicio y al final (`trim`).
+- Convertir el valor a mayúsculas.
+- Utilizar el número de pedido completo.
+
+La Spec 04, decisión D-08, mantiene este contrato. La auditoría detectó que TK-06.3 no explicita estos comportamientos.
+
+**Tarea**
+
+1. Revisa TK-06.3 en `backlog/US-06_seguimiento_pedidos.md`.
+2. Contrasta sus criterios con DP-10 de `specs/03_conversational_bot.spec.md` y D-08 de `specs/04_orders_claims.spec.md`.
+3. Completa el apartado **Hecho cuando** para indicar que la búsqueda:
+   - elimina espacios al inicio y al final del número recibido;
+   - normaliza el valor a mayúsculas;
+   - utiliza el número de pedido completo para localizarlo.
+4. Verifica qué escenario de la Spec 03 cubre este comportamiento y referencia el escenario correspondiente si resulta aplicable.
+
+**Restricciones**
+
+- Modifica exclusivamente `backlog/US-06_seguimiento_pedidos.md`.
+- No modifiques las specs aprobadas ni otros archivos.
+- No introduzcas búsquedas parciales, por subcadenas ni coincidencias aproximadas.
+- No cambies el formato del número de pedido ni agregues reglas de normalización distintas de las ya aprobadas.
+- No cambies puntos, dependencias, prioridad, alcance ni totales del backlog.
+- No hagas commit ni push.
+
+**Validación**
+
+- Comprueba que TK-06.3 refleja DP-10 y D-08 sin contradicciones.
+- Ejecuta `git diff --check`.
+- Revisa el diff para confirmar que el cambio es puntual.
+- Confirma que los totales permanecen iguales: MVP 31 tickets / 96 puntos; V2 11 tickets / 27 puntos; total 42 tickets / 123 puntos.
+
+Al finalizar, informa el archivo modificado, los criterios incorporados, las referencias utilizadas, las validaciones realizadas y el estado de Git.
+```
+**Qué salió:**: El criterio quedó correctamente distribuido entre las responsabilidades del FSM y el servicio: normalización antes de buscar e igualdad exacta contra order_number.
+
+### Prompt 2.B.53 Evaluar estimaciones de TK-01.2 y TK-05.4
+**Modelo:** No especificado  
+**Herramienta:** Claude Code
+```
+Necesito evaluar la observación H-08 de la auditoría final del backlog.
+
+**Contexto**
+
+La auditoría identificó dos posibles subestimaciones:
+
+- TK-01.2: 2 puntos. Contempla manejo de respuestas 401 y comportamientos de sesión asociados a DP-05, DP-06, DP-07 y DP-09 de la Spec 05.
+- TK-05.4: 3 puntos. Incorpora validación local del teléfono y las reglas de normalización correspondientes.
+
+**Tarea**
+
+Analiza ambos tickets contrastando:
+- Su descripción y criterios de aceptación actuales.
+- Las responsabilidades y reglas de las specs aprobadas.
+- El trabajo técnico necesario para cumplirlos dentro del MVP.
+- Las dependencias y el trabajo que ya está asignado a otros tickets, para evitar contabilizar tareas dos veces.
+
+Para cada ticket, determina si la estimación actual es razonable, ajustada o insuficiente. Justifica brevemente la evaluación y señala qué parte del trabajo sustenta tu conclusión.
+
+**Restricciones**
+
+- No modifiques ningún archivo.
+- No cambies puntos ni totales.
+- No propongas dividir tickets ni crear nuevos tickets salvo que exista una necesidad funcional real y demostrable.
+- No agregues mecanismos, requisitos ni complejidad que no estén en las specs aprobadas.
+- Evalúa desde la perspectiva de un MVP, no de un producto escalable a gran volumen.
+
+**Resultado esperado**
+
+Presenta una tabla con:
+- Ticket y estimación actual.
+- Complejidad estimada.
+- Evaluación de la estimación.
+- Justificación.
+- Recomendación: mantener o reconsiderar los puntos.
+
+Si recomiendas cambiar puntos, indica el valor sugerido y el impacto exacto sobre los totales del backlog, pero no lo apliques.
+
+El objetivo es tomar una decisión de planificación y cerrar H-08, no abrir una nueva ronda de diseño.
+
+```
+**Qué salió:**: Analisis de las estimaciones para los tickets dado y recomendacion para aplicar los cambios.
+
+
+### Prompt 2.B.54 Actualizar estimación de TK-01.2
+
+**Modelo:** No especificado  
+**Herramienta:** Claude Code
+```
+Apruebo la recomendación de la evaluación H-08:
+
+- TK-01.2 pasa de 2 a 3 puntos.
+- TK-05.4 permanece en 3 puntos.
+
+Actualiza exclusivamente las referencias de estimación y totales afectadas:
+
+1. `backlog/US-01_acceso_operador.md`
+   - Cambia TK-01.2 de 2 a 3 puntos.
+   - Actualiza la suma de puntos de US-01 de 6 a 7.
+
+2. `backlog/README.md`
+   - Actualiza los puntos de US-01.
+   - Actualiza el total MVP de 96 a 97 puntos.
+   - Actualiza el total general de 123 a 124 puntos.
+   - Mantén V2 en 11 tickets y 27 puntos.
+
+3. `README.md`
+   - Actualiza la referencia al total de 96 puntos del MVP para que refleje 97.
+
+**Restricciones**
+- No modifiques criterios de aceptación, descripciones, dependencias ni otros tickets.
+- No cambies la estimación de TK-05.4.
+- No modifiques las specs aprobadas.
+- No agregues ni elimines tickets.
+- No hagas commit ni push.
+
+**Validación**
+- Verifica que las sumas por historia, fase y backlog sean consistentes.
+- Confirma los totales: MVP 31 tickets / 97 puntos; V2 11 tickets / 27 puntos; total 42 tickets / 124 puntos.
+- Ejecuta `git diff --check`.
+- Revisa el diff y confirma que solo se modificaron los tres archivos autorizados.
+- Informa el estado de Git.
+
+```
+**Qué salió:**: Se cerraron los puntos pendientes, se indica hacer commit y push e iniciar implementacion
+
+### Prompt 2.B.55 Actualizar estimación de TK-01.2
+
+**Modelo:** No especificado  
+**Herramienta:** Claude Code
+```
+ Con los cambios aplicados se da por finalizado la etapa de diseño 2.B,por lo que haz commit y push de los cambios ingresados
+```
+
+**Qué salió:**: 

@@ -2,7 +2,7 @@
 
 | Estado | Cubre | Tickets |
 |---|---|---|
-| Aprobada v1.1 (Entrega 2) | IN-01, IN-02, IN-03 (`MVP`), RN-01, RN-09, RN-10 · lado inventario de RN-02, RN-03, RN-05 · Criterios: CA-01, CA-03, CA-04, CA-05, CA-12, CA-13, CA-14, CA-15 · V2: IN-03 (reposición), RP, RN-11, CA-02 | `MVP`: TK-03.1, TK-03.2, TK-03.3, TK-03.4, TK-04.1, TK-04.3, TK-04.5 · `V2`: TK-04.2, TK-04.4 |
+| Aprobada v1.2 (Entrega 2). Fecha de aprobación: 2026-11-18. Historial: v1.1 aprobada el 2026-11-18; v1.2 incorpora las resoluciones de DP-01, DP-02, DP-04 y DP-06: resuelve DP-04 mediante el cruce de `listProducts` con `listStockAlerts`, y DP-01, DP-02 y DP-06 (sin reactivación, edición y ajuste de inactivos, y "gana la última escritura" con actualización parcial) | IN-01, IN-02, IN-03 (`MVP`), RN-01, RN-09, RN-10 · lado inventario de RN-02, RN-03, RN-05 · Criterios: CA-01, CA-03, CA-04, CA-05, CA-12, CA-13, CA-14, CA-15 · V2: IN-03 (reposición), RP, RN-11, CA-02 | `MVP`: TK-03.1, TK-03.2, TK-03.3, TK-03.4, TK-04.1, TK-04.3, TK-04.5 · `V2`: TK-04.2, TK-04.4 |
 
 **Fuentes.** [PRD](../docs/PRD.md) v1.2 · [ARCHITECTURE](../docs/ARCHITECTURE.md) · [`docs/openapi.yaml`](../docs/openapi.yaml) `info.version` 1.0.0 · [spec 01](01_data_models.spec.md) · [backlog](../backlog/README.md) US-03, US-04, US-05.
 
@@ -53,7 +53,7 @@ En el MVP no existen el módulo `purchase-orders`, su tabla, sus endpoints ni su
 
 - Lotes, vencimientos, registro sanitario y proveedores como entidad (PRD §4.3).
 - Borrado físico de productos (RN-10).
-- Reactivación de productos: no hay requisito ni operación (DP-01).
+- Reactivación de productos: **no existe en el MVP**; la desactivación es irreversible y la reactivación queda como evolución futura (DP-01, resuelta).
 - Historial o auditoría de cambios de stock y de qué operador los hizo (spec 01, "Fuera del modelo persistente").
 - Mensajes, estados y opciones del chat (spec 03).
 
@@ -155,6 +155,8 @@ Precondición: sesión de operador válida (AU-01). El stock inicial se fija aqu
 
 ### F-3 · Editar producto (IN-01, RN-03)
 
+`updateProduct` modifica **solo los campos recibidos**, también sobre productos inactivos, sin reactivarlos (DP-02, DP-06).
+
 1. El operador modifica uno o más de: nombre, descripción, precio, stock mínimo.
 2. `updateProduct` aplica los cambios. El stock actual no se toca.
 3. Efectos:
@@ -163,6 +165,8 @@ Precondición: sesión de operador válida (AU-01). El stock inicial se fija aqu
    - Cambio de nombre: el detalle de pedidos muestra el nombre actual, porque `OrderItem.productName` no es un dato histórico (contrato, schema `OrderItem`).
 
 ### F-4 · Desactivar producto (IN-01, RN-10)
+
+En el MVP la desactivación es **irreversible**: no hay operación de reactivación (DP-01).
 
 1. El operador elige desactivar. `deactivateProduct` marca el producto como inactivo.
 2. Efectos:
@@ -174,6 +178,8 @@ Precondición: sesión de operador válida (AU-01). El stock inicial se fija aqu
 3. Repetir la desactivación no tiene efectos y responde éxito.
 
 ### F-5 · Ajustar stock manualmente (IN-02, CA-13)
+
+El ajuste también se permite sobre productos inactivos, con el mismo control de `expectedStock`, y no los reactiva (DP-02).
 
 1. El operador ve el stock actual de un producto (F-1).
 2. Indica el nuevo valor absoluto. El dashboard envía `newStock` y, como `expectedStock`, el stock que mostraba (TK-03.3).
@@ -248,10 +254,11 @@ Todas las modificaciones de stock son actualizaciones condicionales sobre la mis
 | Desactivación y confirmación simultáneas sobre el mismo producto | Si la desactivación se confirma primero, la confirmación se rechaza con `PRODUCT_INACTIVE` y el stock no cambia. Si la confirmación bloquea la fila primero, el pedido se crea y luego el producto queda inactivo | RN-02, ARCHITECTURE (confirmación) |
 | Cambio de precio y confirmación simultáneos | El cambio de precio espera al commit de la confirmación; la comparación con el precio mostrado y el precio guardado corresponden al instante de la confirmación | RN-03, ARCHITECTURE (confirmación) |
 | Edición general (`updateProduct`) y ajuste de stock simultáneos | No compiten: tocan columnas distintas y la edición no modifica el stock | Contrato (`updateProduct`) |
-| Dos ediciones generales simultáneas del mismo producto | No hay requisito de control de concurrencia para la edición general. Ver DP-06 | — |
+| Dos ediciones generales simultáneas del mismo producto | Gana la última escritura confirmada sobre el mismo campo; con campos distintos se conservan ambos cambios, porque `updateProduct` modifica solo los campos recibidos y nunca reescribe el producto completo. Sin versión, sin control optimista y sin `SELECT … FOR UPDATE`; aislamiento `READ COMMITTED` (DP-06) | IN-01, ARCHITECTURE |
 | Producto desactivado después de agregarse al carrito y antes de confirmar | La confirmación se rechaza con `PRODUCT_INACTIVE`, no se crea el pedido y el stock no cambia; el producto nunca forma parte de un pedido confirmado. La experiencia conversacional posterior (retirarlo del carrito, nuevo resumen y nueva confirmación) es de la spec 03 (DP-02 de la spec 03; DP-05 de esta spec, resuelta) | RN-02, CH-06, CA-14, TK-05.6 |
 | Producto desactivado después de listarse en el catálogo y antes de agregarse | La consulta de disponibilidad informa que ya no está activo y el chat no lo agrega al carrito (F-7; DP-03, resuelta; DP-01 de la spec 03) | RN-02, RN-10, CH-04, TK-05.2 |
-| Edición o ajuste de stock de un producto inactivo | El contrato no lo restringe. Ver DP-02 | — |
+| Edición o ajuste de stock de un producto inactivo | Se permiten `updateProduct` (nombre, descripción, precio y mínimo) y `adjustProductStock` (con `expectedStock` y `STOCK_CHANGED`). Ninguna operación reactiva el producto: sigue fuera de las ventas y de `listStockAlerts`, aunque su stock quede ≤ mínimo (DP-02) | IN-01, IN-02, RN-02, RN-09 |
+| Edición general concurrente con un ajuste de stock o una desactivación | `updateProduct` nunca toca `current_stock` ni `is_active`, así que se conservan el campo editado, el stock ajustado y el estado inactivo (DP-06) | IN-01, IN-02, RN-10 |
 
 ## 8. Operaciones relacionadas
 
@@ -284,7 +291,7 @@ No forman parte del contrato HTTP. Se nombran por su función; los nombres de la
 
 ### 8.3 Brechas del contrato
 
-No se detectó ninguna operación necesaria para el alcance MVP aprobado que falte en `docs/openapi.yaml`. La reactivación de productos no tiene operación, pero tampoco requisito (DP-01); el resaltado de stock crítico en la tabla de inventario puede resolverse con las operaciones existentes (DP-04).
+No se detectó ninguna operación necesaria para el alcance MVP aprobado que falte en `docs/openapi.yaml`. La reactivación de productos no tiene operación ni requisito, y queda fuera del MVP (DP-01, resuelta); el resaltado de stock crítico en la tabla de inventario puede resolverse con las operaciones existentes (DP-04).
 
 ## 9. Errores y situaciones excepcionales
 
@@ -370,14 +377,26 @@ Los mensajes del bot se verifican en la spec 03; la transacción, en la spec 04.
 | ESC-30 | Un pedido `PROCESSING` con 3 unidades de un producto con stock 7 | El operador lo cancela dos veces en paralelo | El stock queda en 10 (restituido una sola vez) | C · ver spec 04 | RN-05, CA-12 · TK-06.1 |
 | ESC-31 | Un pedido `PENDING` con un producto que luego se desactivó | El operador lo cancela | El stock del producto inactivo aumenta en la cantidad del ítem; el producto sigue inactivo y fuera de alertas | I · ver spec 04 | RN-05, RN-10, RN-09 · TK-06.1 |
 
+### 11.5 Productos inactivos y concurrencia de la edición general (DP-01, DP-02, DP-06)
+
+Los escenarios de concurrencia (C) se ejecutan contra PostgreSQL real con conexiones paralelas, no con simulaciones ni con otro motor (RNF-01, RNF-04).
+
+| ID | Dado | Cuando | Entonces | Nivel | Trazas |
+|---|---|---|---|---|---|
+| ESC-32 | Un producto inactivo | El operador modifica con `updateProduct` su nombre, su descripción, su precio o su stock mínimo | La edición se aplica; el producto sigue inactivo, fuera del catálogo del chat y de `listStockAlerts`, aunque su stock quede ≤ mínimo | I | IN-01, RN-09, RN-10, DP-02 · `updateProduct` · TK-03.1 |
+| ESC-33 | Un producto inactivo | El operador envía `updateProduct` con `isActive: true` (solo o junto a otro campo) | Se rechaza con `VALIDATION_ERROR` por el esquema `UpdateProductRequest`; el producto sigue inactivo y ningún campo cambia. No existe ninguna operación de activación | I | IN-01, RN-10, DP-01 · `updateProduct` · TK-03.1 |
+| ESC-34 | Un producto inactivo con stock 5 | El operador ajusta a 0 con `expectedStock` 5; después repite con `expectedStock` 5 | El primer ajuste se aplica (stock 0); el segundo responde `STOCK_CHANGED` y el stock sigue en 0. El producto sigue inactivo y fuera de `listStockAlerts` | I | IN-02, RN-09, DP-02 · `adjustProductStock` · TK-03.2 |
+| ESC-35 | Un producto con nombre "N1" y precio `"100.00"` | En paralelo, un `updateProduct` cambia el nombre a "N2" y otro el precio a `"120.00"` | El producto queda con nombre "N2" y precio `"120.00"`: se conservan ambos cambios | C | IN-01, DP-06 · `updateProduct` · TK-03.1 |
+| ESC-36 | Un producto con precio `"100.00"` | En paralelo, dos `updateProduct` cambian el precio a `"110.00"` y a `"120.00"` | El precio final es uno de los dos y coincide con el de la última escritura aplicada y confirmada; ambas peticiones responden con éxito | C | IN-01, DP-06 · `updateProduct` · TK-03.1 |
+| ESC-37 | Un producto activo con stock 10 y precio `"100.00"` | En paralelo: `updateProduct` cambia el precio a `"120.00"`, `adjustProductStock` fija el stock en 4 con `expectedStock` 10, y `deactivateProduct` lo desactiva | El producto queda con precio `"120.00"`, stock 4 e inactivo: ninguna actualización parcial sobrescribe los cambios de las otras operaciones | C | IN-01, IN-02, RN-10, DP-06 · `updateProduct`, `adjustProductStock`, `deactivateProduct` · TK-03.1, TK-03.2 |
 ## 12. Matriz de trazabilidad
 
 ### 12.1 Requisitos y reglas
 
 | ID PRD | Fase | Sección | `operationId` / capacidad | Criterios PRD | Criterios backlog | Tickets | Escenarios |
 |---|---|---|---|---|---|---|---|
-| IN-01 | `MVP` | 5.2, F-1..F-4 | `listProducts`, `getProduct`, `createProduct`, `updateProduct`, `deactivateProduct` | — | US-03 crit. 1, 2, 5, 6 | TK-03.1, TK-03.3 | ESC-01..10 |
-| IN-02 | `MVP` | 5.2, F-5, §7 | `adjustProductStock` | CA-13 | US-03 crit. 3, 4 | TK-03.2, TK-03.3, TK-03.4 | ESC-11..18 |
+| IN-01 | `MVP` | 5.2, F-1..F-4 | `listProducts`, `getProduct`, `createProduct`, `updateProduct`, `deactivateProduct` | — | US-03 crit. 1, 2, 5, 6 | TK-03.1, TK-03.3 | ESC-01..10, ESC-32, 33, 35..37 |
+| IN-02 | `MVP` | 5.2, F-5, §7 | `adjustProductStock` | CA-13 | US-03 crit. 3, 4 | TK-03.2, TK-03.3, TK-03.4 | ESC-11..18, ESC-34, 37 |
 | IN-03 | `MVP` | 5.2, F-6 | `listStockAlerts` | CA-01 | US-04 crit. 1 | TK-04.1, TK-04.3, TK-04.5 | ESC-19..23 |
 | IN-03 | `V2` | §14 | — | — | US-04 crit. 2 | TK-04.4 | — |
 | RN-01 | `MVP` | 5.1, §10 | `createProduct`, `adjustProductStock`, descuento | CA-05 | US-03 crit. 2 | TK-03.1, TK-03.2, TK-05.3 | ESC-02, 16, 26, 27 |
@@ -385,7 +404,7 @@ Los mensajes del bot se verifican en la spec 03; la transacción, en la spec 04.
 | RN-03 | `MVP` | 5.1, F-3, §10 | `updateProduct`, descuento | CA-15 | US-03 crit. 5 · US-05 crit. 10 | TK-03.1, TK-05.3, TK-05.6 | ESC-03, 29 |
 | RN-05 | `MVP` | 5.1, F-9 | `changeOrderStatus` (restitución) | CA-12 | US-06 crit. 5 | TK-06.1 | ESC-14, 30, 31 |
 | RN-09 | `MVP` | 5.1, F-6 | `listStockAlerts` | CA-01 | US-04 crit. 1 | TK-04.1, TK-04.3, TK-04.5, TK-03.3 | ESC-05, 06, 17, 19..23 |
-| RN-10 | `MVP` | 5.1, F-4, §10 | `deactivateProduct` | CA-14 | US-03 crit. 6 | TK-03.1 | ESC-06..08, 31 |
+| RN-10 | `MVP` | 5.1, F-4, §10 | `deactivateProduct` | CA-14 | US-03 crit. 6 | TK-03.1 | ESC-06..08, 31, 32..34, 37 |
 | CH-04 | `MVP` | F-7 | Catálogo del chat | — | US-05 crit. 3 | TK-05.2 | ESC-06, 17 |
 | CH-05 | `MVP` | F-7 | Disponibilidad | CA-04 | US-05 crit. 4 | TK-05.2 | (spec 03: ESC-22, ESC-43) |
 | CH-06 | `MVP` | §7 | Descuento al confirmar | CA-05, CA-14, CA-15 | US-05 crit. 8–10 | TK-05.6 | ESC-25, 29 |
@@ -401,9 +420,9 @@ Los mensajes del bot se verifican en la spec 03; la transacción, en la spec 04.
 | `listProducts` | IN-01 | TK-03.1, TK-03.3 | ESC-01, 06 |
 | `createProduct` | IN-01, RN-01 | TK-03.1 | ESC-01, 02 |
 | `getProduct` | IN-01, IN-02 | TK-03.1, TK-03.3 | ESC-03, 09 |
-| `updateProduct` | IN-01, RN-03, RN-09 | TK-03.1 | ESC-03, 04, 05, 09 |
-| `deactivateProduct` | IN-01, RN-10 | TK-03.1 | ESC-06, 07, 09 |
-| `adjustProductStock` | IN-02, RN-01 | TK-03.2, TK-03.4 | ESC-09, 11..18 |
+| `updateProduct` | IN-01, RN-03, RN-09 | TK-03.1 | ESC-03, 04, 05, 09, 32, 33, 35..37 |
+| `deactivateProduct` | IN-01, RN-10 | TK-03.1 | ESC-06, 07, 09, 37 |
+| `adjustProductStock` | IN-02, RN-01 | TK-03.2, TK-03.4 | ESC-09, 11..18, 34, 37 |
 | `listStockAlerts` | IN-03, RN-09 | TK-04.1, TK-04.3, TK-04.5 | ESC-05, 19..23 |
 | `sendChatMessage` (consumidor) | CH-04..CH-07 | TK-05.2, TK-05.6 | ESC-17, 24..29 (ver spec 03) |
 | `changeOrderStatus` (consumidor) | PE-02, RN-05 | TK-06.1 | ESC-14, 30, 31 (ver spec 04) |
@@ -412,24 +431,26 @@ Los mensajes del bot se verifican en la spec 03; la transacción, en la spec 04.
 
 ### 13.1 Supuestos y restricciones
 
+- **Desactivación irreversible (DP-01).** Una desactivación accidental no puede revertirse dentro del MVP. El producto conserva su historial; para volver a vender ese artículo hay que dar de alta un producto nuevo.
+
 - Una sola moneda, sin impuestos ni descuentos (PRD §10).
 - El carrito vive en la sesión del chat y no reserva stock (RN-02, PRD §10).
 - Un único rol de operador y sin auditoría por operador (AU-02, spec 01).
 - PostgreSQL 16 con aislamiento `READ COMMITTED` y actualizaciones condicionales, sin `SELECT … FOR UPDATE` (ARCHITECTURE, RNF-01).
 - El nombre de producto no es único: la spec 01 no define índice único sobre `name`.
 
-### 13.2 Decisiones pendientes
+### 13.2 Decisiones
 
-DP-03 y DP-05 están **resueltas**: se aprobaron con las decisiones DP-01 y DP-02 de la spec 03 (alternativa A). Las demás siguen pendientes: ninguna está aprobada ni se resuelve en esta spec. Cuando la tabla describe lo que permite el contrato vigente, lo hace para dejar constancia del estado actual, no como decisión tomada. Cada una requiere aprobación humana y, si cambia una regla, se actualizan primero el PRD o el contrato.
+Todas las decisiones de esta spec están **resueltas**. DP-03 y DP-05 se aprobaron con las decisiones DP-01 y DP-02 de la spec 03 (alternativa A). DP-01, DP-02, DP-04 y DP-06 están resueltas en la v1.2, aprobada el 2026-11-18: DP-01 con la alternativa A, DP-02 con la C, DP-04 con la A y DP-06 con la A. Ninguna cambia el contrato ni el modelo de datos.
 
 | ID | Tema | Situación | Fuentes | Quién decide |
 |---|---|---|---|---|
-| DP-01 | Reactivación de productos | IN-01 solo prevé crear, editar y desactivar. No hay operación para reactivar y `UpdateProductRequest` no admite `isActive`. Un producto desactivado por error no puede volver a venderse en el MVP | IN-01, RN-10, `UpdateProductRequest` | Responsable del producto. Si se requiere: PRD (IN-01) y contrato (`info.version`) |
-| DP-02 | Edición y ajuste de stock de un producto inactivo | Ni el PRD ni el contrato los prohíben ni los autorizan de forma explícita. El contrato vigente no los impide y esta spec no añade restricción, pero no es una decisión aprobada | IN-01, IN-02, `updateProduct`, `adjustProductStock` | Responsable del producto |
+| DP-01 | Reactivación de productos | **Resuelta (aprobada en la v1.2, alternativa A).** Pregunta original: ¿se pueden reactivar productos desactivados? IN-01 solo prevé crear, editar y desactivar, y el contrato no tiene ninguna operación para reactivar (`UpdateProductRequest` no admite `isActive`). **Reglas:** en el MVP la desactivación es irreversible; `updateProduct` no modifica `isActive` (la petición se rechaza con `VALIDATION_ERROR`); no hay operación ni endpoint de activación; el producto inactivo conserva su historial y sigue en `listProducts` y `getProduct`, pero no se vende ni aparece en `listStockAlerts`. La reactivación queda como evolución futura. **Limitación:** una desactivación accidental no puede revertirse en el MVP (§13.1). **Justificación:** no hay requisito MVP de reactivación y no cambia el contrato. **Alternativas evaluadas:** (B) reactivar con `updateProduct`, imposible sin cambiar el contrato; (C) operación explícita de reactivación, ampliación del contrato fuera del MVP. **Escenarios:** ESC-33 | IN-01, RN-10, `UpdateProductRequest`, `deactivateProduct` | Resuelta |
+| DP-02 | Edición y ajuste de stock de un producto inactivo | **Resuelta (aprobada en la v1.2, alternativa C).** Pregunta original: ¿se puede editar o ajustar el stock de un producto inactivo? **Reglas:** se permiten `updateProduct` (nombre, descripción, precio y stock mínimo) y `adjustProductStock` (ajuste absoluto con `expectedStock` y `STOCK_CHANGED`). Ninguna reactiva el producto, que sigue fuera de las ventas (RN-02, CH-04) y de `listStockAlerts` aunque su stock sea ≤ mínimo (RN-09, CA-01). **Justificación:** es la única alternativa compatible con el contrato vigente, porque `updateProduct` no declara ningún error para rechazar un inactivo; editar un inactivo es inocuo y ajustar su stock permite corregir el inventario físico, en coherencia con la restitución por cancelación (F-9). Sin errores HTTP ni respuestas 409 nuevos. **Alternativas evaluadas:** (A) bloquear ambas operaciones y (B) bloquear solo `updateProduct`; ambas exigen añadir un código de error y una respuesta 409 al contrato. **Escenarios:** ESC-32, ESC-34 | IN-01, IN-02, RN-02, RN-09, RN-10, `updateProduct`, `adjustProductStock` | Resuelta |
 | DP-03 | Producto desactivado entre que el chat lo lista y el cliente lo agrega | **Resuelta (aprobada, DP-01 de la spec 03, alternativa A).** El chat revalida el estado al elegir el producto y al validar la cantidad; si está inactivo, informa, no lo agrega y vuelve al catálogo. Para ello la consulta de disponibilidad informa si el producto está activo (F-7, §8.2). No se crea ningún endpoint | RN-02, CH-04, CH-05, RN-10 | Resuelta |
-| DP-04 | Resaltado de stock crítico en la tabla de inventario | TK-03.3 pide resaltar "stock ≤ mínimo (RN-09)". El schema `Product` no trae un indicador de alerta, así que el frontend tendría que calcular RN-09, lo que contradice que el frontend no aplica reglas `RN-`. Además TK-03.3 no menciona la condición "activo" de RN-09 | TK-03.3, RN-09, RNF-07, ARCHITECTURE "Frontend", schema `Product` | Responsable del producto. **Alternativa recomendada, sin cambio de contrato:** el dashboard llama a `listStockAlerts` y a `listProducts`, y resalta en la tabla los productos cuyo `id` figura en el resultado de alertas. Así la condición de RN-09, incluida la de "activo", la aplica solo el servicio. No se propone ningún campo nuevo |
+| DP-04 | Resaltado de stock crítico en la tabla de inventario | **Resuelta (aprobada en la v1.2, alternativa A, sin cambio de contrato).** Pregunta original: cómo resaltar en la tabla de inventario los productos en stock crítico. TK-03.3 pide resaltar "stock ≤ mínimo (RN-09)", pero el schema `Product` no trae un indicador de alerta, así que el frontend tendría que calcular RN-09, lo que contradice que el frontend no aplica reglas `RN-`; además TK-03.3 no mencionaba la condición "activo". **Resolución:** RN-09 se aplica **solo** en `listStockAlerts`. La pantalla de productos obtiene el catálogo con `listProducts` y los productos en alerta con `listStockAlerts`, y resalta las filas cuyo `id` figura en la respuesta de alertas. El frontend no calcula stock actual frente a mínimo ni evalúa el estado del producto. Los productos inactivos no se resaltan porque `listStockAlerts` no los devuelve (RN-09, CA-01). La presentación, los errores y las recargas corresponden a la spec 05 (§16.4). **Alternativas evaluadas:** (A) cruce por `id` con `listStockAlerts`, aprobada; (B) campo derivado de alerta en `Product`, descartada por ser una ampliación del contrato; (C) no resaltar en la tabla, descartada por incumplir TK-03.3; cálculo de RN-09 en el frontend, descartado por RNF-07 | TK-03.3, RN-09, RNF-07, ARCHITECTURE "Frontend", `listProducts`, `listStockAlerts` | Resuelta |
 | DP-05 | Opciones del bot tras `PRODUCT_INACTIVE` y orden de presentación con varios motivos | **Resuelta (aprobada, DP-02 y DP-03 de la spec 03, alternativa A).** Responsabilidad del inventario: que la confirmación informe el rechazo `PRODUCT_INACTIVE` y que el producto nunca forme parte de un pedido confirmado, sin cambio de stock. La retirada del carrito, el nuevo resumen, la reconfirmación y el orden de los motivos se especifican solo en la spec 03 | CH-06, RN-02, TK-05.6 | Resuelta |
-| DP-06 | Concurrencia en la edición general | No hay requisito de control para dos `updateProduct` simultáneos sobre el mismo producto. El contrato vigente no prevé ningún control, así que la última escritura prevalecería; esto describe el estado actual y no es una decisión aprobada | IN-01, `updateProduct` | Responsable del producto, si se considera necesario |
+| DP-06 | Concurrencia en la edición general | **Resuelta (aprobada en la v1.2, alternativa A: gana la última escritura, con actualización parcial).** Pregunta original: ¿qué control de concurrencia tienen dos `updateProduct` simultáneos sobre el mismo producto? **Reglas:** sobre el mismo campo prevalece la última escritura aplicada y confirmada; sobre campos distintos se conservan ambos cambios. `updateProduct` modifica solo los campos recibidos y no lee y reescribe el producto completo con datos potencialmente obsoletos. Nunca modifica `currentStock`: `adjustProductStock` conserva su propio control (`expectedStock`, `STOCK_CHANGED`). Una edición concurrente con una desactivación afecta a columnas distintas y se conservan ambas. No se promete más aislamiento que `READ COMMITTED` (ARCHITECTURE). **Justificación:** suficiente para el MVP, con un único rol de operador, sin columnas ni campos de contrato nuevos. **Alternativas evaluadas:** (B) control optimista con versión, que requiere una columna nueva (spec 01) y un campo y un 409 en el contrato; (C) bloqueo pesimista con `SELECT … FOR UPDATE`, contrario a ARCHITECTURE. **Escenarios:** ESC-35, ESC-36, ESC-37 | IN-01, `updateProduct`, ARCHITECTURE "Transacciones" y "Concurrencia de stock" | Resuelta |
 
 ### 13.3 Observaciones documentales
 
@@ -440,7 +461,7 @@ Inconsistencias detectadas en otras fuentes. No se corrigen en esta tarea.
 | OBS-01 | Cerrada. La arquitectura citaba "PRD v1.1" y decía que `docs/openapi.yaml` "se crea en un paso posterior". Corregidos ambos asuntos: el primer párrafo cita ahora el PRD v1.2 (como OBS-04 de la spec 03) y describe `docs/openapi.yaml` como contrato ya definido, base aprobada para la Entrega 2 con aspectos provisionales en OBS-03 de la spec 03 | `docs/ARCHITECTURE.md`, primer párrafo |
 | OBS-02 | Resuelta: la spec 01, de la que depende esta spec, está "Aprobada v1.1 (Entrega 2)". Revisada contra el modelo aprobado sin contradicciones. Su sección "Puntos abiertos" recoge el posible impacto de DP-01 y DP-06 en el modelo | `specs/01_data_models.spec.md`, cabecera y "Puntos abiertos" |
 | OBS-03 | El contrato se declara "aprobada provisionalmente para chat y pedidos" en su descripción, mientras `CLAUDE.md` lo indica como aprobado. No queda explícito el estado de aprobación de las operaciones de productos | `docs/openapi.yaml` ("Estado del contrato"), `CLAUDE.md` |
-| OBS-04 | US-03 crit. 2 cita RN-01 para rechazar un precio ≤ 0, pero RN-01 trata solo del stock; el precio > 0 proviene de IN-01 y del `CHECK` de la spec 01. La cabecera de US-03 no lista RN-09, que usa TK-03.3 | `backlog/US-03_catalogo_inventario.md` |
+| OBS-04 | Cerrada. US-03 crit. 2 citaba RN-01 para rechazar un precio ≤ 0, cuando RN-01 trata solo del stock y el precio > 0 proviene de IN-01 y del `CHECK` de la spec 01; además, la cabecera de US-03 no listaba RN-09, que usa TK-03.3. Corregidos ambos asuntos en US-03: el criterio 2 atribuye ahora el precio y el mínimo a IN-01 y a los `CHECK` `price > 0` y `min_stock_alert >= 0` de la spec 01, y el stock a RN-01 y al `CHECK` `current_stock >= 0`; y la cabecera lista RN-09 entre sus reglas | `backlog/US-03_catalogo_inventario.md` |
 | OBS-05 | TK-03.1 exige probar que un cambio de precio no afecta pedidos existentes (RN-03), pero solo depende de TK-01.1; la creación de pedidos llega en TK-05.3. El test necesitará pedidos insertados como datos de prueba | `backlog/US-03_catalogo_inventario.md`, TK-03.1 |
 
 ## 14. Diseño diferido a V2 (no implementable en el MVP)

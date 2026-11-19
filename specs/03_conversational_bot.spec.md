@@ -2,7 +2,7 @@
 
 | Estado | Cubre | Tickets |
 |---|---|---|
-| Aprobada v1.0 (Entrega 2). Fecha de aprobación: 2026-11-18. Decisiones D-01..D-12 y DP-01..DP-11 aprobadas (alternativa A) el 2026-11-18 | CH-01..CH-08 (partes `MVP`), CH-11, CL-02, CL-03 (consumo), RN-08 · lado chat de RN-02, RN-03, RN-04, RN-12 · Criterios: CA-03, CA-04, CA-05, CA-06, CA-07, CA-14, CA-15, CA-16 · V2: CH-03 (opción 3), CH-08 (reclamo), CH-09, CH-10 | `MVP`: TK-05.7, TK-05.1, TK-05.2, TK-05.4, TK-05.5, TK-05.6, TK-06.3 · relacionados: TK-02.4, TK-05.3 · `V2`: TK-06.6, TK-07.2 |
+| Aprobada v1.1 (Entrega 2). Fecha de aprobación: 2026-11-18. Historial: v1.0 aprobada el 2026-11-18; v1.1 incorpora la alineación de ESC-06 con la normalización aprobada en la spec 05 (OBS-06 de la spec 05). Decisiones D-01..D-12 y DP-01..DP-11 aprobadas (alternativa A) el 2026-11-18 | CH-01..CH-08 (partes `MVP`), CH-11, CL-02, CL-03 (consumo), RN-08 · lado chat de RN-02, RN-03, RN-04, RN-12 · Criterios: CA-03, CA-04, CA-05, CA-06, CA-07, CA-14, CA-15, CA-16 · V2: CH-03 (opción 3), CH-08 (reclamo), CH-09, CH-10 | `MVP`: TK-05.7, TK-05.1, TK-05.2, TK-05.4, TK-05.5, TK-05.6, TK-06.3 · relacionados: TK-02.4, TK-05.3 · `V2`: TK-06.6, TK-07.2 |
 
 **Fuentes.** [PRD](../docs/PRD.md) v1.2 · [ARCHITECTURE](../docs/ARCHITECTURE.md) · [`docs/openapi.yaml`](../docs/openapi.yaml) `info.version` 1.0.0 (estado provisional para chat y pedidos, ver OBS-03) · [spec 01](01_data_models.spec.md) Aprobada v1.1 · [spec 02](02_inventory_system.spec.md) · [backlog](../backlog/README.md) US-02 (`MVP`), US-05, US-06, US-07 (`V2`).
 
@@ -391,7 +391,7 @@ Nivel: **U** unidad (FSM con servicios simulados y reloj controlado) · **I** in
 | ESC-03 | Cliente inactivo del seed | Su teléfono | `startChatSession` | Igual que ESC-02 | CL-02, CA-06 · US-02 crit. 3 · TK-05.1, TK-05.5 | I, E |
 | ESC-04 | — | `abc`, `   ` | `startChatSession` | Igual que ESC-02 | RN-12 · US-02 crit. 2 · TK-05.1 | I |
 | ESC-05 | — | `phone` ausente o `""` | `startChatSession` | `VALIDATION_ERROR`; no se crea sesión | RN-12 · contrato · TK-05.1 | I |
-| ESC-06 | Fixtures de TK-02.4: clientes con teléfono nacional sin prefijo, con `+56` y con un prefijo internacional distinto de `+56` | Cada teléfono escrito como en el fixture; el número internacional escrito sin su prefijo | `startChatSession` | Los tres identifican a su cliente. El internacional sin prefijo recibe `+56`, no coincide y responde como ESC-02 | RN-12, CL-03 · US-02 crit. 1 · TK-02.4 | U, I |
+| ESC-06 | Fixtures de TK-02.4: clientes con teléfono nacional sin prefijo, con `+56` y con un prefijo internacional distinto de `+56` | Cada teléfono escrito como en el fixture; el número internacional escrito con su prefijo `+` explícito (por ejemplo, `+54 9 11 1234 5678`) | `startChatSession` | Los tres identifican a su cliente. El internacional conserva su prefijo (`+5491112345678`) y no recibe `+56`; los códigos de país solo se reconocen con `+` explícito (spec 05) | RN-12, CL-03 · US-02 crit. 1 · TK-02.4 | U, I |
 
 ### 10.2 Sesión (F-2)
 

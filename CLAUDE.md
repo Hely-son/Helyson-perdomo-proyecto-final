@@ -33,10 +33,10 @@ Cada dato vive en un solo archivo. Los demás lo referencian.
 | Archivo | Cubre | Estado |
 |---|---|---|
 | `specs/01_data_models.spec.md` | Entidades MVP, restricciones, índices, seed. Diseño conceptual V2 de `Claim` y `PurchaseOrder` | Aprobada v1.1 (Entrega 2) |
-| `specs/02_inventory_system.spec.md` | IN, RN-01/09/10 · V2: RP, RN-11 | Aprobada v1.1 (Entrega 2) |
-| `specs/03_conversational_bot.spec.md` | Sistema conversacional MVP: CH (FSM del chat, sesiones y su expiración CH-11), RN-08 | Aprobada v1.0 (Entrega 2), 2026-11-18 |
+| `specs/02_inventory_system.spec.md` | IN, RN-01/09/10 · V2: RP, RN-11 | Aprobada v1.2 (Entrega 2), 2026-11-18 |
+| `specs/03_conversational_bot.spec.md` | Sistema conversacional MVP: CH (FSM del chat, sesiones y su expiración CH-11), RN-08 | Aprobada v1.1 (Entrega 2), 2026-11-18 |
 | `specs/04_orders_claims.spec.md` | Pedidos y reclamos. Pedidos `MVP`: PE, RN-02/03/04/05 (confirmación, número y estados del pedido) · Reclamos `V2`: RE, RN-06/07 | Aprobada v1.0 (Entrega 2), 2026-11-18 |
-| `specs/05_operator_dashboard.spec.md` | AU, CL-02/03, RN-12, pantallas del operador · V2: CL-01 | Pendiente |
+| `specs/05_operator_dashboard.spec.md` | Clientes, normalización e identificación (CL-02/03, RN-12), acceso del operador (AU, CA-11, RNF-08) y estructura del dashboard (pantallas del operador) · V2: CL-01 | Aprobada v1.1 (Entrega 2), 2026-11-18 |
 
 ## Convenciones de código
 

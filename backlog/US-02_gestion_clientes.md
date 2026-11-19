@@ -34,9 +34,16 @@ En el MVP los clientes solo se cargan por seed (PRD §10). Esta historia aporta 
 Crear la función de normalización de RN-12 y, en `customers.service`, la consulta por teléfono de CL-03. No crea endpoints HTTP.
 
 **Hecho cuando:**
-- Tests unitarios de la normalización: separadores, número nacional sin prefijo, número con `+56`, número con otro prefijo internacional, prefijo no duplicado, entrada vacía e inválida.
+- La normalización sigue la spec 05 §6.1:
+  - elimina **solo** los separadores aprobados (espacio ASCII, guion `-`, punto `.` y paréntesis `(` `)`); cualquier otro carácter, o un `+` fuera de la primera posición, la invalida (DP-01);
+  - una entrada **sin `+`** es nacional y debe tener **exactamente nueve dígitos**: con nueve devuelve `+56` seguido de esos dígitos; con menos o con más es inválida y nunca se completan dígitos (DP-02, DP-03);
+  - un **`+` explícito** indica prefijo internacional y se conserva sin anteponer `+56`; no se infieren códigos de país sin `+` y `00` no es prefijo (DP-02).
+- Ante una entrada inválida, la función devuelve el motivo (vacía, faltan *n* dígitos, sobran dígitos, formato no admitido) para uso interno de la aplicación (spec 05 §6.3 B).
+- Tests unitarios de la normalización: cada separador aprobado; nueve dígitos nacionales; ocho y menos dígitos con la cantidad que falta; diez o más dígitos sin `+`; `+56` explícito sin un segundo `+56` (prefijo no duplicado); otro prefijo internacional con `+` conservado; `56…` y `00…` sin `+` rechazados; entrada vacía, solo espacios y caracteres no admitidos (spec 05 ESC-01..ESC-08, ESC-21).
 - Tests de integración de la consulta: cliente activo, cliente inactivo y teléfono inexistente. Los fixtures incluyen teléfonos escritos como número nacional sin prefijo internacional, con `+56` y con un prefijo internacional distinto de `+56` (spec 03, ESC-06).
-- La función es la misma que usan el seed (TK-00.4) y el chat (TK-05.1).
+- La función es la misma que usan el seed (TK-00.4) y el chat (TK-05.1). El backend revalida y normaliza todo teléfono recibido, aunque el simulador ya lo haya validado.
+- La identificación (CL-03) devuelve inválido, inexistente, inactivo o activo; con un teléfono inválido no consulta la base. El motivo del rechazo **no** se añade al contrato ni a la respuesta del chat: ante un teléfono inválido, inexistente o inactivo, el chat mantiene la respuesta genérica de la spec 03 (F-1, CL-02).
+- La validación local del simulador (prefijo fijo `+56`, aviso de dígitos que faltan o sobran y no envío de la petición; spec 05 §6.3 A) es del frontend del chat (TK-05.4), no de este ticket.
 
 ### TK-02.1 · [API] Endpoints de clientes
 **Fase:** `V2` · **Puntos:** 3 · **Depende de:** TK-01.1, TK-02.4 · **Spec:** specs/05_operator_dashboard.spec.md

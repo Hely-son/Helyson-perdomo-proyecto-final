@@ -69,6 +69,7 @@ Crear en `orders.service` la operación de crear un pedido a partir de los ítem
 
 **Hecho cuando:**
 - Si falla cualquier ítem, se revierte todo y se devuelve la lista de ítems afectados con su motivo: `STOCK_INSUFFICIENT`, `PRODUCT_INACTIVE` o `PRICE_CHANGED` con el precio vigente (RNF-03, CA-14, CA-15).
+- Cada ítem rechazado por `STOCK_INSUFFICIENT` incluye el stock disponible leído dentro de la transacción (spec 04, D-01). El motor conversacional utiliza ese valor en `RESOLVE_STOCK` para ofrecer ajustar la cantidad solicitada. Se verifica mediante pruebas de integración contra PostgreSQL para ESC-04 (stock disponible 1) y ESC-07 (rechazo con stock disponible), de la spec 04.
 - Ante un interbloqueo o conflicto de serialización (`P2034`), la transacción se reintenta entera hasta 3 veces.
 - Los tests de integración contra PostgreSQL cubren cada motivo de rechazo y verifican que, al rechazar, no existe el pedido ni cambia el stock de ningún producto.
 
@@ -93,8 +94,14 @@ Crear los estados del FSM para mostrar el resumen con los precios vigentes (guar
 Crear en `/chat` la interfaz estilo WhatsApp con Ant Design: ingreso de teléfono, burbujas de cliente y bot, campo de texto y botón para reiniciar la conversación.
 
 **Hecho cuando:**
-- La UI solo muestra lo que devuelve la API. No contiene lógica de flujo.
+- La UI solo muestra lo que devuelve la API. No contiene lógica de flujo; la única validación propia es la de formato del teléfono que se indica abajo.
 - Ante una sesión inválida o expirada muestra la respuesta de la API y permite iniciar una conversación nueva con el botón de reinicio.
+- Validación local del teléfono (spec 05 §6.3 A):
+  - el campo muestra `+56` como prefijo fijo y el cliente escribe solo los nueve dígitos nacionales;
+  - vacío: indica que debe ingresar el número; ocho dígitos: `Falta 1 dígito`; menos de nueve: cuántos dígitos faltan; más de nueve: que sobran dígitos;
+  - en esos casos **no** envía la petición a `startChatSession` y no completa dígitos;
+  - con nueve dígitos envía **solo esos nueve dígitos**, sin `+56`, así que el prefijo no se duplica; el backend aplica la normalización compartida con el seed (spec 05 §6.3 B; TK-02.4).
+- Estos mensajes son solo del campo del simulador: no son respuestas del bot ni errores HTTP. Ante un teléfono inválido que llegue directamente a la API, el backend mantiene la respuesta genérica de la spec 03 (F-1) sin exponer el motivo (spec 03 ESC-04; spec 05 ESC-01, ESC-21 para la normalización).
 
 ### TK-05.5 · [TEST] Concurrencia de la confirmación y E2E de compra
 **Fase:** `MVP` · **Puntos:** 5 · **Depende de:** TK-05.6, TK-05.4, TK-00.4 · **Spec:** specs/04_orders_claims.spec.md, specs/03_conversational_bot.spec.md

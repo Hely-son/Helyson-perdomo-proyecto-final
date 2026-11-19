@@ -39,6 +39,9 @@ Crear en `orders.service` la máquina de transiciones de RN-05 para el actor `OP
 - Una transición no permitida o una carrera perdida devuelve un error de dominio (409 vía API).
 - Hay tests unitarios para todas las combinaciones de estado × transición del operador.
 - Los tests de integración contra PostgreSQL cubren CA-12: cancelación desde `PROCESSING` con restitución, rechazo desde `DISPATCHED`, `DELIVERED` y `CANCELLED`, y cancelaciones repetidas en paralelo que restituyen el stock una sola vez.
+- La restitución de la cancelación actualiza los productos en orden ascendente de `productId`, y ante un interbloqueo o conflicto de serialización (`P2034`) la transacción de cancelación se reintenta entera hasta 3 veces, igual que la confirmación (spec 04, D-05).
+- Hay test de integración contra PostgreSQL de ESC-28 (spec 04): cancelar un pedido `PENDING` cuyo producto se desactivó después de confirmarse deja el pedido en `CANCELLED` y aumenta el stock del producto, que sigue inactivo y fuera de las alertas.
+- Hay test de concurrencia contra PostgreSQL de ESC-29 (spec 04): la cancelación de un pedido con A y B en paralelo con la confirmación de otro pedido con B y A termina sin interbloqueo ni error interno, y el stock final es el inicial más lo restituido menos lo confirmado.
 
 ### TK-06.2 · [API] Endpoints de pedidos para el operador
 **Fase:** `MVP` · **Puntos:** 3 · **Depende de:** TK-06.1, TK-01.1 · **Spec:** specs/04_orders_claims.spec.md
@@ -48,6 +51,7 @@ Crear `GET /orders` con filtro por estado, paginación y orden por fecha de crea
 **Hecho cuando:**
 - El detalle incluye el cliente, los ítems y el total.
 - El listado no se ordena por `order_number` (spec 01).
+- El listado se ordena por `createdAt` descendente y, a igualdad de fecha, por `id` descendente, de forma determinista (spec 04, DP-01). Hay test de integración de ESC-32 (spec 04) con dos pedidos de igual `createdAt`.
 - Hay tests de integración del filtro, del detalle y de los códigos de error del cambio de estado.
 
 ### TK-06.3 · [API] "Mis pedidos" en el chat
@@ -57,6 +61,7 @@ Crear los estados del FSM para pedir el número de orden y mostrar el pedido (CH
 
 **Hecho cuando:**
 - La búsqueda filtra por el cliente de la sesión (RN-08).
+- Antes de buscar, el FSM elimina los espacios al inicio y al final del número recibido y lo convierte a mayúsculas. El servicio localiza el pedido por igualdad exacta con el número completo (`order_number`), sin búsquedas parciales ni solo por dígitos: `42` no encuentra `MED-00042` (spec 03, DP-10; spec 04, D-08). Hay test unitario de ESC-41 (spec 03): ` med-00042 ` muestra el pedido propio; `42`, `MED-99999` y `hola` reciben "Pedido no encontrado".
 - La respuesta muestra número, estado, ítems y total, sin información de reclamos.
 - No ofrece cancelar el pedido (CH-09 es `V2`).
 - Hay tests unitarios del pedido propio, del ajeno y del inexistente.

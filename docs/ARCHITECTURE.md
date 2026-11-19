@@ -162,7 +162,7 @@ Una sola SPA con dos áreas:
 | Base de datos | PostgreSQL 16 en todos los entornos | Un solo motor (RNF-01): las pruebas de concurrencia validan el mismo comportamiento que producción. |
 | Autenticación | JWT + bcrypt | Stateless, suficiente para un único rol (AU-02). |
 | Contrato API | OpenAPI 3 (`docs/openapi.yaml`) | Contrato único y versionado (RNF-02). |
-| Testing | Jest + Supertest · Playwright | Unit e integración de la API contra PostgreSQL real. E2E de los criterios `CA-` del MVP. |
+| Testing | Jest + Supertest · Jest · Playwright | Jest + Supertest: unit e integración de la API contra PostgreSQL real. Jest: unit de la lógica del frontend, sin renderizar componentes. Playwright: E2E de los criterios `CA-` del MVP. |
 | Contenedores | Docker Compose | Entorno local y despliegue de la entrega reproducibles (RNF-05). |
 | CI | GitHub Actions | Lint, typecheck y tests en cada push y pull request contra PostgreSQL real (RNF-06). |
 | Metodología | SDD con Claude Code | Specs aprobadas antes de generar código (ver [CLAUDE.md](../CLAUDE.md)). Uso de IA registrado en `PROMPTS.md` (RNF-09). |
