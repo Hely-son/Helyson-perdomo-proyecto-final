@@ -32,6 +32,30 @@ Crear `backend/` con Express + TypeScript, organizado en capas y módulos (RNF-0
 - La configuración se lee de variables de entorno y se valida al arrancar, incluidas `DATABASE_URL`, la clave JWT, `JWT_EXPIRES_IN` y `CHAT_SESSION_TTL_MINUTES`. Existe `.env.example` sin valores reales (RNF-08).
 - `GET /api/v1/health` responde 200.
 
+**Decisiones de implementación** (aprobadas por el usuario el 2026-11-19, puerta 1 de TK-00.1):
+- **Stack:** Node.js 26.x LTS (`engines`), TypeScript 6.0.x, Express 5.x, Zod 4.6.7, Jest 30.x + ts-jest 29.4.x + Supertest 7.x, ESLint 10.x + typescript-eslint 8.x, tsx 4.x, CommonJS. Dependencias directas con versión exacta en `package.json` y `package-lock.json`. Sin dotenv: `--env-file-if-exists=../.env`, de modo que si falta el archivo la validación decide.
+- **Archivos en la raíz:** `.env.example` y un `.gitignore` mínimo que ignora `.env` y `.env.*`, excepto `.env.example`, además de `node_modules/` y las salidas de build y cobertura.
+- **Variables:**
+  - `DATABASE_URL`: obligatoria, con esquema `postgres://` o `postgresql://`. Solo se valida el formato, no la conexión.
+  - `JWT_SECRET`: obligatoria, de al menos 32 bytes UTF-8.
+  - `JWT_EXPIRES_IN`: opcional, `8h` por defecto. Formato `^[1-9]\d*[smhd]$`.
+  - `CHAT_SESSION_TTL_MINUTES`: opcional, 30 por defecto. Entero positivo.
+  - `PORT`: opcional, 3000 por defecto. Entero de 1 a 65535.
+  - Una variable opcional vacía cuenta como ausente; una obligatoria vacía es inválida.
+- **Errores de configuración:** un solo error nombra todas las variables inválidas, sin mostrar sus valores. Los valores de `JWT_SECRET` y `DATABASE_URL` nunca aparecen en errores, logs ni respuestas. Con configuración inválida, el proceso termina con error antes de escuchar.
+- **`.env.example`:** solo las cinco variables anteriores. `JWT_SECRET` va vacío; `DATABASE_URL` lleva un ejemplo sin credenciales reales. Las variables del operador del seed las agrega TK-00.4 (ESC-51).
+- **Errores HTTP**, solo con los códigos del contrato y exactamente `{ error: { code, message } }`:
+  - Cuerpo que no es JSON válido, y cualquier otro fallo del parser (incluido un cuerpo demasiado grande): 400 `MALFORMED_REQUEST`.
+  - JSON válido, aunque sea primitivo, que no cumple el esquema: 422 `VALIDATION_ERROR`. El middleware valida cuerpo, query y parámetros de ruta.
+  - Ruta o método inexistente: 404 `NOT_FOUND`.
+  - Error no controlado, síncrono o asíncrono: 500 `INTERNAL_ERROR`, con mensaje genérico, sin stack ni el mensaje original.
+- **Diseño para pruebas:**
+  - `loadConfig(env)` recibe el entorno como parámetro.
+  - `createApp()` construye la aplicación sin escuchar.
+  - `validate(schema)` es el middleware de Zod.
+  - `createApp` acepta un router opcional que solo usan las pruebas. `server.ts` nunca lo monta.
+- **Verificaciones posteriores, no cumplidas en este ticket:** las pruebas contra PostgreSQL (TK-00.3, TK-00.5) y la ejecución en CI (TK-00.7).
+
 ### TK-00.2 · [INFRA] Proyecto frontend
 **Fase:** `MVP` · **Puntos:** 2 · **Depende de:** — · **Spec:** docs/ARCHITECTURE.md
 

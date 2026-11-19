@@ -93,4 +93,14 @@ El responsable sale de la capa del ticket. Si el contenido no coincide con la ca
 npx @redocly/cli@2.73.0 lint docs/openapi.yaml   # valida el contrato OpenAPI (TK-00.8)
 ```
 
-Todavía no hay código. Completar esta sección al crear `backend/`, `frontend/` y `docker-compose.yml` (TK-00.1, TK-00.2, TK-00.6).
+Backend (`cd backend`). Requiere Node 26 (p. ej. `nvm use 26`). `dev` carga `../.env`: copiar `.env.example` a `.env` en la raíz.
+
+```bash
+npm ci              # instala dependencias exactas del lockfile (primera vez)
+npm run dev         # servidor con recarga
+npm test            # Jest
+npm run lint        # ESLint
+npm run typecheck   # tsc --noEmit
+```
+
+Frontend y Docker se documentarán en TK-00.2 y TK-00.6.
