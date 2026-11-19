@@ -18,7 +18,7 @@ Seguimiento operativo del MVP. Solo registra estado: la definición de cada tick
 | Ticket | Estado | Responsable actual | Commit | Aprobación humana |
 |---|---|---|---|---|
 | TK-00.8 | Hecho | — | `1cc966d`, `d646368` | 2026-11-18 |
-| TK-00.1 | Pendiente de aprobación humana | usuario (revisión final; SEC-01 corregido y verificado por QA y seguridad) | — | Inicio: 2026-11-19 |
+| TK-00.1 | Hecho | — | `c0e2423` | 2026-11-19 |
 | TK-00.2 | Pendiente | — | — | — |
 | TK-00.6 | Pendiente | — | — | — |
 | TK-00.3 | Pendiente | — | — | — |
