@@ -4,6 +4,8 @@ Cada archivo `US-XX` contiene la historia de usuario, sus criterios de aceptaci�
 
 Cada historia, criterio y ticket lleva la fase del PRD: `MVP` (se implementa en este ciclo) o `V2` (documentado, no se implementa). Los tickets `V2` conservan su definición como referencia y se volverán a planificar (dependencias, tests y estimación) cuando V2 se priorice.
 
+El seguimiento operativo (estado de cada ticket `MVP`, responsable, commit y aprobación humana, y avance de implementación de cada spec) vive en [TRACKER.md](TRACKER.md). Los archivos de historias no registran estado.
+
 ## Resumen
 
 | Orden | Historia | Fase | Requisitos | Depende de | Puntos MVP | Puntos V2 |

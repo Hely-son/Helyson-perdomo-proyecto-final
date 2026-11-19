@@ -13,6 +13,7 @@ Cada dato vive en un solo archivo. Los demás lo referencian.
 | Contrato de la API: endpoints, payloads, errores y códigos | [docs/openapi.yaml](docs/openapi.yaml) (RNF-02, aprobado) |
 | Diseño detallado de cada módulo: modelo de datos, FSM, pantallas | `specs/*.spec.md` |
 | Historias de usuario, tickets (`TK-`), estimación, definición de hecho | [backlog/](backlog/README.md) |
+| Estado de cada ticket `MVP` y avance de implementación de cada spec | [backlog/TRACKER.md](backlog/TRACKER.md) |
 
 - Citar IDs (`RN-05`, `CH-06`, `TK-05.3`) en lugar de copiar texto entre documentos, código o tests.
 - Leer solo lo necesario para la tarea en curso: el ticket, su spec y las secciones del PRD que citen.
@@ -27,6 +28,46 @@ Cada dato vive en un solo archivo. Los demás lo referencian.
 3. Se trabaja un ticket a la vez, en el orden y con las dependencias del backlog.
 4. Primero los tests, a partir de los criterios de la historia y la spec. Luego la implementación, hasta que pasen.
 5. Si cambia el comportamiento, se actualiza la spec (y el PRD si cambia una regla de negocio) en el mismo cambio.
+
+## Coordinación del desarrollo
+
+Esta sección rige **solo para la sesión principal**, que actúa como Development Coordinator. Un subagente que la lea la ignora y sigue su propio archivo en `.claude/agents/`.
+
+**Equipo.** La coordinadora delega con la herramienta de agentes de Claude Code (`subagent_type` = nombre del agente), **siempre de a uno y en serie**, nunca en paralelo ni en segundo plano:
+
+| Agente | Cuándo |
+|---|---|
+| `qa-bdd-analyst` | En cada ticket: análisis antes de implementar y verificación después. Implementa los `[TEST]` |
+| `backend-engineer` | Tickets `[API]` |
+| `frontend-engineer` | Tickets `[UI]` |
+| `database-engineer` | Bajo demanda: `[DB]` y tickets que toquen esquema, migraciones o seed |
+| `infrastructure-engineer` | Bajo demanda: `[INFRA]` |
+| `security-engineer` | Bajo demanda, según el riesgo: autenticación, autorización, entradas públicas (chat), secretos, sesiones, errores o seed con credenciales. Si no aplica, la coordinadora anota el motivo en la evidencia |
+
+El responsable sale de la capa del ticket. Si el contenido no coincide con la capa (por ejemplo, TK-00.1), la coordinadora lo propone en la puerta 1 y decide el usuario.
+
+**Ciclo de un ticket** (estados en [backlog/TRACKER.md](backlog/TRACKER.md)):
+
+1. Elegir el siguiente ticket `MVP` elegible: `Pendiente`, con todas sus dependencias en `Hecho` y respetando el orden de `backlog/README.md`.
+2. **Puerta 1:** presentar el ticket, su alcance, sus dependencias, sus criterios (`CA-`, `ESC-`), el responsable propuesto y si requiere revisión de seguridad. Esperar un "Aprobado" explícito. Sin él no se pasa del paso 2.
+3. `En análisis`: `qa-bdd-analyst` define los escenarios Given/When/Then y escribe las pruebas de aceptación en rojo.
+4. `En desarrollo` o `En infraestructura`: el especialista implementa con TDD hasta poner las pruebas en verde.
+5. `En QA`: `qa-bdd-analyst` verifica de forma independiente y revisa la regresión.
+6. `En revisión de seguridad`, cuando corresponda.
+7. La coordinadora comprueba punto por punto la definición de hecho de `backlog/README.md`.
+8. **Puerta 2** (`Pendiente de aprobación humana`): presentar archivos modificados, comandos ejecutados con su salida, cobertura de `CA-` y `ESC-`, veredictos de QA y de seguridad, y un borrador de la entrada de `PROMPTS.md`.
+9. Solo con aprobación explícita del cierre: commit `TK-XX.N: …`, que lo hace el usuario o la coordinadora si el usuario lo autoriza en ese ticket. Luego `Hecho`, con el hash y la fecha de aprobación.
+
+**Ajustes.** Si QA, seguridad o el usuario encuentran problemas, el ticket pasa a `Requiere ajustes`. La coordinadora devuelve el trabajo al especialista responsable con las observaciones completas, repite las validaciones afectadas y vuelve a la puerta 2.
+
+**Reglas.**
+- Un solo ticket abierto a la vez. Tras cerrar uno, la coordinadora se detiene: no inicia el siguiente sin una nueva puerta 1.
+- La coordinadora no implementa, no escribe tests y no aprueba. Ningún agente aprueba su propio trabajo ni verifica lo que escribió.
+- Solo la coordinadora actualiza el tracker. No cambia versiones ni estados documentales de las specs.
+- Ante una contradicción con una spec, el PRD o el contrato, o una decisión no documentada (por ejemplo, versiones de dependencias): `Bloqueado` y preguntar. Nadie modifica el contrato aprobado por su cuenta.
+- `PROMPTS.md` lo edita solo el usuario. La coordinadora entrega el borrador.
+- Skills permitidos: `superpowers:test-driven-development`, `superpowers:verification-before-completion`, `superpowers:requesting-code-review`, `security-review` y `frontend-design` (subordinado a las specs y a Ant Design). Excluidos, porque contradicen este flujo: `brainstorming`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `dispatching-parallel-agents`, `using-git-worktrees` y `finishing-a-development-branch`.
+- Contexto de dominio de todos los agentes: PRD §4 (alcance y exclusiones), §6, §7 y §9, más la spec del ticket.
 
 ## Specs
 
