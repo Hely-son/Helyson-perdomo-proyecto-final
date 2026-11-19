@@ -2875,13 +2875,713 @@ No modifiques otros tickets, no inicies TK-00.2 y no realices push.
 ```
 **Qué salió:** El coordinador actualizó exclusivamente `backlog/TRACKER.md`, registrando TK-00.1 como `Hecho`, con el commit de implementación `c0e2423` y la fecha 2026-11-19. El cierre quedó registrado en el commit `6f0a70f`. El ticket finalizó y TK-00.2 permaneció sin iniciar.
 
-## Resultado de TK-00.1
+### Prompt 2.D.17: Evaluar la elegibilidad del siguiente ticket
 
-El ticket se completó mediante un flujo coordinado de agentes especializados y decisiones humanas:
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+TK-00.1 ya fue cerrado y aprobado. Analiza el estado actual del backlog y determina cuál es el siguiente ticket elegible para implementación.
+Para el siguiente ticket:
+- Comprueba su estado y sus dependencias.
+- Revisa su descripción, alcance y criterios de aceptación.
+- Identifica los documentos y especificaciones que lo respaldan.
+- Determina si existen decisiones técnicas pendientes.
+- No comiences la implementación ni modifiques archivos.
+Quiero que primero presentes el análisis de elegibilidad y las condiciones necesarias para iniciar el trabajo.
+```
+**Qué salió:** El coordinador identificó TK-00.2, `[INFRA] Proyecto frontend`, como el siguiente ticket elegible después de TK-00.1. El ticket estaba pendiente, no tenía dependencias bloqueantes y correspondía al siguiente elemento del backlog. El coordinador no inició la implementación: presentó el análisis para revisión humana.
 
-- El coordinador evaluó la elegibilidad y organizó la ejecución.
-- `qa-bdd-analyst` preparó y validó los escenarios de prueba.
-- `backend-engineer` implementó el backend y ejecutó las correcciones autorizadas.
-- `security-engineer` realizó la revisión independiente de seguridad.
-- El usuario aprobó las alternativas, aceptó riesgos y autorizó las acciones relevantes.
-- El coordinador mantuvo la trazabilidad de las delegaciones, resultados y cierre.
+### Prompt 2.D.18: Preparar la validación funcional antes de implementar
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Antes de delegar la implementación de TK-00.2, quiero que preparemos una validación independiente de su alcance.
+Pasa el ticket a análisis y delega a `qa-bdd-analyst` la elaboración de escenarios de aceptación.
+El agente QA debe:
+- Revisar el ticket y las especificaciones aprobadas.
+- Identificar los criterios funcionales relacionados.
+- Preparar escenarios Given/When/Then.
+- Detectar ambigüedades, dependencias y condiciones que todavía no se pueden verificar.
+- Establecer una línea base de lo que existe antes de implementar.
+No delegues todavía a `frontend-engineer`. No modifiques código ni cierres el ticket.
+Presenta el resultado de QA para que podamos revisar los escenarios antes de tomar decisiones técnicas.
+```
+**Qué salió:**El coordinador pasó TK-00.2 a `En análisis` y asignó la responsabilidad a `qa-bdd-analyst`. El agente QA preparó 25 escenarios Given/When/Then, incluyendo la cobertura de los criterios del ticket y de ESC-40, ESC-45, ESC-49 y ESC-50. Como el directorio `frontend/` todavía no existía, los escenarios quedaron inicialmente sin cumplimiento. Se estableció así una línea base independiente para comparar la implementación posterior.
+
+### Prompt 2.D.19: Revisar los escenarios y delimitar el alcance funcional
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Presenta los 25 escenarios preparados por QA y analiza su relación con el alcance real de TK-00.2.
+Necesito que distingas:
+- Qué comportamiento corresponde al scaffold inicial del frontend.
+- Qué comportamiento depende de la autenticación y gestión de sesión.
+- Qué comportamiento requiere un entorno de pruebas automatizadas.
+- Qué comportamiento pertenece a la infraestructura de despliegue.
+Revisa especialmente ESC-40, ESC-45, ESC-49 y ESC-50.
+No amplíes TK-00.2 para incorporar funcionalidades que pertenecen a otros tickets. Presenta las dependencias y los escenarios que solo podrán completarse en etapas posteriores.
+```
+**Qué salió:** Se delimitó el alcance entre varios tickets:
+- TK-00.2: estructura del frontend, rutas, layout provisional, menú, cliente API, configuración de entorno y proxy.
+- TK-01.2: login, sesión, protección de rutas y cierre de sesión real.
+- TK-00.5: infraestructura de pruebas automatizadas y cobertura E2E.
+- TK-00.6: Docker y configuración de despliegue.
+- TK-00.7: integración continua.
+También se determinó que TK-00.2 no debía incorporar rutas ni entradas de menú de funcionalidades V2.
+
+### Prompt 2.D.20: Resolver las decisiones de arquitectura del frontend
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Con los escenarios de QA como referencia, prepara las decisiones técnicas necesarias para implementar TK-00.2.
+Quiero revisar explícitamente:
+- Stack de frontend y compatibilidad entre versiones.
+- Organización de rutas y navegación.
+- Comportamiento provisional de las rutas desconocidas.
+- Estructura del layout y menú.
+- Configuración de variables de entorno.
+- Comunicación con el backend.
+- Estrategia de proxy durante desarrollo.
+- Comandos de desarrollo, build, lint y typecheck.
+- Alcance de las pruebas automatizadas.
+- Necesidad o no de una revisión de seguridad independiente.
+Distingue las decisiones que requieren aprobación humana de las recomendaciones técnicas. No instales dependencias ni modifiques archivos todavía.
+```
+**Qué salió:** El coordinador presentó las decisiones D1–D10 y las observaciones OBS-01 a OBS-09 identificadas durante el análisis de QA.
+Entre las decisiones principales quedaron:
+- Implementación a cargo de `frontend-engineer` y validación independiente a cargo de `qa-bdd-analyst`.
+- No incorporar un test runner en TK-00.2; trasladar la automatización a TK-00.5.
+- Mantener una configuración tipada de rutas y menú.
+- Redirigir temporalmente las rutas desconocidas a `/dashboard`.
+- Mantener las opciones del menú con los textos exactos: Inicio, Productos, Pedidos y Cerrar sesión.
+- Usar `VITE_API_BASE_URL`, con `/api/v1` como valor por defecto.
+- Configurar el proxy de Vite hacia `localhost:3000`.
+- Utilizar un cliente HTTP liviano basado en `fetch`, sin Axios.
+- Documentar los comandos del frontend en `CLAUDE.md`.
+- No requerir una revisión de seguridad independiente para este ticket, según D10.
+Las decisiones quedaron pendientes de aprobación humana.
+
+### Prompt 2.D.21: Revisar las observaciones y aprobar el alcance
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Revisa las observaciones OBS-01 a OBS-09 presentadas por QA y relaciónalas con las decisiones D1–D10.
+Quiero que las condiciones de implementación sean explícitas:
+- Las dependencias deben tener versiones exactas, sin rangos `^` ni `~`.
+- Debe existir un comando de typecheck.
+- La ausencia de pruebas automatizadas debe quedar registrada como excepción del ticket, no como cumplimiento.
+- `frontend/dist/` debe quedar ignorado por Git.
+- Vite debe utilizar un puerto definido y `strictPort`.
+- El comportamiento provisional de `/` y las rutas desconocidas debe quedar documentado.
+- El menú debe conservar los textos aprobados.
+- ESC-40, ESC-45 y ESC-49 no deben declararse completamente satisfechos si quedan pruebas o funcionalidades pendientes.
+- Debe documentarse la consideración de CORS cuando se configure una URL externa.
+Si no existen contradicciones, presenta el conjunto final de decisiones para mi aprobación. No implementes todavía.
+```
+**Qué salió:**Se consolidaron las decisiones técnicas y las nueve observaciones de QA como condiciones de implementación.
+Se acordó que los escenarios que no pudieran automatizarse en TK-00.2 debían conservar su estado parcial y sus dependencias futuras. También se estableció que el proxy de desarrollo utilizaría el backend local y que la configuración de entorno no debía introducir secretos en el bundle.
+
+### Prompt 2.D.22: Verificar las dependencias antes de instalarlas
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Antes de autorizar la instalación de dependencias, delega a `frontend-engineer` una comprobación de compatibilidad del stack aprobado.
+La verificación debe realizarse fuera del repositorio del proyecto, en un entorno temporal.
+Debe comprobar:
+- Disponibilidad de las versiones exactas.
+- Compatibilidad entre React, React DOM y sus tipos.
+- Compatibilidad de TypeScript con ESLint y typescript-eslint.
+- Compatibilidad de Vite con su plugin de React.
+- Compatibilidad de React Router con React 18.
+- Compatibilidad de Ant Design con React 18.
+- Funcionamiento de instalación, lockfile, `npm ci`, build, lint y typecheck.
+- Dependencias transitivas e incompatibilidades.
+Presenta las versiones concretas y los resultados antes de instalar nada en el proyecto.
+No modifiques el repositorio.
+```
+**Qué salió:** El coordinador delegó la comprobación a `frontend-engineer`. El especialista probó conjuntamente las 17 dependencias propuestas utilizando Node 26.13.1 y npm 11.20.0. La instalación, `npm ci`, `tsc -b`, `vite build` y `eslint .` finalizaron correctamente. También comprobó que `npm ls` no presentaba dependencias inválidas o incompatibles.
+La comprobación permitió detectar restricciones importantes de compatibilidad antes de introducir el stack en el proyecto.
+
+### Prompt 2.D.23: Evaluar incompatibilidades y decisiones sobre dependencias
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Presenta los resultados de la verificación de dependencias y explícame las incompatibilidades detectadas.
+Quiero revisar especialmente:
+- La versión de Ant Design compatible con React 18.
+- La versión de React Router compatible con React 18.
+- La versión de TypeScript compatible con typescript-eslint.
+- La necesidad de `skipLibCheck`.
+- Los scripts de instalación que npm bloquea por no estar aprobados.
+- El tamaño del bundle y sus advertencias.
+- La versión de Node requerida.
+- La necesidad de `@types/node` para la configuración de Vite.
+- La justificación de cada dependencia de desarrollo.
+No cambies versiones por tu cuenta. Presenta alternativas y consecuencias para que pueda decidir.
+```
+**Qué salió:** Se evaluaron las siguientes decisiones:
+
+- Ant Design 5.29.3, porque Ant Design 6 presentaba incompatibilidades de tipos con React 18.
+- React Router 7.18.6, compatible con React 18, utilizando `react-router`.
+- TypeScript 6.0.3, porque TypeScript 7 no era compatible con typescript-eslint 8.73.0.
+- `skipLibCheck: true`, para omitir la comprobación de declaraciones de terceros sin desactivar el chequeo del código propio.
+- Node 26.x como versión requerida.
+- `@types/node` 26.6.6 para resolver los tipos de `node:path` utilizados por Vite.
+- Aceptar temporalmente la advertencia de bundle superior a 500 kB.
+- No aprobar el script de instalación de `fsevents`; registrar su seguimiento para TK-00.6 y TK-00.7.
+La comprobación también confirmó la inclusión de `@eslint/js` y la justificación de `globals`.
+
+### Prompt 2.D.24: Aprobar las versiones y autorizar la implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Apruebo las 17 dependencias y sus versiones exactas, junto con las decisiones R1–R8 y las decisiones adicionales presentadas.
+Confirma que la implementación respetará lo siguiente:
+- React 18.3.1 y React DOM 18.3.1.
+- TypeScript 6.0.3.
+- Vite 8.3.8 y su plugin de React 6.3.0.
+- Ant Design 5.29.3.
+- React Router 7.18.6.
+- ESLint 10.15.0 y el conjunto de plugins aprobado.
+- `@types/node` 26.6.6.
+- Node 26.x y registro de la versión de npm.
+- Versiones exactas, sin `^` ni `~`.
+- Lockfile obligatorio y verificación mediante `npm ci`.
+El script de instalación de `fsevents` no está aprobado. Si aparece una acción de instalación adicional que requiera autorización, detente y consúltame.
+Una vez confirmadas estas condiciones, autorizo la implementación de TK-00.2 por `frontend-engineer`.
+```
+**Qué salió:** El coordinador registró la aprobación de las dependencias y las decisiones técnicas. TK-00.2 pasó a `En desarrollo`, con `frontend-engineer` como responsable de implementación. La autorización mantuvo las restricciones de alcance y las condiciones de instalación previamente acordadas.
+
+### Prompt 2.D.25: Delegar la implementación del frontend
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Delega la implementación de TK-00.2 a `frontend-engineer`, utilizando exclusivamente las decisiones aprobadas y los escenarios de QA como referencia.
+La implementación debe contemplar:
+- Scaffold de React, TypeScript y Vite.
+- Configuración de rutas y navegación.
+- Layout base y menú provisional.
+- Pantallas correspondientes a las rutas MVP.
+- Cliente API centralizado con `fetch`.
+- Configuración de `VITE_API_BASE_URL`.
+- Proxy de desarrollo hacia el backend.
+- Scripts de desarrollo, build, lint y typecheck.
+- Configuración de TypeScript, ESLint y Vite.
+- Lockfile y versiones exactas.
+Restricciones:
+- No incorporar funcionalidades de autenticación ni gestión de sesión.
+- No crear rutas ni menús V2.
+- No incorporar un test runner.
+- No modificar backend, especificaciones ni documentación fuera de los archivos expresamente autorizados.
+- No realizar commits ni push.
+- No leer, modificar ni incorporar `PROMPTS.md`.
+Si aparece una discrepancia técnica que requiera una decisión nueva, detente y preséntamela antes de continuar.
+```
+**Qué salió:** El coordinador delegó la implementación al especialista frontend. Se construyeron los 21 archivos del proyecto frontend, además de los cambios autorizados en `.env.example`, `.gitignore` y la sección de comandos de `CLAUDE.md`.
+El especialista utilizó Node 26.13.1 y npm 11.20.0, generó el lockfile y comprobó la instalación desde cero.
+La aplicación incorporó las rutas MVP, el layout provisional, el menú aprobado, las pantallas iniciales, el cliente API y el proxy de desarrollo.
+No se incorporaron autenticación, sesión, rutas V2 ni pruebas automatizadas.
+
+### Prompt 2.D.26: Resolver el comportamiento de la URL base vacía
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Durnte la revisión de la implementación se identificó un detalle en la configuración de `VITE_API_BASE_URL`.
+El operador de fallback utiliza `??`, por lo que una variable definida como cadena vacía no activa el valor por defecto.
+Analiza el problema y presenta una corrección mínima que permita utilizar `/api/v1` tanto cuando la variable no existe como cuando está vacía, sin alterar los valores personalizados válidos.
+No modifiques el código hasta presentar la solución y solicitar mi aprobación.
+```
+**Qué salió:** El coordinador presentó el problema y propuso utilizar `||` en lugar de `??` para resolver el fallback.
+Se aprobó el cambio.
+`frontend-engineer` modificó una línea en `frontend/src/api/client.ts` y comprobó los siguientes casos:
+- Variable ausente: `/api/v1`.
+- Variable vacía: `/api/v1`.
+- Variable `/api/v1`: se conserva.
+- Variable personalizada: se conserva.
+Typecheck, lint y build volvieron a pasar.
+
+### Prompt 2.D.27: Solicitar validación independiente de la implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+La implementación de TK-00.2 está terminada. Antes de preparar su cierre, delega la validación independiente a `qa-bdd-analyst`.
+El agente debe:
+- Ejecutar los escenarios preparados antes de la implementación.
+- Verificar instalación y dependencias.
+- Comprobar build, lint y typecheck.
+- Revisar las rutas y el menú en navegador.
+- Validar el proxy contra el backend real.
+- Comprobar la configuración de entorno y que no se expongan secretos.
+- Revisar que no se hayan incorporado funcionalidades fuera del alcance.
+- Comprobar que el backend no haya sufrido modificaciones.
+La validación debe ser independiente: QA no debe modificar el código del implementador.
+Solicita un informe con evidencias, escenarios aprobados, parciales, defectos y observaciones. No cierres el ticket.
+```
+**Qué salió:** El coordinador pasó TK-00.2 a `En QA` y asignó la validación a `qa-bdd-analyst`.
+El especialista ejecutó las comprobaciones de forma independiente y emitió un informe con el veredicto **Aprobado con observaciones**.
+No encontró defectos bloqueantes. Confirmó el funcionamiento de las rutas, el menú, el proxy, el build, lint y typecheck, además de la ausencia de secretos en el bundle.
+También verificó que los 72 tests del backend continuaban pasando.
+### Prompt 2.D.28: Evaluar el informe de QA y aceptar sus observaciones
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Presenta y analiza el informe de `qa-bdd-analyst`.
+Necesito distinguir:
+- Escenarios aprobados.
+- Escenarios parciales por alcance.
+- Escenarios verificados mediante métodos alternativos.
+- Observaciones no bloqueantes.
+- Excepciones aprobadas durante el diseño.
+- Trabajo que debe trasladarse a otros tickets.
+No conviertas una cobertura parcial en cumplimiento completo.
+Considera que:
+- El tamaño del bundle fue aceptado en R6.
+- La ausencia de favicon y el comportamiento del menú en pantallas estrechas quedan fuera del alcance aprobado.
+- Las observaciones O-4 y O-5 fueron resueltas.
+- QA-00.2-14 utilizó un método alternativo porque el cliente HTTP no es importado por ninguna pantalla y Vite lo elimina del bundle.
+Presenta tu recomendación, pero no cierres el ticket ni modifiques el tracker sin mi autorización.
+```
+**Qué salió:**
+El informe de QA registró 22 escenarios aprobados y tres parciales:
+- QA-00.2-08, relacionado con ESC-40.
+- QA-00.2-11, relacionado con ESC-49.
+- QA-00.2-14, relacionado con la verificación del valor por defecto del cliente HTTP.
+Para QA-00.2-14, el especialista compiló el cliente HTTP de forma aislada y comprobó los distintos valores de configuración. El método alternativo fue aceptado, sin forzar la inclusión del cliente en el bundle de la aplicación.
+
+### Prompt 2.D.29: Revisar la Definition of Done antes del cierre
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Antes de preparar el paquete de cierre, revisa la Definition of Done de `backlog/README.md` punto por punto contra la evidencia de implementación y QA.
+Distingue claramente:
+- Criterios cumplidos.
+- Criterios parcialmente cubiertos.
+- Criterios no aplicables.
+- Excepciones aprobadas.
+- Pendientes que corresponden a otros tickets.
+No asumas que la aprobación de QA equivale automáticamente al cumplimiento completo de la Definition of Done.
+Si encuentras un criterio obligatorio que no esté cubierto por las excepciones aprobadas, detente y explícame la discrepancia.
+No modifiques archivos, no hagas commits y no cierres el ticket durante esta revisión.
+**Qué salió:**
+```
+La revisión identificó que el punto 2 de la Definition of Done tenía dos aspectos diferentes:
+- Las pruebas de unidad e integración y los criterios automatizados estaban exceptuados por D3/OBS-03 y quedaban pendientes de TK-00.5.
+- Lint y typecheck pasaban localmente, pero todavía no podían ejecutarse en CI porque la infraestructura de integración continua correspondía a TK-00.7.
+El coordinador detectó que la excepción de D3/OBS-03 no cubría explícitamente la ejecución en CI y solicitó una decisión humana antes de preparar el cierre.
+
+### Prompt 2.D.30: Aprobar la excepción de CI y autorizar el seguimiento
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Apruebo ampliar explícitamente la excepción del punto 2 de la Definition of Done para TK-00.2.
+El estado debe quedar documentado así:
+- Tests de unidad e integración: exceptuados por D3/OBS-03, pendientes de TK-00.5.
+- Lint local: cumplido.
+- Typecheck local: cumplido.
+- Lint y typecheck en CI: pendientes de TK-00.7.
+No marques el punto 2 completo como cumplido. La excepción de CI es distinta de la excepción de pruebas y se limita a TK-00.2.
+También autorizo los cambios correspondientes en `backlog/TRACKER.md`:
+- Pasar TK-00.2 a `Pendiente de aprobación humana`.
+- Registrar la cobertura parcial de ESC-40, ESC-45 y ESC-49.
+- Registrar la futura verificación de QA-00.2-14 en el build de la aplicación cuando alguna pantalla utilice el cliente HTTP.
+- Registrar la ejecución de lint y typecheck del frontend y backend en TK-00.7.
+Después de modificar el tracker, presenta el diff exacto y el paquete de cierre.
+No realices commits, push ni cierres el ticket.
+```
+**Qué salió:** El coordinador actualizó exclusivamente `backlog/TRACKER.md`, dejando TK-00.2 en `Pendiente de aprobación humana` y registrando los seguimientos correspondientes. La revisión confirmó que no se modificaron otros archivos durante esta etapa.
+
+### Prompt 2.D.31: Corregir la presentación de la cobertura funcional y QA
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Revisa el paquete de cierre y separa dos dimensiones que no deben confundirse:
+1. El resultado individual de cada escenario QA utilizando el método de verificación acordado.
+2. El grado de cobertura completa de cada criterio funcional ESC-, incluyendo las pruebas automatizadas pendientes.
+En particular:
+- Los 22 escenarios aprobados deben mantenerse como aprobados.
+- Los tres escenarios parciales son QA-00.2-08, QA-00.2-11 y QA-00.2-14.
+- ESC-45 se verificó mediante QA-00.2-09 y QA-00.2-10, ambos aprobados.
+- ESC-45 no debe contarse dos veces ni presentarse como un defecto funcional.
+- Debe indicarse que su automatización queda pendiente de TK-00.5.
+- ESC-40 y ESC-49 deben conservar sus pendientes funcionales y de automatización.
+No ejecutes nuevas pruebas ni modifiques código. Presenta una versión corregida del paquete de cierre.
+```
+**Qué salió:** El coordinador presentó una versión corregida que separó los resultados de QA de la cobertura completa de los criterios funcionales.
+Quedó documentado que:
+- 22 de los 25 escenarios fueron aprobados.
+- Tres escenarios quedaron parciales.
+- ESC-45 está verificado funcionalmente por inspección del código y del build, pero su automatización sigue pendiente.
+- ESC-40 y ESC-49 mantienen sus pendientes funcionales y de automatización.
+- La Definition of Done conserva las excepciones de pruebas y CI diferenciadas.
+
+### Prompt 2.D.32: Autorizar los commits y el cierre de TK-00.2
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code  
+```
+Apruebo expresamente los dos commits y el cierre de TK-00.2.
+**Commit 1 — Implementación**
+Autorizo incluir:
+- Los 21 archivos de `frontend/`, incluido el lockfile.
+- `.env.example`.
+- `.gitignore`.
+- `CLAUDE.md`, exclusivamente con los cambios autorizados en la sección de comandos.
+- `backlog/TRACKER.md`, con TK-00.2 en `Pendiente de aprobación humana` y los siete seguimientos registrados.
+**Commit 2 — Cierre**
+Autorizo un segundo commit exclusivamente sobre `backlog/TRACKER.md` para:
+- Cambiar TK-00.2 a `Hecho`.
+- Registrar el hash real del primer commit.
+- Registrar la fecha efectiva de aprobación.
+Condiciones:
+- No incluir `PROMPTS.md` ni `node_modules`.
+- No modificar otros archivos.
+- No hacer push.
+- Verificar los hashes, el contenido del segundo commit y que el árbol de trabajo quede limpio.
+- Después de ambos commits, detenerse sin iniciar otro ticket.
+```
+**Qué salió:** El coordinador ejecutó los dos commits locales, sin push:
+1. `f99cb47b826a1299b2634973c07fb4563b628ccd` — Implementación del frontend.
+2. `657325aaf2060a5fa499073592fb157f98d5f586` — Cierre de TK-00.2.
+El segundo commit modificó exclusivamente una línea de `backlog/TRACKER.md`, cambiando el estado a `Hecho` y registrando el hash del primer commit y la fecha `2026-11-19`.
+La verificación final confirmó:
+- Ninguno de los commits incluyó `PROMPTS.md` ni `node_modules`.
+- El árbol de trabajo quedó limpio.
+- La rama `feature/entrega-2` quedó dos commits por delante de `origin/feature/entrega-2`.
+- No se realizó push.
+- El coordinador se detuvo sin iniciar TK-00.6, TK-00.3 ni otro ticket.
+**Resultado:** TK-00.2 quedó cerrado como `Hecho`, con dos commits locales y trazabilidad de implementación y cierre.
+
+## Prompt 2.D.33 — Evaluar la elegibilidad de TK-00.6
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Necesito evaluar la elegibilidad de TK-00.6 antes de iniciar cualquier implementación.
+Actúa como coordinador del ticket. Revisa el backlog, las especificaciones aprobadas, la arquitectura existente, los requisitos no funcionales y las dependencias con los tickets anteriores.
+Determina:
+- Qué problema resuelve TK-00.6.
+- Qué entregables requiere.
+- Qué tickets o decisiones condicionan su ejecución.
+- Qué requisitos deben estar resueltos antes de implementar.
+- Qué aspectos necesitan análisis de QA y seguridad.
+Recuerda que MedSupply AI es un MVP académico: el evaluador debe poder clonar, configurar, levantar y probar el producto. No se desplegará en producción. Evita introducir complejidad productiva que no aporte a ese objetivo.
+No modifiques archivos ni cambies estados. Si falta información, identifícala y presenta el resultado para revisión.
+```
+**Qué salió:** Se identificó TK-00.6 como un ticket habilitador de infraestructura. Se determinó que debía preparar la ejecución reproducible del producto, considerando Docker, PostgreSQL, backend, frontend y la entrega integrada.
+Se estableció que primero debía completarse el análisis y la preparación documental mediante Gate 1. No se autorizó todavía la implementación.
+
+## Prompt 2.D.34 — Construir la matriz de escenarios de QA
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Prepara la matriz de QA de TK-00.6 antes de implementar.
+Delega el análisis de escenarios al especialista correspondiente y consolida los resultados.
+La matriz debe cubrir:
+- Configuración y validación de variables.
+- Inicialización de PostgreSQL.
+- Permisos del usuario de aplicación.
+- Construcción de imágenes Docker.
+- Comunicación entre servicios.
+- Migraciones y datos iniciales.
+- Acceso al producto mediante Nginx.
+- Recuperación ante errores.
+- Reproducibilidad del entorno.
+Separa los escenarios que pertenecen a TK-00.6 de aquellos que corresponden a otros tickets.
+No inventes criterios de aceptación ni modifiques las especificaciones aprobadas. Presenta los escenarios, sus dependencias y las dudas detectadas para revisión.
+```
+**Qué salió:** Se preparó la matriz A1 con 48 escenarios de TK-00.6 y 24 escenarios diferidos a otros tickets.
+Se identificaron escenarios provisionales y dependencias que necesitaban decisiones técnicas antes de convertirse en criterios definitivos.
+
+## Prompt 2.D.35 — Analizar la arquitectura de infraestructura
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Analiza la arquitectura necesaria para implementar TK-00.6.
+Delega el análisis técnico a los especialistas correspondientes y consolida una propuesta de arquitectura.
+Evalúa la relación entre:
+- PostgreSQL.
+- Backend.
+- Frontend.
+- Nginx.
+- Dockerfiles.
+- Docker Compose.
+- Migraciones y seed.
+- Configuración por entorno.
+Distingue el entorno de desarrollo de la entrega demostrable del MVP.
+Prioriza una arquitectura sencilla y reproducible. No introduzcas infraestructura adicional ni mecanismos propios de producción que no sean necesarios para ejecutar y demostrar el producto.
+Prepara el documento A2 en el scratchpad. No lo copies al repositorio ni modifiques archivos del proyecto.
+```
+**Qué salió:**
+Se preparó la propuesta A2 de arquitectura, incluyendo la separación entre el Compose de desarrollo y el de entrega, el uso de PostgreSQL, la construcción del backend y el acceso al frontend mediante Nginx.
+Quedaron identificadas decisiones técnicas que debían resolverse antes de implementar.
+
+## Prompt 2.D.36 — Consolidar las decisiones técnicas pendientes
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Consolida las decisiones técnicas necesarias para TK-00.6.
+Revisa A1, A2, los requisitos, la arquitectura y las decisiones previamente aprobadas.
+Para cada punto pendiente:
+1. Describe el problema.
+2. Explica las alternativas viables.
+3. Expone las consecuencias de cada alternativa.
+4. Recomienda la opción más sencilla que satisfaga los requisitos del MVP.
+5. Identifica si requiere aprobación humana.
+No conviertas recomendaciones en decisiones aprobadas. No modifiques los documentos ni el repositorio.
+```
+**Qué salió:** Se consolidaron las decisiones D.2 y los puntos técnicos pendientes. Se estableció qué aspectos podían resolverse documentalmente y cuáles condicionaban la implementación.
+Se mantuvo la separación entre decisiones propuestas y decisiones que necesitaban autorización.
+
+## Prompt 2.D.37 — Revisar y aprobar las decisiones D.2
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Prepara la revisión de las decisiones D.2 de TK-00.6.
+Presenta cada decisión con su justificación y sus consecuencias sobre:
+- La matriz QA.
+- La arquitectura.
+- Los archivos de configuración.
+- La construcción de imágenes.
+- La ejecución de los servicios.
+- La entrega del MVP.
+Identifica cuáles necesitan una decisión expresa del usuario.
+No apliques cambios todavía. Espera la aprobación humana antes de modificar los documentos.
+```
+**Qué salió:**Se revisaron 13 decisiones D.2.
+El usuario aprobó ocho decisiones: #1, #2, #3, #4, #5, #8, #9 y #12. Las demás conservaron su estado según las decisiones y condiciones previamente acordadas.
+
+## Prompt 2.D.38 — Aplicar las decisiones aprobadas a la documentación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Aplica exclusivamente las ocho decisiones D.2 aprobadas (#1, #2, #3, #4, #5, #8, #9 y #12) a los documentos autorizados.
+Los especialistas pueden preparar las modificaciones, pero tú debes consolidarlas y revisar su coherencia.
+Comprueba que los cambios:
+- No contradigan los requisitos.
+- No alteren decisiones anteriores.
+- No introduzcan alcance adicional.
+- Mantengan la coherencia entre QA, arquitectura y backlog.
+No apliques decisiones pendientes ni modifiques archivos del repositorio. Presenta los diffs para revisión.
+```
+**Qué salió:**Las ocho decisiones aprobadas quedaron reflejadas en los cuatro documentos autorizados.
+Se revisaron las ediciones de los especialistas y se realizó una auditoría de coherencia. No se detectaron contradicciones en los cambios consolidados.
+
+## Prompt 2.D.39 — Auditar la documentación antes de aprobar Gate 1
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Realiza una auditoría documental de TK-00.6 antes de solicitar la aprobación de Gate 1.
+Revisa A1 y A2, las decisiones aplicadas y los puntos que siguen pendientes.
+Comprueba:
+- Trazabilidad de los escenarios.
+- Coherencia de la arquitectura.
+- Correspondencia entre decisiones y documentos.
+- Ausencia de contradicciones.
+- Identificación de escenarios diferidos.
+- Que las decisiones pendientes no aparezcan como aprobadas.
+Si encuentras errores, presenta el problema y propone la corrección mínima. No modifiques archivos sin autorización.
+```
+**Qué salió:** Se detectaron y revisaron detalles de redacción y presentación documental. Se corrigieron únicamente los puntos autorizados y se verificó que los fragmentos señalados como defectuosos no correspondían a errores reales de los documentos.
+A1 y A2 quedaron preparadas para su aprobación y posterior incorporación al repositorio.
+
+
+## Prompt 2.D.40 — Aprobar y trasladar A1 y A2 al repositorio
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Una vez aprobados los documentos A1 y A2, prepara su incorporación al repositorio.
+Antes de copiar:
+1. Comprueba los archivos de origen.
+2. Identifica los destinos autorizados.
+3. Verifica que no existan modificaciones locales que deban preservarse.
+4. Copia únicamente los documentos aprobados.
+5. Compara los hashes de origen y destino.
+6. Comprueba que el resto del contenido existente permanezca intacto.
+No modifiques otros archivos, no hagas commits ni push y presenta los resultados.
+```
+**Qué salió:** A1 quedó incorporada en `docs/qa/TK-00.6-matrix.md` y A2 en `docs/ARCHITECTURE.md`.
+Los hashes coincidieron con los documentos aprobados:
+- A1: `c4ecf64dd504…`
+- A2: `940de9d43ac6…`
+Se conservaron los 48 escenarios de TK-00.6 y los 24 diferidos. No se detectaron conflictos documentales.
+
+## Prompt 2.D.41 — Preparar el plan de implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Con Gate 1 preparado, construye el plan de implementación de TK-00.6.
+Divide el trabajo en pasos técnicos pequeños y verificables.
+El plan debe separar:
+- Preparación del tracker.
+- Incorporación de documentos.
+- Construcción del backend.
+- PostgreSQL y Compose de desarrollo.
+- Dockerfile del frontend y Nginx.
+- Compose de entrega.
+- README y comandos de ejecución.
+- QA independiente.
+- Revisión de seguridad.
+- Definition of Done y preparación de Gate 2.
+Identifica las dependencias entre pasos y los archivos que se modificarían.
+Recuerda que los pasos del plan no son Gates. Gate 2 solo puede comenzar cuando la implementación, QA, seguridad y DoD estén completos.
+No ejecutes cambios. Presenta el plan para autorización.
+```
+**Qué salió:**Se estableció un plan de diez pasos numerados del 0 al 9.
+Los pasos 0 a 6 corresponden a implementación; el paso 7 a QA independiente; el paso 8 a revisión de seguridad; y el paso 9 a DoD y preparación de Gate 2.
+Se mantuvo la distinción entre los dos Gates del ticket y los diez pasos del plan.
+
+## Prompt 2.D.42 — Actualizar el tracker para iniciar infraestructura
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Con la autorización recibida, ejecuta únicamente el paso 0 del plan de TK-00.6.
+Actualiza el tracker para reflejar que el ticket inicia su etapa de infraestructura y asigna el responsable definido.
+Antes de modificarlo, verifica el estado actual y conserva la información de los demás tickets.
+No implementes componentes, no alteres otros estados, no hagas commits ni push.
+Al finalizar, presenta el diff y confirma exactamente qué cambió.
+```
+**Qué salió:** TK-00.6 pasó a `En infraestructura`, con `infrastructure-engineer` como responsable.
+No se modificaron otros tickets ni se alteró el seguimiento de otros trabajos.
+
+## Prompt 2.D.43 — Construir la imagen Docker del backend
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Ejecuta el paso 2 del plan de infraestructura: preparar la imagen Docker del backend.
+Delega la implementación al especialista correspondiente y supervisa los cambios.
+La solución debe:
+- Utilizar la versión de Node aprobada.
+- Compilar TypeScript para producción.
+- Ejecutar el backend desde `dist`.
+- Instalar únicamente dependencias necesarias en la imagen final.
+- Ejecutarse con un usuario no privilegiado.
+- Mantener las variables de entorno fuera de la imagen.
+- Respetar las decisiones de seguridad y arquitectura aprobadas.
+No agregues herramientas o dependencias innecesarias.
+Después, verifica build, tests, lint, typecheck y ejecución de la imagen. Presenta el diff, resultados y cualquier desviación.
+No hagas commits ni push.
+```
+**Qué salió:** Se incorporó el Dockerfile multi-stage del backend, la configuración de compilación y los scripts necesarios.
+Las verificaciones confirmaron:
+
+- 72 tests aprobados.
+- Lint y typecheck correctos.
+- Build de producción satisfactorio.
+- Ejecución del servidor con respuesta HTTP 200.
+- Usuario no privilegiado en la imagen final.
+- Ausencia de dependencias de desarrollo en la imagen final.
+Se conservó la imagen construida para reutilizarla en pasos posteriores. No se realizaron commits ni push.
+
+## Prompt 2.D.44 — Configurar PostgreSQL y Compose de desarrollo
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Ejecuta el paso 3 del plan: preparar PostgreSQL y el Compose de desarrollo.
+Implementa únicamente lo necesario para levantar la base de datos del entorno de desarrollo.
+Respeta las decisiones aprobadas:
+- PostgreSQL 16 con digest fijado.
+- Puerto publicado exclusivamente en `127.0.0.1:5432`.
+- Volumen persistente.
+- Inicialización mediante script.
+- Usuario de aplicación sin privilegios de superusuario.
+- Creación de `medsupply` y `medsupply_test` en desarrollo.
+- Variables obligatorias sin valores predeterminados inseguros.
+- Healthcheck mediante `pg_isready -h 127.0.0.1`.
+No introduzcas servicios adicionales ni modifiques el backend o frontend.
+Verifica inicialización, permisos, persistencia, conexión y comportamiento ante variables inválidas. Utiliza únicamente credenciales ficticias en las pruebas.
+Presenta los cambios y detente al finalizar.
+```
+**Qué salió:** Se incorporaron:
+- `docker-compose.yml`.
+- `docker/postgres/init-db.sh`.
+- Las variables y documentación correspondientes en `.env.example`.
+Las pruebas confirmaron la creación de las bases, los permisos del usuario de aplicación, la persistencia y el comportamiento ante credenciales inválidas.
+Se detectaron dos desviaciones de método para QA:
+- Escenario 06: Vite escucha en IPv6, por lo que se utilizará `localhost:5173`.
+- Escenario 04: al no existir `psql` en el host, se utilizarán `nc` y un contenedor temporal con la imagen PostgreSQL aprobada.
+
+## Prompt 2.D.45 — Analizar los hallazgos del Compose de desarrollo
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Antes de continuar con el paso 4, analiza los hallazgos detectados durante la implementación del Compose de desarrollo.
+Evalúa especialmente qué ocurre cuando falla la inicialización de PostgreSQL y se intenta recuperar el servicio conservando el volumen.
+Determina:
+- Qué estado deja PostgreSQL después del fallo.
+- Si el healthcheck actual detecta una inicialización incompleta.
+- Si un servicio dependiente podría arrancar con una base no inicializada.
+- Qué alternativas existen para resolverlo con el menor cambio posible.
+Separa los hallazgos técnicos de las decisiones que requieren autorización.
+No modifiques archivos ni inicies el paso 4.
+```
+**Qué salió:**
+Se identificó que un volumen persistente puede conservar un clúster PostgreSQL inicializado aunque el script de creación de bases haya fallado.
+Por tanto, `pg_isready` por sí solo no garantiza que `medsupply` exista.
+Se recomendó añadir una comprobación de existencia de `medsupply` al healthcheck, sin contraseña y conservando la comprobación TCP.
+El usuario solicitó analizar también los posibles estados parciales antes de autorizar la modificación.
+
+## Prompt 2.D.46 — Evaluar los estados parciales de la inicialización
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Investiga si el script `docker/postgres/init-db.sh` puede dejar un estado parcial que no sea detectado por un healthcheck que compruebe únicamente la existencia de `medsupply`.
+Revisa el orden real de ejecución de las sentencias SQL y determina:
+- Si puede existir `medsupply` sin el usuario de aplicación.
+- Si puede existir con atributos o permisos incompletos.
+- Si puede existir sin `medsupply_test` en desarrollo.
+- Qué consecuencias tendría cada escenario.
+Si encuentras un estado parcial no detectado, detente y presenta alternativas. No modifiques archivos ni implementes una solución sin autorización.
+```
+**Qué salió:**
+Se identificó un caso no detectado: si se creaba `medsupply` correctamente, pero fallaba posteriormente la creación de `medsupply_test`, el healthcheck podía considerar sano el servicio aunque la inicialización de desarrollo estuviera incompleta.
+Se determinó que el usuario de aplicación no podía faltar si `medsupply` existía, porque se crea antes y la base se crea con ese usuario como propietario.
+Se presentaron tres alternativas:
+- (a) Reordenar la creación para que `medsupply` siempre sea la última base.
+- (b) Comprobar también `medsupply_test` en desarrollo.
+- (c) Aceptar el riesgo residual.
+No se modificaron archivos ni se levantaron contenedores.
+
+## Prompt 2.D.47 — Corregir el orden de inicialización y el healthcheck
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code.
+```
+Con la aprobación expresa de la opción (a), ejecuta la corrección del hallazgo 1 de TK-00.6.
+Modifica exclusivamente:
+- `docker/postgres/init-db.sh`.
+- `docker-compose.yml`.
+Primero reordena la inicialización para crear el usuario, después `medsupply_test` en desarrollo y finalmente `medsupply`.
+Después amplía el healthcheck para conservar `pg_isready -h 127.0.0.1` y comprobar también la existencia de `medsupply`, sin contraseña.
+Reproduce el escenario de fallo de inicialización y recuperación con un volumen persistente. Comprueba que `docker compose up --wait` no   considere sano el servicio incompleto y que el entorno se recupere al recrearlo desde cero.
+Verifica también que `medsupply_test` siga existiendo únicamente en desarrollo y que los permisos del usuario no cambien.
+Respeta el alcance del MVP: no agregues infraestructura, servicios ni endurecimiento productivo innecesario.
+No modifiques otros archivos, no hagas commits ni push y no inicies el paso 4.
+Al finalizar, presenta el diff, las evidencias de las pruebas y el estado de Git. Detente y espera mi revisión.
+```
+**Qué salió:**<em>Pendiente de ejecución.</em> se indico que el usuario aprobó la opción (a) y autorizó expresamente modificar `docker/postgres/init-db.sh` y `docker-compose.yml` para corregir el orden de inicialización y el healthcheck.
+La ejecución y sus resultados todavía deben verificarse antes de documentarlos como completados.
+
