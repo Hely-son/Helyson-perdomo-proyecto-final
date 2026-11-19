@@ -103,4 +103,14 @@ npm run lint        # ESLint
 npm run typecheck   # tsc --noEmit
 ```
 
-Frontend y Docker se documentarán en TK-00.2 y TK-00.6.
+Frontend (`cd frontend`). Requiere Node 26 (p. ej. `nvm use 26`). Vite lee las variables `VITE_*` del `.env` de la raíz (`envDir`).
+
+```bash
+npm ci              # instala dependencias exactas del lockfile (primera vez)
+npm run dev         # Vite en http://localhost:5173 (strictPort); proxy /api → http://localhost:3000
+npm run build       # tsc -b && vite build
+npm run lint        # ESLint
+npm run typecheck   # tsc -b --noEmit
+```
+
+Docker se documentará en TK-00.6.

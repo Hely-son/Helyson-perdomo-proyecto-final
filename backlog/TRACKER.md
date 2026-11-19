@@ -19,7 +19,7 @@ Seguimiento operativo del MVP. Solo registra estado: la definición de cada tick
 |---|---|---|---|---|
 | TK-00.8 | Hecho | — | `1cc966d`, `d646368` | 2026-11-18 |
 | TK-00.1 | Hecho | — | `c0e2423` | 2026-11-19 |
-| TK-00.2 | Pendiente | — | — | — |
+| TK-00.2 | Pendiente de aprobación humana | usuario | — | — |
 | TK-00.6 | Pendiente | — | — | — |
 | TK-00.3 | Pendiente | — | — | — |
 | TK-00.5 | Pendiente | — | — | — |
@@ -59,6 +59,13 @@ Observaciones operativas que surgieron durante un ticket y deben revisarse en ot
 |---|---|---|
 | TK-00.1 (paso 2, SEC-02) | `npm audit`: 18 avisos moderados, solo en dependencias de desarrollo (transitivas de `glob` y `minimatch`). `npm audit --omit=dev`: 0 vulnerabilidades. **Riesgo aceptado temporalmente** por el usuario (puerta 2, 2026-11-19). No degradar Jest ni modificar dependencias por este motivo | Cuando exista una versión corregida compatible con las versiones aprobadas |
 | TK-00.1 (paso 2) | npm bloqueó los scripts de instalación de `esbuild` y `@parcel/watcher` por no estar aprobados; `tsx` funciona en local | TK-00.6 (Docker) y TK-00.7 (CI) |
+| TK-00.2 (versiones, R5) | npm bloquea el script de instalación de `fsevents@2.3.3` (opcional de Vite, solo macOS). **No aprobado** por decisión del usuario: el binario ya viene compilado y funciona sin él. Una primera instalación sin lockfile no instala `fsevents` y el vigilante de Vite pasa a polling en macOS; con `npm ci` y lockfile se instala. En Linux no se instala | TK-00.6 (Docker) y TK-00.7 (CI) |
+| TK-00.2 (DoD 2 y 3, excepción D3/OBS-03) | **Excepción aprobada por el usuario, no cumplimiento:** TK-00.2 no tiene tests de unidad ni de integración del frontend ni criterios automatizados (no se incorpora ningún runner en este ticket). Escribirlos cuando exista el runner del frontend | TK-00.5 |
+| TK-00.2 (DoD 2, excepción de CI) | **Excepción aprobada por el usuario, limitada a TK-00.2 y distinta de la anterior:** lint y typecheck del frontend pasan en local, pero no se ejecutan en CI porque la CI aún no existe. TK-00.7 debe ejecutar en CI lint y typecheck del frontend y del backend, junto con las demás comprobaciones del backend | TK-00.7 |
+| TK-00.2 (QA, ESC-40) | Cobertura parcial: solo la navegación y el menú (Inicio, Productos, Pedidos y Cerrar sesión deshabilitado), verificados a mano. Pendiente: sesión iniciada y cierre de sesión real (TK-01.2); prueba E2E (TK-00.5). No está completamente satisfecho | TK-01.2 y TK-00.5 |
+| TK-00.2 (QA, ESC-45) | Cobertura parcial: ausencia de rutas y menús `V2` verificada por inspección del código y del build. Pendiente: prueba de unidad automatizada. No está completamente satisfecho | TK-00.5 |
+| TK-00.2 (QA, ESC-49) | Cobertura parcial: solo la parte (a), provisional (`/` y las rutas desconocidas o `V2` redirigen a `/dashboard` sin bucles). Pendiente: la parte (b), sin sesión → `/login` (TK-01.2), y la prueba automatizada (TK-00.5). No está completamente satisfecho | TK-01.2 y TK-00.5 |
+| TK-00.2 (QA-00.2-14) | El valor por defecto `/api/v1` se verificó con un build aislado del cliente HTTP, porque ninguna pantalla lo importa y Vite lo elimina del bundle (método alternativo aprobado). Volver a verificarlo en el build de la app cuando alguna pantalla use el cliente HTTP | TK-00.5 |
 | TK-00.1 (paso 4) | Express responde automáticamente a `OPTIONS` con 200 `text/plain` y la cabecera `Allow`, en lugar del 404 JSON aprobado para métodos no declarados. Aceptado como limitación (alternativa a). Definir explícitamente el comportamiento y sus pruebas al diseñar CORS | Diseño de CORS (sin ticket asignado) |
 | TK-00.1 (paso 4) | Los errores 500 no se registran en ningún log (sin logging en TK-00.1 por decisión del usuario). Definir una política de logging que proteja credenciales, datos de conexión y demás información sensible (RNF-08) | TK-00.3 |
 | TK-00.1 (paso 6, SEC-03) | Si el puerto está ocupado, `listen()` termina con código 1 y muestra el stack en stderr. Tratarlo dentro de la política de logging y manejo controlado de errores operacionales, sin exponer stacks ni información sensible innecesaria | TK-00.3 |
