@@ -21,7 +21,7 @@ Seguimiento operativo del MVP. Solo registra estado: la definición de cada tick
 | TK-00.1 | Hecho | — | `c0e2423` | 2026-11-19 |
 | TK-00.2 | Hecho | — | `f99cb47` | 2026-11-19 |
 | TK-00.6 | Hecho | — | `25915f5` | 2026-11-20 |
-| TK-00.3 | Pendiente de aprobación humana | usuario | — | Puerta 2 aprobada 2026-11-20 (con la excepción de DoD 2 registrada en Seguimientos) |
+| TK-00.3 | Hecho | — | `7e9a5a8` | 2026-11-20 |
 | TK-00.5 | Pendiente | — | — | — |
 | TK-00.4 | Pendiente | — | — | — |
 | TK-00.7 | Pendiente | — | — | — |
