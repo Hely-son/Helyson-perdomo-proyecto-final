@@ -7,6 +7,7 @@ Este documento registra los prompts y la interacción con Claude (Anthropic) sig
 ## Entrega 1 — Documentación Técnica y Especificaciones
 
 ### Prompt 1.1: Definición de Alcance y PRD
+
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
@@ -56,12 +57,14 @@ Importante:  NO asumas nada hazme las preguntas y te las ire contestando 1 a 1 c
 **Solicitud:**  
 "Genera un archivo `CLAUDE.md` para la raíz del repositorio que sirva como guía de contexto para Claude Code. Debe establecer el principio de Spec-Driven Development (SDD), definir la fuente de verdad mapeando el PRD y las specs (`specs/*.spec.md`), documentar el stack (React 18 + Vite + Antd, Express + TS, Prisma + SQLite/Postgres) y la arquitectura monolítica modular."
 ```
+
 **Qué salió:** Genero el archivo claude con lo indicado
 
 ### Prompt 1.3: Estructura del `README.md` Principal
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 **Contexto/Rol:** Technical Writer / Evaluador Académico.  
 **Solicitud:**  
@@ -181,7 +184,9 @@ Estimación: puntos Fibonacci (1, 2, 3, 5, 8) por ticket, sumados por historia, 
 
 **Qué salió:** `CLAUDE.md` y `README.md` actualizados con lo indicado.
 
-## Entrega 2.A — Actualizacion en base a observaciones de entrega 1 
+---
+
+## Entrega 2.A — Actualizacion en base a observaciones de entrega 1
 
 ### Prompt 2.A.1: Auditoría integral sin modificaciones
 
@@ -246,12 +251,13 @@ Lista exacta de archivos que deberán modificarse o crearse.
 Finaliza esperando mi aprobación. No continúes automáticamente.
 ```
 
-**Qué salió:** Resumen de problemas del proyecto, contradicciones, falta de definiciones, que puede o no aplicar, y a la espera de mis decisiones 
+**Qué salió:** Resumen de problemas del proyecto, contradicciones, falta de definiciones, que puede o no aplicar, y a la espera de mis decisiones
 
-# PROMPT 2.A.2 — Actualización del PRD a v1.1: alcance MVP y decisiones aprobadas
+### Prompt 2.A.2: Actualización del PRD a v1.1: alcance MVP y decisiones aprobadas
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Actúa como Product Owner técnico y Business Analyst senior, especializado en documentación de requisitos y trazabilidad bajo Spec-Driven Development (SDD).
 
@@ -336,10 +342,11 @@ Detente al finalizar y dame un resumen de los cambios, y siguiendo la propuesta 
 
 **Qué salió:** Se actualizo el prd, con lo esperado para mvp y v2, nuevo alcance y objetivo diferenciacion clara.
 
-### Prompt 2.A.3: Actualizacion de incosistencias 
+### Prompt 2.A.3: Actualizacion de incosistencias
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Respecto a estas dudas se aclaran las definiciones
 
@@ -376,12 +383,14 @@ No hagas commit ni push.
 Detente al finalizar y dame un resumen de los cambios, y siguiendo la propuesta proximos pasos
 
 ```
+
 **Qué salió:** Actualizacion de las dudas pricipales de claude, se indica las definiciones que faltan para poder continuar, se modifica unicamente el prd
 
-### Prompt 2.A.4: Actualizacion de pedidos inventarios y reclamos 
+### Prompt 2.A.4: Actualizacion de pedidos inventarios y reclamos
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Continuando con la fase de definiciones en cuanto a
 Inventario y reposición
@@ -421,12 +430,14 @@ No hagas commit ni push.
 Detente al finalizar y dame un resumen de los cambios, y siguiendo la propuesta proximos pasos
 
 ```
+
 **Qué salió:** Se actualizo el prd, con respecto a los items indicados se indican propuestas, y observaciones pendientes
 
 ### Prompt 2.A.5: Actualizacion version PRD
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 
 Crear una sección específica para requisitos no funcionales con IDs `RNF-01`, `RNF-02`, etc.
@@ -496,14 +507,14 @@ No hagas commit ni push.
 
 Detente al finalizar y espera aprobación humana antes de continuar con la arquitectura y el modelo de datos.
 ```
-**Qué salió:** Se hizo un resumen todo lo actualizado en el prd, unico archivo modificado, aun se piden ajustes o cambios para aplicar 
 
+**Qué salió:** Se hizo un resumen todo lo actualizado en el prd, unico archivo modificado, aun se piden ajustes o cambios para aplicar
 
-
-### Prompt 2.A.6: Ajustes 
+### Prompt 2.A.6: Ajustes
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 En base a las observaciones y propuestas haz estos cambios: 
 
@@ -512,13 +523,14 @@ En base a las observaciones y propuestas haz estos cambios:
 3. Precisar los estados permitidos y la idempotencia de CA-12.
 4. Ejecutar una validación final de consistencia y confirmar que solo cambió docs/PRD.md.
 ```
-**Qué salió:** Se actualizo el prd, con lo esperado para mvp y v2, nuevo alcance y objetivo diferenciacion clara.
 
+**Qué salió:** Se actualizo el prd, con lo esperado para mvp y v2, nuevo alcance y objetivo diferenciacion clara.
 
 ### Prompt 2.A.7: Actualizacion version PRD
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Se aprueba el contenido cambiado en el prd, por lo que actualiza la version y estado 
 - Versión: 1.1.
@@ -528,14 +540,14 @@ Se aprueba el contenido cambiado en el prd, por lo que actualiza la version y es
 
 en base a los cambios, reformular los objetivos del MVP para que describan exclusivamente lo que realmente se entregará.
 ```
+
 **Qué salió:** Se actualizo el prd, con lo esperado para mvp y v2, nuevo alcance y objetivo diferenciacion clara.
-
-
 
 ### Prompt 2.A.8: Arquitectura y modelo de datos
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Tomando como fuente de verdad el `docs/PRD.md` v1.1 aprobado, actualiza los siguientes documentos para que reflejen fielmente el alcance MVP/V2 y las reglas de negocio definidas:
 
@@ -577,31 +589,36 @@ Al finalizar:
 
 Detente al finalizar y espera mi revisión antes de continuar.
 ```
+
 **Qué salió:** Se actualizo los archivos arquitecture md y el spec 01, se indican decisiones que el modelo tomo por su cuenta y se me piden revsion y validacion, ya aplico dichos cambios.
 
 ### Prompt 2.A.9: Arquitectura y modelo de datos
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Aprobado los cambios y modificaciones que propusiste, actualice el prd de ser necesarios para no tener inconsistencias 
 ```
-**Qué salió:** Se actualizo el prd, se indica que se valide la nueva version del prd 1.2 
 
+**Qué salió:** Se actualizo el prd, se indica que se valide la nueva version del prd 1.2
 
 ### Prompt 2.A.10: Version 1.2 prd
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Aprobado la nueva version del prd
 ```
+
 **Qué salió:** Se actualizo la nueva version del prd 1.2, se indica que claude, readme el backlog estan deprecados, no reflejan los cambios que se han realizado en la version 1.2
 
 ### Prompt 2.A.10: Alineación documental con PRD v1.2
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Objetivo
 Alinear la documentación operativa y el backlog del proyecto con el `docs/PRD.md` v1.2 aprobado, respetando las decisiones funcionales, arquitectónicas y de persistencia ya establecidas.
@@ -703,7 +720,8 @@ Detente al finalizar y espera aprobación humana antes de comenzar OpenAPI.
 
 **Qué salió:** Se mmodificaron todos los archivos involucrados, se presente un resumen y cambios, tambien decesiones pendiente, quedo a la espera de la aprobacion para pasar a open api
 
-### Prompt 2.A.10: Cierre de alineación documental 
+### Prompt 2.A.10: Cierre de alineación documental
+
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
@@ -722,9 +740,8 @@ Informar los cambios y detenerse para revisión humana.
 
 **Qué salió:** Indico el resumen de los cambios aplicados, tambien que se debe crear el tk-008,  pide aprobar para continuar con open api
 
-
-
 ### Prompt 2.A.10: implementar ticket 008
+
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
@@ -734,11 +751,10 @@ Antes de implementar, avanza con la construcción de docs/openapi.yaml, pero en 
 2. Revisión humana: contrastar el contrato contra PRD, arquitectura, modelo de datos y backlog. Aprobarlo antes de comenzar los endpoints.
 ```
 
-**Qué salió:**: Genero un nuevo archivo con el contrato del open api, cubre los 14 endpoints MVP y Claude dejó claro qué validaciones ejecutó y cuáles no.
-
-
+**Qué salió:** Genero un nuevo archivo con el contrato del open api, cubre los 14 endpoints MVP y Claude dejó claro qué validaciones ejecutó y cuáles no.
 
 ### Prompt 2.A.11: Auditoria open api
+
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
@@ -902,13 +918,13 @@ Verificar especialmente:
   Detente al finalizar el informe y espera autorización.
 ```
 
-**Qué salió:**: Genero una auditoria encontro decisiones y problemas, indica como ajustarlo, lo que recomienda, y queda a la espera de mis descisiones 
-
+**Qué salió:** Genero una auditoria encontro decisiones y problemas, indica como ajustarlo, lo que recomienda, y queda a la espera de mis descisiones
 
 ### Prompt 2.A.12: Cambios en base a la auditoria
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 ## Objetivo
 Aplicar las decisiones aprobadas durante la revisión humana de `docs/openapi.yaml`.
@@ -1004,10 +1020,11 @@ Entregar:
 5. Estado de Git antes y después.
 Detenerse al terminar. Esperar revisión y aprobación humana antes de cualquier otra modificación.
 ```
+
 **Qué salió:** Se actualizo el open api, indico el resumen de todos los cambios aplicados, pide aprobar la version.
 
-
 ### Prompt 2.A.13: aprobar open api
+
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
@@ -1015,9 +1032,10 @@ Detenerse al terminar. Esperar revisión y aprobación humana antes de cualquier
 Queda aprobada la version del api, haz commit y push de los cambios
 ```
 
-**Qué salió:**: Genero la version en 1.0.0 y realizo commit y push, indico que claude, readme quedaron desactualizados 
+**Qué salió:** Genero la version en 1.0.0 y realizo commit y push, indico que claude, readme quedaron desactualizados
 
 ### Prompt 2.A.14: implementar ticket 008
+
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
@@ -1025,12 +1043,14 @@ Queda aprobada la version del api, haz commit y push de los cambios
 Corrige CLAUDE.md y README para reflejar openapi.yaml creado
 ```
 
-**Qué salió:**: ahora todo el sistema esta actualizado, indica hacer commit y push.
+**Qué salió:** ahora todo el sistema esta actualizado, indica hacer commit y push.
 
+---
 
-## Entrega 2.B — Creacion de spec faltantes antes de la implementacion 
+## Entrega 2.B — Creacion de spec faltantes antes de la implementacion
 
 ### Prompt 2.B.1: Revision Spec 01
+
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
@@ -1149,8 +1169,7 @@ No avances a implementación.
 
 ```
 
-**Qué salió:**: Indico que el veredicto para esta spec era aprobado, dejo una seccion Puntos abiertos (no bloqueantes)
-
+**Qué salió:** Indico que el veredicto para esta spec era aprobado, dejo una seccion Puntos abiertos (no bloqueantes)
 
 ### Prompt 2.B.2: Elaboración de Spec 02: Sistema de inventario
 
@@ -1321,9 +1340,10 @@ Al terminar, presenta:
 **Importante:** esta fase termina cuando la especificación está redactada y auditada. No continúes con implementación. Espera la revisión y aprobación humana.
 ```
 
-**Qué salió:**: Creo el archivo de inventory, indico, resumen, decisiones, tambien las inconsitencias encontradas, indico caminos para resolverlas.
+**Qué salió:** Creo el archivo de inventory, indico, resumen, decisiones, tambien las inconsitencias encontradas, indico caminos para resolverlas.
 
 ### Prompt 2.B.3: Solventar inconvenientes Spec 02
+
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
@@ -1359,11 +1379,14 @@ Entrega un informe con:
 No hagas ninguna implementación.
 
 ```
-**Qué salió:**: aplico lo solicitado, dio el resumen. pero indica que aun hay decisiones que no estan cerradas.
+
+**Qué salió:** aplico lo solicitado, dio el resumen. pero indica que aun hay decisiones que no estan cerradas.
 
 ### Prompt 2.B.4: Cierre documental Spec 02
+
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Realiza el cierre documental de `specs/02_inventory_system.spec.md` y actualiza el estado correspondiente en `CLAUDE.md`.
 ## Alcance autorizado
@@ -1404,12 +1427,13 @@ Entrega:
 5. Estado de Git antes y después, demostrando que solo modificaste los archivos autorizados.
 No avances  a implementación.
 ```
-**Qué salió:**: La spec 02 queda en Aprobada v1.0 (Entrega 2). Al revisarla contra la spec 01 aprobada no apareció ninguna contradicción.
 
+**Qué salió:** La spec 02 queda en Aprobada v1.0 (Entrega 2). Al revisarla contra la spec 01 aprobada no apareció ninguna contradicción.
 
-### Prompt 2.B.5: Inicializar especificación  Spec 03
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+### Prompt 2.B.5: Inicializar especificación Spec 03
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Crea el archivo `specs/03_conversational_bot.spec.md` en estado de Borrador v1.0 (Entrega 2), pendiente de aprobación. 
@@ -1417,12 +1441,13 @@ Crea el archivo `specs/03_conversational_bot.spec.md` en estado de Borrador v1.0
 - Define la sección de Propósito y Alcance del módulo conversacional para el MVP de Entrega 2.
 - No modifiques ningún otro archivo del repositorio.
 ```
-**Qué salió:**:  Creación del archivo specs/03_conversational_bot.spec.md con la estructura base, el encabezado oficial y la sección de fuentes de verdad validadas.
 
+**Qué salió:** Creación del archivo specs/03_conversational_bot.spec.md con la estructura base, el encabezado oficial y la sección de fuentes de verdad validadas.
 
-###  Prompt 2.B.6: Definicfiones para spec 3
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+### Prompt 2.B.6: Definicfiones para spec 3
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Edita el archivo `specs/03_conversational_bot.spec.md` para redactar las secciones de:
@@ -1430,22 +1455,28 @@ Edita el archivo `specs/03_conversational_bot.spec.md` para redactar las seccion
 2. Ciclo de vida de la sesión: Creación, estados, TTL configurable mediante CHAT_SESSION_TTL_MINUTES (30 min por defecto), renovación de actividad, manejo de sesiones expiradas y coherencia con SESSION_INVALID y el contrato OpenAPI.
 - Respeta estrictamente el aislamiento de estados y no inventes persistencia no definida.
 ```
-**Qué salió:**:  Las secciones 2 y 3 redactadas y documentadas dentro del archivo markdown de la spec.
+
+**Qué salió:** Las secciones 2 y 3 redactadas y documentadas dentro del archivo markdown de la spec.
 
 ### Prompt 2.B.7: Navegación, Catálogo e Integración con Inventario (Spec 02)
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Edita el archivo `specs/03_conversational_bot.spec.md` para documentar:
 1. Navegación y catálogo: Menú inicial, consulta de productos, precios, disponibilidad y stock.
 2. Delegación estricta al módulo de inventario de la Spec 02 (sin duplicar sus reglas) para verificar productos activos/inactivos y existencias.
 3. Tratamiento de productos inexistentes o inactivos durante la navegación del usuario.
 ```
-**Qué salió:**:  La sección 4 de la spec integrada con el comportamiento de inventario de la Spec 02.
+
+**Qué salió:** La sección 4 de la spec integrada con el comportamiento de inventario de la Spec 02.
 
 ### Prompt 2.B.8: Gestión del Carrito de Compras
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Edita el archivo `specs/03_conversational_bot.spec.md` incorporando la sección del Carrito:
 - Operaciones permitidas: Agregar productos, modificar cantidades, eliminar productos y consultar resumen.
@@ -1453,11 +1484,14 @@ Edita el archivo `specs/03_conversational_bot.spec.md` incorporando la sección 
 - Regla crítica: Especifica claramente qué sucede cuando un producto previamente agregado al carrito se desactiva antes de la confirmación (debe rechazarse y excluirse).
 - Coherencia estricta entre el estado del carrito y la sesión.
 ```
-**Qué salió:**: La sección 5 redactada con las reglas del carrito y el manejo de productos desactivados.
+
+**Qué salió:** La sección 5 redactada con las reglas del carrito y el manejo de productos desactivados.
 
 ### Prompt 2.B.9: Confirmación de Compra y Ciclo de Pedidos
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Edita el archivo `specs/03_conversational_bot.spec.md` para la Confirmación de Compra y Pedidos:
 - Revalidación obligatoria de stock, estado activo y precios vigentes frente al resumen previo.
@@ -1466,22 +1500,28 @@ Edita el archivo `specs/03_conversational_bot.spec.md` para la Confirmación de 
 - Manejo de confirmaciones simultáneas/mensajes repetidos y respuesta conversacional de éxito.
 - Reglas para la consulta de pedidos propios del cliente (restringiendo acceso cruzado).
 ```
-**Qué salió:**: Las secciones 6 y 7 con el flujo completo de checkout, precios y pedidos.
+
+**Qué salió:** Las secciones 6 y 7 con el flujo completo de checkout, precios y pedidos.
 
 ### Prompt 2.B.10: Máquina de Estados Conversacional y Diagrama Mermaid
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Edita el archivo `specs/03_conversational_bot.spec.md` para incluir:
 - La máquina de estados conversacional detallando para cada estado: ID, descripción, datos que conserva, mensajes/opciones permitidas, eventos, estados de destino, condiciones de transición y manejo de eventos inválidos.
 - Distinción clara entre estado de sesión, de conversación, del carrito y del pedido (sin mezclarlos).
 - Inclusión del diagrama Mermaid que represente visualmente el flujo principal.
 ```
-**Qué salió:**: La sección 4 (o equivalente) de la spec con la definición formal de estados y el diagrama Mermaid funcional.
+
+**Qué salió:** La sección 4 (o equivalente) de la spec con la definición formal de estados y el diagrama Mermaid funcional.
 
 ### Prompt 2.B.11: Manejo de Errores, Contrato OpenAPI y Trazabilidad
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Edita el archivo `specs/03_conversational_bot.spec.md` para completar:
 1. Manejo de errores y situaciones límite (teléfono inválido, sesión expirada, stock insuficiente, cambio de precio, etc.).
@@ -1490,11 +1530,14 @@ Edita el archivo `specs/03_conversational_bot.spec.md` para completar:
 4. Separación explícita de MVP y V2 (excluyendo claims y cancelaciones de cliente del MVP).
 5. Registro formal de decisiones pendientes (DP) y estado documental final en Borrador v1.0.
 ```
-**Qué salió:**:  La especificación completamente finalizada, lista para la validación documental y el informe final.
 
-### Prompt 2.B.12:  Auditar Decisiones de Diseño en Spec 03
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Qué salió:** La especificación completamente finalizada, lista para la validación documental y el informe final.
+
+### Prompt 2.B.12: Auditar Decisiones de Diseño en Spec 03
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Realiza una revisión exclusivamente documental (sin modificar archivos, ni hacer commits) leyendo `specs/03_conversational_bot.spec.md` junto con `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/openapi.yaml`, `specs/01_data_models.spec.md` y `specs/02_inventory_system.spec.md`.
 Extrae las 12 decisiones de diseño (D-01 a D-12) de Spec 03 y construye una tabla detallada con:
@@ -1506,11 +1549,14 @@ Extrae las 12 decisiones de diseño (D-01 a D-12) de Spec 03 y construye una tab
 - Consecuencia de aprobarla.
 Guarda este análisis en memoria para el informe final. No declares la Spec 03 aprobada.
 ```
-**Qué salió:**:  Una tabla estructurada con las 12 decisiones de diseño de la Spec 03 trazadas contra su documento fuente, diferenciando claramente cuáles ya tienen respaldo oficial y cuáles dependen de validación humana.
 
-### Prompt  2.B.13:Auditar Decisiones Pendientes  y su impacto
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Qué salió:** Una tabla estructurada con las 12 decisiones de diseño de la Spec 03 trazadas contra su documento fuente, diferenciando claramente cuáles ya tienen respaldo oficial y cuáles dependen de validación humana.
+
+### Prompt 2.B.13: Auditar Decisiones Pendientes y su impacto
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Continuando con la revisión documental de `specs/03_conversational_bot.spec.md` y cruzando con `backlog/README.md` y los tickets del flujo conversacional (sin editar ningún archivo):
 Extrae las 11 decisiones pendientes de aprobación (DP-01 a DP-11), conservando su numeración exacta sin combinarlas. Para cada una genera una ficha o fila de tabla con:
@@ -1522,11 +1568,14 @@ Extrae las 11 decisiones pendientes de aprobación (DP-01 a DP-11), conservando 
 - Nivel de bloqueo: indica si bloquea la aprobación total de Spec 03 o solo una parte de la implementación.
 No resuelvas ninguna decisión en nombre del usuario.
 ```
-**Qué salió:**:  El inventario completo de las 11 decisiones pendientes (DP-01 a DP-11) con matriz de impacto técnico/funcional y nivel de criticidad/bloqueo para cada una.
 
-### Prompt 2.B.14:Detección de Observaciones y Brechas Documentales
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Qué salió:** El inventario completo de las 11 decisiones pendientes (DP-01 a DP-11) con matriz de impacto técnico/funcional y nivel de criticidad/bloqueo para cada una.
+
+### Prompt 2.B.14: Detección de Observaciones y Brechas Documentales
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Analiza `specs/03_conversational_bot.spec.md` frente al resto de la documentación (`PRD.md`, `ARCHITECTURE.md`, `openapi.yaml`, `Spec 01`, `Spec 02` y `backlog`) en modo solo lectura.
 Extrae por separado todas las observaciones (OBS) y brechas detectadas, clasificándolas estrictamente bajo estas categorías:
@@ -1538,11 +1587,14 @@ Extrae por separado todas las observaciones (OBS) y brechas detectadas, clasific
 - Riesgo técnico.
 Para cada hallazgo detalla su impacto concreto en el proyecto y la acción recomendada para mitigarlo.
 ```
-**Qué salió:**: Listado categorizado de todas las observaciones y brechas (OBS), separando los riesgos bloqueantes de la deuda documental menor.
+
+**Qué salió:** Listado categorizado de todas las observaciones y brechas (OBS), separando los riesgos bloqueantes de la deuda documental menor.
 
 ### Prompt 2.B.15: Ejecutar Validación Cruzada de Reglas Críticas y Contrato OpenAPI
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Sin modificar ningún archivo del repositorio, realiza una auditoría de cumplimiento cruzado sobre `specs/03_conversational_bot.spec.md` verificando punto por punto:
 1. Reflejo exacto de reglas confirmadas sobre producto inactivo (rechazo en confirmación) y cambio de precio (nuevo resumen + segunda confirmación).
@@ -1554,11 +1606,14 @@ Sin modificar ningún archivo del repositorio, realiza una auditoría de cumplim
 7. Separación explícita entre alcance MVP y funcionalidades V2 (Claims y cancelaciones fuera de MVP).
 Documenta cualquier desviación o confirmación de cumplimiento.
 ```
-**Qué salió:**: Un checklist de auditoría técnica que certifica si las 8 reglas críticas del proyecto se cumplen sin contradicciones frente a OpenAPI, Spec 01 y Spec 02.
+
+**Qué salió:** Un checklist de auditoría técnica que certifica si las 8 reglas críticas del proyecto se cumplen sin contradicciones frente a OpenAPI, Spec 01 y Spec 02.
 
 ### Prompt 2.B.12: Generar Informe Final de Revisión para Aprobación Humana
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Consolida todos los hallazgos de los pasos anteriores en un informe estructurado en consola (sin modificar ningún archivo del repositorio, sin commits y sin declarar aprobada la Spec 03) siguiendo exactamente este orden:
 1. Resumen ejecutivo del estado actual de `specs/03_conversational_bot.spec.md`.
@@ -1569,36 +1624,47 @@ Consolida todos los hallazgos de los pasos anteriores en un informe estructurado
 6. Recomendación clara sobre qué decisiones debería aprobar el usuario de inmediato y cuáles conviene mantener pendientes para etapas posteriores.
 Verifica con `git status` que el repositorio permanece intacto.
 ```
-**Qué salió:**:El informe de auditoría completo y ordenado listo para ser presentado como entregable y servir de guía para la toma de decisiones humanas, acompañado de la evidencia de que el repositorio no fue alterado.
 
-### Prompt 2.B.13: Aprobar spec 3 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Qué salió:** El informe de auditoría completo y ordenado listo para ser presentado como entregable y servir de guía para la toma de decisiones humanas, acompañado de la evidencia de que el repositorio no fue alterado.
+
+### Prompt 2.B.13: Aprobar spec 3
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Segun el informe de auditoria, anterior, aplica los cambios a la spec 2 y llevala a la version 1.1, despues haz una validacion de las 3 specs. segun la documentacion, buscando incosistencia entre estas, en caso de que  hayas alguna inconsistencia, indica cual, porque riesgos, posibles mitigaciones, marca la specs con problemas como rechazada, en caso de que las 3 esten aprobadas, marca la spec 3 como aprobada.
 ```
-**Qué salió:**:Encontro inconsistencias, tareas subestimadas con la spec 3, por lo que la dejo rechazada, lanzo un plan de correccion, y pide aprobacion para aplicarlo. 
 
+**Qué salió:** Encontro inconsistencias, tareas subestimadas con la spec 3, por lo que la dejo rechazada, lanzo un plan de correccion, y pide aprobacion para aplicarlo.
 
-### Prompt 2.B.13: Aprobar plan para resolucion spec 3 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+### Prompt 2.B.13: Aprobar plan para resolucion spec 3
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Apruebo el plan para la resolucion, pero en cuanto orders.service devuelva el pedido, la sesión pasa a MAIN_MENU y el carrito se vacía, antes de cualquier otro paso, así que un fallo posterior no puede volver a SUMMARY. ESC-48 lo verifica. Cumple los puntos 2, 3 y 4 en una sola instancia. El corte durante el COMMIT (punto 5) queda como limitación conocida del MVP, y el punto 1 no se cumple literalmente.
 ```
-**Qué salió:**:Entrego un resumen de todo lo aplicado, que ya no hay nada pendiente, recomendando aprobar y pasar a la spec 4.
 
-### Prompt 2.B.14: Aprobacion spec 3 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Qué salió:** Entrego un resumen de todo lo aplicado, que ya no hay nada pendiente, recomendando aprobar y pasar a la spec 4.
+
+### Prompt 2.B.14: Aprobacion spec 3
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Se da por aprobada la spec 3, actualiza el claude y readme para que consideren esta aprobacion, despues commit y push 
 ```
-**Qué salió:**:Spec 3 pasa a aprobado, claude y readme actualizado, recomienda seguir con la spec 4.
+
+**Qué salió:** Spec 3 pasa a aprobado, claude y readme actualizado, recomienda seguir con la spec 4.
 
 ### Prompt 2.B.15: Inicializar Spec 04
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Vamos a elaborar `specs/04_orders_and_claims.spec.md` para el módulo de pedidos y reclamos de MedSupply AI (Entrega 2), dejándola inicialmente en estado "Borrador v1.0 (Entrega 2), pendiente de aprobación".
 - Lee y analiza: `docs/PRD.md` (v1.2), `docs/ARCHITECTURE.md`, `docs/openapi.yaml`, `specs/01_data_models.spec.md` (v1.1), `specs/02_inventory_system.spec.md` (v1.1), `specs/03_conversational_bot.spec.md` (v1.0) y `backlog/README.md` (especialmente US-05, US-06 y US-07).
@@ -1609,11 +1675,14 @@ Vamos a elaborar `specs/04_orders_and_claims.spec.md` para el módulo de pedidos
   4. Actores y responsabilidades (delimitando claramente la frontera con Spec 01, Spec 02, Spec 03 y Spec 05, sin duplicar reglas ni implementar código).
 - No modifiques ningún otro archivo del repositorio ni realices commits.
 ```
-**Qué salió:**: Creación de specs/04_orders_claims.spec.md con su encabezado oficial de borrador y las primeras 4 secciones redactadas respetando estrictamente las fronteras arquitectónicas con las Specs 01–03.
+
+**Qué salió:** Creación de specs/04_orders_claims.spec.md con su encabezado oficial de borrador y las primeras 4 secciones redactadas respetando estrictamente las fronteras arquitectónicas con las Specs 01–03.
 
 ### Prompt 2.B.16: Especificar modelo conceptual, estados y reglas de negocio de Pedidos (MVP)
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Edita `specs/04_orders_and_claims.spec.md` para desarrollar las secciones 5, 6 y 7 enfocadas en el dominio `orders` (MVP):
 - Investiga y aplica los requisitos del PRD: RN-02, RN-03, RN-04, RN-05, PE, CH-07, CH-08, CH-09, RNF-03 y RNF-04.
@@ -1621,11 +1690,14 @@ Edita `specs/04_orders_and_claims.spec.md` para desarrollar las secciones 5, 6 y
 - Documenta las reglas de negocio y flujos funcionales: creación de pedido, persistencia de precio histórico de ítems, generación de número `MED-` (mínimo 5 dígitos, sin máximo, permitiendo saltos), consulta de pedidos, seguimiento desde chat, gestión de estados desde dashboard y cancelación desde estados permitidos con restitución exacta de stock una sola vez.
 - Respeta la frontera con Spec 03 (Spec 03 decide cuándo se confirma y maneja sesión en memoria; Spec 04 gobierna la creación efectiva del pedido).
 ```
-**Qué salió:**:  Las secciones 5, 6 y 7 redactadas en specs/04_orders_claims.spec.md con todo el ciclo de vida, estados y reglas de negocio de pedidos para el MVP.
+
+**Qué salió:** Las secciones 5, 6 y 7 redactadas en specs/04_orders_claims.spec.md con todo el ciclo de vida, estados y reglas de negocio de pedidos para el MVP.
 
 ### Prompt 2.B.17: Documentar contrato OpenAPI, transacciones PostgreSQL y errores (Spec 04)
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Edita `specs/04_orders_and_claims.spec.md` para desarrollar las secciones 8, 9 y 10:
 - Contrato API (Sección 8): Mapea las operaciones `GET /orders`, `GET /orders/{id}` y `PATCH /orders/{id}/status` usando sus `operationId` reales de `docs/openapi.yaml` (sin duplicar payloads ni modificar OpenAPI).
@@ -1633,22 +1705,28 @@ Edita `specs/04_orders_and_claims.spec.md` para desarrollar las secciones 8, 9 y
 - Integridad, transacciones y concurrencia (Sección 10): Detalla la atomicidad en PostgreSQL (creación de pedido, ítems y descuento de stock en una sola transacción con rollback ante fallos previos al COMMIT), prevención de sobreventa concurrente y no duplicación al restituir stock.
 - Distingue expresamente: (1) atomicidad en PostgreSQL, (2) coordinación con la sesión en memoria (respetando la decisión C1 de Spec 03 y su riesgo residual) y (3) garantías que el MVP no ofrece (idempotencia entre instancias).
 ```
-**Qué salió:**: Las secciones 8, 9 y 10 completadas en la especificación, garantizando rigor transaccional y coherencia total con OpenAPI y la decisión C1 de la Spec 03.
+
+**Qué salió:** Las secciones 8, 9 y 10 completadas en la especificación, garantizando rigor transaccional y coherencia total con OpenAPI y la decisión C1 de la Spec 03.
 
 ### Prompt 2.B.18: Incorporar diseño conceptual del dominio Claims para V2 (Spec 04)
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Edita `specs/04_orders_and_claims.spec.md` para redactar la sección 15 (Diseño conceptual V2 de reclamos):
 - Documenta conceptualmente el dominio `claims`: objetivo, actores, ciclo de vida, estados, transiciones, reglas de negocio, flujo de resolución y relación con pedidos y clientes.
 - Vincula los requisitos RE y CH-10, además de la trazabilidad con US-07 y sus tickets.
 - Cumple estrictamente las restricciones: Claims queda fuera del MVP; no definir tablas físicas en PostgreSQL, modelos Prisma ni endpoints en OpenAPI, ni incluirlo en el menú del bot MVP.
 ```
-**Qué salió:**: La sección de diseño conceptual de reclamos (claims) redactada y aislada explícitamente como alcance exclusivo de V2.
+
+**Qué salió:** La sección de diseño conceptual de reclamos (claims) redactada y aislada explícitamente como alcance exclusivo de V2.
 
 ### Prompt 2.B.19: Completar escenarios, matriz de trazabilidad y decisiones pendientes (Spec 04)
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Edita `specs/04_orders_and_claims.spec.md` para desarrollar las secciones 11, 12, 13 y 14:
 - Sección 11 (Escenarios de aceptación): Crea escenarios numerados y verificables siguiendo la convención de las Specs 01–03.
@@ -1656,11 +1734,14 @@ Edita `specs/04_orders_and_claims.spec.md` para desarrollar las secciones 11, 12
 - Sección 13 (Decisiones pendientes): Registra cualquier ambigüedad detectada detallando alternativas, recomendación justificada e impacto (sin aprobarlas ni inventar decisiones).
 - Sección 14 (Observaciones y limitaciones conocidas): Documenta brechas o restricciones técnicas encontradas.
 ```
-**Qué salió:**: La especificación specs/04_orders_and_claims.spec.md 100% completa en estado de borrador, con trazabilidad total y decisiones pendientes formalizadas.
+
+**Qué salió:** La especificación specs/04_orders_and_claims.spec.md 100% completa en estado de borrador, con trazabilidad total y decisiones pendientes formalizadas.
 
 ### Prompt 2.B.20: Validar Spec 04 y generar el informe final para revisión
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Sin modificar ningún archivo adicional, sin hacer commits y manteniendo `specs/04_orders_and_claims.spec.md` como "Borrador v1.0 (Entrega 2), pendiente de aprobación", realiza una validación cruzada completa y entrega el informe final con exactamente estos 10 puntos:
 1. Archivos consultados.
@@ -1675,11 +1756,14 @@ Sin modificar ningún archivo adicional, sin hacer commits y manteniendo `specs/
 10. Diff y estado de Git (`git status` y resumen de cambios demostrando que solo se creó/modificó `specs/04_orders_and_claims.spec.md`).
 Detente y espera revisión humana.
 ```
-**Qué salió:**: El informe final de 10 puntos listo, junto con la comprobación de git status demostrando que solo se tocó el archivo autorizado, tambien indico decisiones que debe tomar el usuario para cerrar la spec 4
+
+**Qué salió:** El informe final de 10 puntos listo, junto con la comprobación de git status demostrando que solo se tocó el archivo autorizado, tambien indico decisiones que debe tomar el usuario para cerrar la spec 4
 
 ### Prompt 2.B.21: Integrar decisiones aprobadas y revisiones de coherencia en Spec 04
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Modifica exclusivamente el archivo `specs/04_orders_claims.spec.md` (sin alterar PRD, arquitectura, OpenAPI, backlog, CLAUDE.md ni Specs 01–03, y manteniendo el estado en "Borrador v1.0 (Entrega 2), pendiente de aprobación") para aplicar lo siguiente:
 1. Documentar DP-01 (Ordenamiento: createdAt DESC, id DESC) como resuelta, aclarando que garantiza orden determinista pero sin prometer páginas inmutables frente a inserciones concurrentes.
@@ -1690,11 +1774,14 @@ Modifica exclusivamente el archivo `specs/04_orders_claims.spec.md` (sin alterar
 6. Ajustar las observaciones: mantener abiertas OBS-01 y OBS-02, conservar OBS-03 a OBS-05, y eliminar OBS-06 si solo correspondía al nombre del archivo.
 7. Verificar que los 36 escenarios mantengan sus IDs y trazabilidad. Ejecuta `git diff --check` y valida que solo se modificó el archivo autorizado.
 ```
-**Qué salió:**: La actualización de la Spec 04 incorporando formalmente las decisiones resueltas (DP-01, DP-02), la precisión de las reglas transaccionales y de consulta, y la depuración de observaciones, manteniendo el repositorio limpio y en estado de borrador.
+
+**Qué salió:** La actualización de la Spec 04 incorporando formalmente las decisiones resueltas (DP-01, DP-02), la precisión de las reglas transaccionales y de consulta, y la depuración de observaciones, manteniendo el repositorio limpio y en estado de borrador.
 
 ### Prompt 2.B.22: Formalizar aprobación de Spec 04, ajustar ESC-32 y actualizar CLAUDE.md
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Realiza el cierre formal de la especificación de pedidos y reclamos realizando exclusivamente estas modificaciones:
 1. En `specs/04_orders_claims.spec.md`:
@@ -1707,35 +1794,40 @@ Realiza el cierre formal de la especificación de pedidos y reclamos realizando 
    - Verifica mediante `git diff --check` y hashes que ningún otro archivo del repositorio fue alterado.
    - Presenta el diff completo, el estado de Git y el informe de validación final. No hagas commit ni push, y no avances a la Spec 05.
 ```
-**Qué salió:**:  El ajuste del escenario de prueba ESC-32, la actualización oficial de la versión y fecha de aprobación en la cabecera de la Spec 04, la sincronización de la tabla en CLAUDE.md y el informe final con los diffs correspondientes sin comprometer cambios en Git.
+
+**Qué salió:** El ajuste del escenario de prueba ESC-32, la actualización oficial de la versión y fecha de aprobación en la cabecera de la Spec 04, la sincronización de la tabla en CLAUDE.md y el informe final con los diffs correspondientes sin comprometer cambios en Git.
 
 ### Prompt 2.B.23: Iniciar la especificación de clientes
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Revisa CLAUDE.md y el backlog para identificar el nombre correcto de la Spec 05. Analiza el PRD, la arquitectura y las especificaciones anteriores.
 
 Crea el borrador de la especificación de clientes, respetando el alcance MVP/V2 y las responsabilidades de cada módulo. No modifiques otros archivos ni hagas commits.
 ```
+
 **Qué salió:** Claude identificó `specs/05_operator_dashboard.spec.md` como nombre canónico y creó el borrador. Desarrolló el dominio de clientes y dejó acceso del operador y pantallas como secciones pendientes.
 **Decisión de alcance:** Se acordó desarrollar clientes (RN-12, CL-02 y CL-03), dejando autenticación y dashboard para una etapa posterior dentro del mismo documento.
 
-### Prompt 2.B.24:  Definir las reglas de normalización telefónica
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+### Prompt 2.B.24: Definir las reglas de normalización telefónica
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Revisa las decisiones pendientes DP-01 a DP-04 de la Spec 05. Propón reglas concretas para separadores, prefijos internacionales, longitud de los teléfonos e identificación de clientes en el seed.
 
 Compara las alternativas con RN-12 y el modelo de datos. No modifiques archivos hasta tener las decisiones aprobadas.
 ```
+
 **Qué salió:** Se identificaron las ambigüedades de normalización y las colisiones de teléfonos. Posteriormente se simplificó la propuesta para ajustarla al alcance real del MVP.
 
-## Prompt 2.B.25: Simplificar la normalización y el seed
+### Prompt 2.B.25: Simplificar la normalización y el seed
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Simplifica la normalización para el MVP. El simulador mostrará +56 como prefijo fijo y el usuario ingresará nueve dígitos.
@@ -1744,12 +1836,13 @@ Rechaza números incompletos o con dígitos adicionales, sin completar números 
 
 Utiliza la misma función para el seed y el chat. Mantén el seed con fixtures ficticios, sin mecanismos complejos de importación ni recuperación.
 ```
+
 **Qué salió:** Se simplificaron las reglas de normalización y el comportamiento del seed. Las decisiones DP-01 a DP-04 quedaron resueltas con una implementación conceptual acotada al MVP.
 
 ### Prompt 2.B.26: Separar validación local y validación del backend
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Aclara en la Spec 05 que la validación de los nueve dígitos ocurre primero en el simulador, antes de llamar al backend.
@@ -1758,36 +1851,39 @@ El backend debe volver a validar el teléfono y mantener las respuestas conversa
 
 Actualiza OBS-07 si la separación resuelve la inconsistencia.
 ```
+
 **Qué salió:** Se documentaron los dos niveles de validación y OBS-07 quedó cerrada. Se mantuvo intacto el contrato conversacional.
 
 ### Prompt 2.B.27: Alinear ESC-06 de la Spec 03
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Revisa ESC-06 de la Spec 03. El escenario utiliza un número internacional sin prefijo explícito, pero la normalización vigente exige el + para conservar códigos internacionales.
 
 Corrige el ejemplo utilizando un prefijo + explícito. Conserva el ID y el propósito del escenario. Versiona la especificación como borrador v1.1 y actualiza su referencia en CLAUDE.md.
 ```
+
 **Qué salió:** ESC-06 se corrigió sin modificar el comportamiento conversacional. La Spec 03 pasó a borrador v1.1, conservando el historial de la v1.0.
 
 ### Prompt 2.B.28: Formalizar Spec 03 v1.1 y actualizar referencias
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Formaliza la aprobación de la Spec 03 v1.1 con fecha 2026-11-18. Cierra OBS-06 de la Spec 05, ya que ESC-06 está alineada con la normalización vigente.
 
 Actualiza las referencias de estado en CLAUDE.md y README.md, sin modificar las demás especificaciones.
 ```
+
 **Qué salió:** Spec 03 quedó aprobada v1.1 y OBS-06 de Spec 05 se cerró. Se actualizaron las referencias documentales.
 
 ### Prompt 2.B.29: Completar acceso del operador y dashboard
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Completa las secciones pendientes de la Spec 05: acceso del operador y pantallas del dashboard.
@@ -1799,10 +1895,10 @@ Respeta las responsabilidades de inventario y pedidos de las Specs 02 y 04. No a
 
 **Qué salió:** Se desarrollaron las secciones de autenticación y dashboard, con trazabilidad hacia las historias y tickets correspondientes.
 
-## Prompt 2.B.30: Resolver decisiones del acceso y navegación
+### Prompt 2.B.30: Resolver decisiones del acceso y navegación
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Resuelve las decisiones pendientes DP-05 a DP-09 de la Spec 05.
@@ -1816,44 +1912,47 @@ Distingue UNAUTHORIZED de INVALID_CREDENTIALS por el código de error. Conserva 
 
 ### Prompt 2.B.31: Formalizar aprobación de Spec 05 v1.0
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Formaliza la aprobación de la Spec 05 v1.0 con fecha 2026-11-18.
 
 Actualiza su estado en CLAUDE.md y README.md. Cierra OBS-09, manteniendo abiertas las alineaciones de backlog que todavía no se han resuelto.
 ```
+
 **Qué salió:** La Spec 05 quedó aprobada v1.0, incluyendo clientes, autenticación y dashboard. Se sincronizaron sus referencias documentales.
 
-### Prompt 2.B.32: Resolver el resaltado de stock crítico**
+### Prompt 2.B.32: Resolver el resaltado de stock crítico
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Analiza DP-04 de la Spec 02. Necesitamos definir cómo destacar los productos con stock crítico en la tabla del dashboard.
 
 Compara las alternativas utilizando los contratos existentes. Prioriza reutilizar listProducts y listStockAlerts, sin duplicar RN-09 en el frontend ni modificar OpenAPI.
 ```
+
 **Qué salió:** Claude recomendó cruzar ambas respuestas por el ID del producto. Se identificaron los riesgos de lecturas en momentos diferentes y la dependencia de planificación entre TK-03.3 y TK-04.1.
 
 ### Prompt 2.B.33: Aplicar DP-04 y alinear el dashboard
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Aplica la alternativa aprobada para DP-04: el frontend debe cruzar listProducts con listStockAlerts y resaltar por identificador.
 
 Actualiza las Specs 02 y 05, incorpora los escenarios necesarios y alinea TK-03.3 con TK-04.1 como dependencia. No modifiques OpenAPI.
 ```
+
 **Qué salió:** DP-04 quedó resuelta en el diseño. Se añadieron ESC-52 a ESC-55 en Spec 05, se actualizó TK-03.3 y ambas especificaciones pasaron a nuevos borradores: Spec 02 v1.2 y Spec 05 v1.1.
 
 ### Prompt 2.B.34: Documentar excepción de planificación entre historias
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Documenta que TK-03.3 depende de TK-04.1, aunque ambos pertenezcan a historias con un orden general diferente.
@@ -1865,20 +1964,21 @@ Mantén los tickets en sus historias originales y explica en el backlog que TK-0
 
 ### Prompt 2.B.35: Corregir inconsistencias de US-03
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Revisa OBS-04 de la Spec 02. Corrige en US-03 la referencia del criterio de aceptación sobre precios y agrega RN-09 a la cabecera de la historia.
 
 No modifiques tickets, puntos ni dependencias. Cierra OBS-04 solamente si ambos asuntos quedan resueltos.
 ```
+
 **Qué salió:** Se corrigió la atribución de las validaciones de precio, stock y mínimo, se agregó RN-09 a la cabecera de US-03 y OBS-04 quedó cerrada.
 
 ### Prompt 2.B.36: Alinear TK-02.4, TK-00.4 y TK-01.2
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Alinea los tickets TK-02.4, TK-00.4 y TK-01.2 con las reglas de las Specs 03 y 05.
@@ -1887,12 +1987,14 @@ Actualiza sus criterios para reflejar la normalización telefónica, el seed sim
 
 Conserva IDs, puntos y dependencias.
 ```
+
 **Qué salió:** Los tres tickets quedaron alineados. Se cerraron OBS-03, OBS-04 y OBS-08 de Spec 05.
 
 ### Prompt 2.B.37: Completar TK-05.4 y el alcance de TK-01.2
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Completa TK-05.4 con la validación local del teléfono: prefijo fijo +56, nueve dígitos, mensajes de error y bloqueo del envío ante entradas inválidas.
 
@@ -1900,12 +2002,13 @@ Completa TK-01.2 con las decisiones de expiración JWT, rutas desconocidas, acce
 
 No modifiques las especificaciones.
 ```
+
 **Qué salió:** Ambos tickets quedaron alineados con Spec 05. Durante la revisión se detectó que faltaba un escenario que verificara específicamente la validación local del teléfono en el simulador.
 
 ### Prompt 2.B.38: Incorporar ESC-56 al simulador
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Agrega ESC-56 a la Spec 05 para verificar la validación local del teléfono en el simulador.
@@ -1914,11 +2017,13 @@ Comprueba el prefijo +56, los nueve dígitos nacionales, los mensajes para entra
 
 Mantén separados el comportamiento del simulador, la normalización del backend y la conversación de Spec 03.
 ```
+
 **Qué salió:** Se incorporó ESC-56 y se actualizaron las matrices de trazabilidad y cobertura. Los 55 escenarios anteriores conservaron sus IDs y contenido.
 
 ### Prompt 2.B.39: Revisar decisiones pendientes de inventario
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
 ```
 Analiza DP-01, DP-02 y DP-06 de la Spec 02.
@@ -1927,26 +2032,27 @@ Revisa la reactivación de productos, las operaciones sobre productos inactivos 
 
 Contrasta las alternativas con el PRD, PostgreSQL, el modelo de datos y OpenAPI. Recomienda una solución compatible con el MVP, sin modificar archivos.
 ```
+
 **Qué salió:** Se recomendaron tres decisiones: sin reactivación en MVP (A), permitir edición y ajuste de stock sobre productos inactivos sin reactivarlos (C), y utilizar actualizaciones parciales con last-write-wins para las modificaciones generales (A).
 
 ### Prompt 2.B.40: Aplicar DP-01, DP-02 y DP-06
 
-Modelo: Opus 1M xHigh
-Herramienta: Claude Code
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
 
-```text
+```
 Aplica DP-01 (A), DP-02 (C) y DP-06 (A) en la Spec 02.
 
 Actualiza las reglas, flujos y escenarios de aceptación. Alinea la Spec 05 para permitir editar y ajustar productos inactivos sin ofrecer reactivación.
 
 Actualiza TK-03.1, TK-03.2 y TK-03.3 con los comportamientos aprobados. Conserva el contrato API, el modelo de datos y las estimaciones.
 ```
-**Qué salió:** Se resolvieron las tres decisiones en Spec 02, incorporando ESC-32 a ESC-37 para inventario y concurrencia, y ESC-57 para el comportamiento de productos inactivos en el dashboard. Los tres tickets quedaron alineados, manteniendo sus puntos y dependencias.
 
+**Qué salió:** Se resolvieron las tres decisiones en Spec 02, incorporando ESC-32 a ESC-37 para inventario y concurrencia, y ESC-57 para el comportamiento de productos inactivos en el dashboard. Los tres tickets quedaron alineados, manteniendo sus puntos y dependencias.
 
 ### Prompt 2.B.41: Formalizar aprobación de las specs 02 y 05
 
-**Modelo:** Opus 1M xHigh 
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
 ```
@@ -1962,15 +2068,15 @@ Verifica las versiones, la trazabilidad de escenarios, los estados de las observ
 
 Revisa los diffs completos y confirma que solo se modificaron los archivos autorizados. No hagas commit ni push.
 ```
-**Qué salió:**: Se formalizó la aprobación de Spec 02 v1.2 y Spec 05 v1.1. Se conservaron los historiales anteriores y se actualizaron CLAUDE.md y README.md para reflejar las cinco specs aprobadas. Las observaciones y los totales del backlog permanecieron sin cambios.
 
+**Qué salió:** Se formalizó la aprobación de Spec 02 v1.2 y Spec 05 v1.1. Se conservaron los historiales anteriores y se actualizaron CLAUDE.md y README.md para reflejar las cinco specs aprobadas. Las observaciones y los totales del backlog permanecieron sin cambios.
 
 ### Prompt 2.B.42: Corregir referencias desactualizadas de aprobación
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
-```text
+```
 Revisa las referencias internas de las specs 02 y 05 que todavía indican que la versión 1.2 de la spec 02 está pendiente de aprobación.
 
 Corrige exclusivamente las cuatro referencias identificadas:
@@ -1988,7 +2094,7 @@ Ejecuta git diff --check y revisa los cambios para confirmar que solo se modific
 No hagas commit ni push.
 ```
 
-**Qué salió:**: Se corrigieron las cuatro referencias. Las specs 02 y 05 conservaron sus estados de aprobación y fechas. La validación confirmó que no quedaron referencias a «pendiente de aprobación» ni a «Borrador v1.2» en ambas especificaciones.
+**Qué salió:** Se corrigieron las cuatro referencias. Las specs 02 y 05 conservaron sus estados de aprobación y fechas. La validación confirmó que no quedaron referencias a «pendiente de aprobación» ni a «Borrador v1.2» en ambas especificaciones.
 
 ### Prompt 2.B.43: Auditoría final de consistencia documental preimplementación
 
@@ -2022,11 +2128,11 @@ Verifica también el estado de Git y diferencia los cambios anteriores de cualqu
 Detente al entregar el informe y espera autorización antes de corregir cualquier hallazgo.
 ```
 
-**Qué salió:**: no encontró contradicciones funcionales entre las cinco specs. Los problemas detectados son principalmente omisiones en los criterios de aceptación del backlog frente a decisiones que ya están aprobadas.
+**Qué salió:** no encontró contradicciones funcionales entre las cinco specs. Los problemas detectados son principalmente omisiones en los criterios de aceptación del backlog frente a decisiones que ya están aprobadas.
 
 ### Prompt 2.B.44: Resolver H-03 — Idempotencia del seed
 
-**Modelo:** Opus 1M xHigh 
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
 ```
@@ -2073,11 +2179,11 @@ Validaciones:
 Al finalizar, presenta el cambio y las validaciones. Detente y espera mi revisión.
 ```
 
-**Qué salió:** : Se hicieron las modficaciones esperada, pero se encontro problemas referentes a los identificadores de productos.
+**Qué salió:** Se hicieron las modficaciones esperada, pero se encontro problemas referentes a los identificadores de productos.
 
 ### Prompt 2.B.45: Resolver H-03 — Idempotencia del seed
 
-**Modelo:** Opus 1M xHigh 
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
 
 ```
@@ -2118,12 +2224,14 @@ Antes de modificar el ticket:
 
 Al terminar, informa qué cambió, qué validaste y el estado de Git. Detente y espera mi revisión.
 ```
-**Qué salió:**: no permitio el cambio ya que esto contradecia las reglas expuestas incialmente.
+
+**Qué salió:** no permitio el cambio ya que esto contradecia las reglas expuestas incialmente.
 
 ### Prompt 2.B.46: Ajustar dependencia de pedidos en TK-00.4
 
-**Modelo:** Opus 1M xHigh 
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Actualiza exclusivamente `backlog/00_habilitadores.md`, específicamente TK-00.4, para aplicar la alternativa A que acabamos de decidir.
 
@@ -2162,12 +2270,14 @@ Ajusta las condiciones del ticket:
 
 Al terminar, informa los cambios y validaciones. No hagas commit ni push y espera mi revisión.
 ```
-**Qué salió:**:Se incorporó la alternativa A en backlog/00_habilitadores.md. Los pedidos del seed solo se cargan cuando los productos correspondientes fueron insertados durante esa misma ejecución. Se preservó el comportamiento de clientes de Spec 05, sin cambios en specs, puntos, dependencias ni totales. Validaciones satisfactorias. Sin commit ni push.
+
+**Qué salió:** Se incorporó la alternativa A en backlog/00_habilitadores.md. Los pedidos del seed solo se cargan cuando los productos correspondientes fueron insertados durante esa misma ejecución. Se preservó el comportamiento de clientes de Spec 05, sin cambios en specs, puntos, dependencias ni totales. Validaciones satisfactorias. Sin commit ni push.
 
 ### Prompt 2.B.47: Cerrar H-07 en TK-01.1
 
-**Modelo:** Opus 1M xHigh 
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 
 Revisa `backlog/US-01_acceso_operador.md` y las referencias correspondientes de `specs/05_operator_dashboard.spec.md`.
@@ -2200,12 +2310,14 @@ Incorpora ambas condiciones en el apartado "Hecho cuando" de TK-01.1, manteniend
 
 Al terminar, informa los cambios, las validaciones y el estado de Git. Detente y espera mi revisión.
 ```
-**Qué salió:**:Se añadieron dos criterios verificables a TK-01.1: costo BCrypt predeterminado declarado en una constante y ausencia de contraseñas o hashes en logs y respuestas HTTP, tanto en login exitoso como fallido. Alineado con Spec 05 §12.2, §15.3, DP-08 y ESC-51. Sin cambios en puntos, dependencias ni totales. Sin commit ni push.
+
+**Qué salió:** Se añadieron dos criterios verificables a TK-01.1: costo BCrypt predeterminado declarado en una constante y ausencia de contraseñas o hashes en logs y respuestas HTTP, tanto en login exitoso como fallido. Alineado con Spec 05 §12.2, §15.3, DP-08 y ESC-51. Sin cambios en puntos, dependencias ni totales. Sin commit ni push.
 
 ### Prompt 2.B.48: Cerrar H-01 en TK-05.3
 
-**Modelo:** Opus 1M xHigh 
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Revisa `backlog/US-05_compra_conversacional.md`, específicamente TK-05.3, y contrástalo con `specs/03_conversational_bot.spec.md` y `specs/04_orders_claims.spec.md`.
 
@@ -2247,10 +2359,14 @@ Si encuentras una contradicción o el contrato no permite precisar el campo, det
 
 Al terminar, informa los cambios y validaciones. No hagas commit ni push y espera mi revisión.
 ```
-**Qué salió:**: se presentaron dos alternativas para cerrar este punto
 
+**Qué salió:** se presentaron dos alternativas para cerrar este punto
 
 ### Prompt 2.B.49: Cerrar H-01 en TK-05.3 Aplicar opción A
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
 ```
 Aplica la opción A para resolver H-01 en TK-05.3 de `backlog/US-05_compra_conversacional.md`.
 
@@ -2275,13 +2391,14 @@ Añade al apartado "Hecho cuando" el criterio acordado:
 
 Informa los cambios y validaciones. Detente y espera mi revisión.
 ```
-**Qué salió:**: Se incorporó a TK-05.3 el requisito de incluir el stock disponible en cada rechazo STOCK_INSUFFICIENT, leído dentro de la transacción. Se vinculó con Spec 04 D-01, ESC-04 y ESC-07, y con RESOLVE_STOCK de Spec 03. Sin modificaciones en specs ni OpenAPI. Totales del backlog preservados. Sin commit ni push.
 
+**Qué salió:** Se incorporó a TK-05.3 el requisito de incluir el stock disponible en cada rechazo STOCK_INSUFFICIENT, leído dentro de la transacción. Se vinculó con Spec 04 D-01, ESC-04 y ESC-07, y con RESOLVE_STOCK de Spec 03. Sin modificaciones en specs ni OpenAPI. Totales del backlog preservados. Sin commit ni push.
 
-### Prompt 2.B.50 Cerrar H-02 en TK-06.1
+### Prompt 2.B.50: Cerrar H-02 en TK-06.1
 
-**Modelo:** Opus 1M xHigh 
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Revisa TK-06.1 en los archivos de `backlog/` y contrástalo con `specs/04_orders_claims.spec.md` (o el nombre exacto de la Spec 04 existente en el repositorio).
 
@@ -2325,11 +2442,14 @@ Antes de redactar, verifica el mecanismo exacto de bloqueo y reintento descrito 
 
 Al terminar, informa los cambios, las validaciones y el estado de Git. Detente y espera mi revisión.
 ```
-**Qué salió:**: Se incorporaron tres criterios a TK-06.1: actualización de productos en orden ascendente por productId, reintento completo de la transacción ante P2034 hasta tres veces y pruebas de integración/concurrencia para ESC-28 y ESC-29. Referencias corregidas a D-05. Sin cambios en specs, puntos, dependencias ni totales. Sin commit ni push.
 
-### Prompt 2.B.51 Completar criterio de orden en TK-06.2
-**Modelo:** Opus 1M xHigh 
+**Qué salió:** Se incorporaron tres criterios a TK-06.1: actualización de productos en orden ascendente por productId, reintento completo de la transacción ante P2034 hasta tres veces y pruebas de integración/concurrencia para ESC-28 y ESC-29. Referencias corregidas a D-05. Sin cambios en specs, puntos, dependencias ni totales. Sin commit ni push.
+
+### Prompt 2.B.51: Completar criterio de orden en TK-06.2
+
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Necesito corregir la observación H-05 de la auditoría de consistencia del backlog.
 **Contexto**
@@ -2354,11 +2474,14 @@ La auditoría detectó que el ticket TK-06.2 no explicita el segundo criterio de
 - Confirma que los totales del backlog permanecen iguales: MVP 31 tickets / 96 puntos; V2 11 tickets / 27 puntos; total 42 tickets / 123 puntos.
 Al finalizar, informa el archivo modificado, el criterio incorporado, las validaciones realizadas y el estado de Git.
 ```
-**Qué salió:**: H-05 revisada y resuelta. El ajuste es correcto y está bien delimitado. Buena precisión con la referencia: corresponde a DP-01 de la Spec 04, no a D-01. También queda bien asociado el test de integración ESC-32 a TK-06.2.
 
-### Prompt 2.B.52 Completar búsqueda por número de pedido en TK-06.3
-**Modelo:** Opus 1M xHigh 
+**Qué salió:** H-05 revisada y resuelta. El ajuste es correcto y está bien delimitado. Buena precisión con la referencia: corresponde a DP-01 de la Spec 04, no a D-01. También queda bien asociado el test de integración ESC-32 a TK-06.2.
+
+### Prompt 2.B.52: Completar búsqueda por número de pedido en TK-06.3
+
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Necesito corregir la observación H-06 de la auditoría de consistencia del backlog.
 **Contexto**
@@ -2389,11 +2512,14 @@ La Spec 04, decisión D-08, mantiene este contrato. La auditoría detectó que T
 - Confirma que los totales permanecen iguales: MVP 31 tickets / 96 puntos; V2 11 tickets / 27 puntos; total 42 tickets / 123 puntos.
 Al finalizar, informa el archivo modificado, los criterios incorporados, las referencias utilizadas, las validaciones realizadas y el estado de Git.
 ```
-**Qué salió:**: El criterio quedó correctamente distribuido entre las responsabilidades del FSM y el servicio: normalización antes de buscar e igualdad exacta contra order_number.
 
-### Prompt 2.B.53 Evaluar estimaciones de TK-01.2 y TK-05.4
-**Modelo:** Opus 1M xHigh 
+**Qué salió:** El criterio quedó correctamente distribuido entre las responsabilidades del FSM y el servicio: normalización antes de buscar e igualdad exacta contra order_number.
+
+### Prompt 2.B.53: Evaluar estimaciones de TK-01.2 y TK-05.4
+
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Necesito evaluar la observación H-08 de la auditoría final del backlog.
 **Contexto**
@@ -2423,13 +2549,14 @@ Presenta una tabla con:
 Si recomiendas cambiar puntos, indica el valor sugerido y el impacto exacto sobre los totales del backlog, pero no lo apliques.
 El objetivo es tomar una decisión de planificación y cerrar H-08, no abrir una nueva ronda de diseño.
 ```
-**Qué salió:**: Analisis de las estimaciones para los tickets dado y recomendacion para aplicar los cambios.
 
+**Qué salió:** Analisis de las estimaciones para los tickets dado y recomendacion para aplicar los cambios.
 
-### Prompt 2.B.54 Actualizar estimación de TK-01.2
+### Prompt 2.B.54: Actualizar estimación de TK-01.2
 
-**Modelo:** Opus 1M xHigh 
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Apruebo la recomendación de la evaluación H-08:
 - TK-01.2 pasa de 2 a 3 puntos.
@@ -2458,24 +2585,29 @@ Actualiza exclusivamente las referencias de estimación y totales afectadas:
 - Revisa el diff y confirma que solo se modificaron los tres archivos autorizados.
 - Informa el estado de Git.
 ```
-**Qué salió:**: Se cerraron los puntos pendientes, se indica hacer commit y push e iniciar implementacion
 
-### Prompt 2.B.55 Actualizar estimación de TK-01.2
+**Qué salió:** Se cerraron los puntos pendientes, se indica hacer commit y push e iniciar implementacion
 
-**Modelo:** Opus 1M xHigh 
+### Prompt 2.B.55: Actualizar estimación de TK-01.2
+
+**Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
  Con los cambios aplicados se da por finalizado la etapa de diseño 2.B,por lo que haz commit y push de los cambios ingresados
 ```
 
-**Qué salió:**: se hice commit y push de los cambios se finalizo el diseño.
+**Qué salió:** se hice commit y push de los cambios se finalizo el diseño.
+
+---
 
 ## Entrega 2.C — Creacion de Agentes y flujo de trabajo
 
 ### Prompt 2.C.1: Analizar la necesidad de un agente de implementación
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Analiza el estado actual del proyecto MedSupply AI y evalúa cómo podemos utilizar agentes de IA para ejecutar los tickets del backlog de forma controlada.
 Necesitamos un agente capaz de implementar funcionalidades sobre un repositorio existente, utilizando las especificaciones aprobadas como fuente de verdad.
@@ -2486,12 +2618,14 @@ Antes de proponer una solución:
 - Determina qué responsabilidades deberían mantenerse bajo supervisión humana.
 No modifiques archivos ni ejecutes acciones sobre el repositorio. Presenta primero un análisis y una propuesta de organización.
 ```
-**Qué salió:**:  Se estableció la necesidad de un flujo de implementación controlado, con responsabilidades delimitadas, supervisión humana y separación entre implementación y validación. El objetivo no era permitir que Claude desarrollara autónomamente, sino construir un mecanismo de ejecución trazable sobre el backlog aprobado.
+
+**Qué salió:** Se estableció la necesidad de un flujo de implementación controlado, con responsabilidades delimitadas, supervisión humana y separación entre implementación y validación. El objetivo no era permitir que Claude desarrollara autónomamente, sino construir un mecanismo de ejecución trazable sobre el backlog aprobado.
 
 ### Prompt 2.C.2: Auditar el repositorio antes de configurar los agentes
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Realiza una auditoría de solo lectura del repositorio antes de crear la estructura de agentes.
 Verifica:
@@ -2505,12 +2639,14 @@ Identifica qué elementos están disponibles y cuáles deben crearse para habili
 No crees archivos, no modifiques documentación y no ejecutes comandos que alteren el repositorio.
 Entrega un diagnóstico y los prerrequisitos para continuar.
 ```
-**Qué salió:**: La auditoría confirmó que el repositorio todavía no contenía código de implementación ni configuración .claude/. Se identificó que las cinco especificaciones estaban aprobadas y que TK-00.8 ya estaba realizado. Esto permitió preparar el entorno de agentes sin asumir que existía infraestructura previa.
+
+**Qué salió:** La auditoría confirmó que el repositorio todavía no contenía código de implementación ni configuración .claude/. Se identificó que las cinco especificaciones estaban aprobadas y que TK-00.8 ya estaba realizado. Esto permitió preparar el entorno de agentes sin asumir que existía infraestructura previa.
 
 ### Prompt 2.C.3: Definir la organización de agentes especializados
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Diseña una organización de agentes especializados para implementar MedSupply AI.
 Necesitamos separar las responsabilidades para evitar que un único agente concentre implementación, validación y revisión de seguridad.
@@ -2529,12 +2665,14 @@ Establece para cada agente:
 La organización debe respetar las especificaciones aprobadas y las exclusiones del MVP establecidas en PRD §4.3.
 Presenta la propuesta antes de crear los archivos.
 ```
+
 **Qué salió:** Se configuró una estructura de seis subagentes especializados. Se estableció la separación entre implementación, QA independiente y revisión de seguridad. Esta distribución permitió evitar que el mismo agente fuera responsable de implementar y aprobar su propio trabajo.
 
 ### Prompt 2.C.4: Definir el control de ejecución mediante el tracker
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Necesitamos incorporar un mecanismo centralizado para controlar la ejecución de los tickets.
 Diseña el archivo backlog/TRACKER.md como fuente operativa del estado de ejecución.
@@ -2548,12 +2686,14 @@ Debe permitir:
 Define también las reglas para actualizar el tracker y evitar que los agentes trabajen sobre tickets que no estén habilitados.
 No permitas que los agentes modifiquen arbitrariamente el orden del backlog.
 ```
-**Qué salió**: Se incorporó backlog/TRACKER.md como mecanismo de seguimiento operativo. Se establecieron reglas para controlar los estados, las dependencias y la asignación de responsables, evitando que los agentes seleccionaran tickets de manera autónoma sin respetar el flujo definido.
+
+**Qué salió:** Se incorporó backlog/TRACKER.md como mecanismo de seguimiento operativo. Se establecieron reglas para controlar los estados, las dependencias y la asignación de responsables, evitando que los agentes seleccionaran tickets de manera autónoma sin respetar el flujo definido.
 
 ### Prompt 2.C.5: Establecer reglas de ejecución secuencial
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Define las reglas de ejecución del flujo multiagente.
 La implementación debe realizarse de forma secuencial, respetando las dependencias del backlog.
@@ -2568,12 +2708,13 @@ Los agentes no deben decidir unilateralmente cambiar el orden de ejecución.
 Documenta estas reglas en la configuración correspondiente.
 ```
 
-**Qué salió**: Se estableció un flujo secuencial de ejecución, evitando implementaciones paralelas y cambios arbitrarios en el orden del backlog. La elegibilidad y las dependencias quedaron como condiciones obligatorias antes de iniciar cada ticket.
+**Qué salió:** Se estableció un flujo secuencial de ejecución, evitando implementaciones paralelas y cambios arbitrarios en el orden del backlog. La elegibilidad y las dependencias quedaron como condiciones obligatorias antes de iniciar cada ticket.
 
 ### Prompt 2.C.6: Incorporar puertas de autorización humana
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Incorpora dos puertas de autorización humana dentro del flujo de implementación.
 La primera puerta debe controlar la autorización para iniciar un ticket:
@@ -2593,12 +2734,14 @@ Ningún agente puede superar estas puertas por decisión propia.
 Si el usuario no autoriza continuar, el flujo debe detenerse sin ejecutar la siguiente etapa.
 Define cómo deben comportarse los agentes ante una autorización denegada o una observación pendiente.
 ```
-**Qué salió**: Se incorporaron dos puertas de control humano. La primera condiciona el inicio de cada ticket y la segunda permite controlar la aceptación del resultado. Se evitó que los agentes pudieran avanzar automáticamente ante decisiones que requieren aprobación del usuario.
+
+**Qué salió:** Se incorporaron dos puertas de control humano. La primera condiciona el inicio de cada ticket y la segunda permite controlar la aceptación del resultado. Se evitó que los agentes pudieran avanzar automáticamente ante decisiones que requieren aprobación del usuario.
 
 ### Prompt 2.C.7: Definir las responsabilidades de QA y seguridad
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Formaliza las responsabilidades de los agentes de QA y seguridad dentro del flujo.
 QA debe realizar una revisión independiente de la implementación:
@@ -2616,12 +2759,14 @@ El agente de seguridad debe operar exclusivamente en modo de lectura:
 Ninguno de estos agentes debe asumir automáticamente la autorización humana.
 Define cómo se comunican los resultados al coordinador y qué condiciones obligan a detener el flujo.
 ```
-**Qué salió**: Se formalizó la independencia de QA respecto del agente implementador y se restringió seguridad a revisión de solo lectura. Los hallazgos deben regresar al flujo de coordinación para su evaluación, sin que los agentes puedan aprobarse mutuamente.
+
+**Qué salió:** Se formalizó la independencia de QA respecto del agente implementador y se restringió seguridad a revisión de solo lectura. Los hallazgos deben regresar al flujo de coordinación para su evaluación, sin que los agentes puedan aprobarse mutuamente.
 
 ### Prompt 2.C.8: Restringir las operaciones Git y los cambios sobre el repositorio
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Incorpora restricciones explícitas sobre las operaciones Git y las modificaciones del repositorio.
 El flujo debe cumplir las siguientes condiciones:
@@ -2634,12 +2779,14 @@ El flujo debe cumplir las siguientes condiciones:
 Los cambios deben quedar disponibles para revisión humana antes de cualquier operación de publicación.
 Documenta estas restricciones en las instrucciones de los agentes y en el flujo de trabajo.
 ```
-**Qué salió**: Se estableció que los agentes no pueden ejecutar commits ni push automáticamente. También se delimitaron los cambios al alcance autorizado y se mantuvo la revisión humana como condición previa a la publicación.
+
+**Qué salió:** Se estableció que los agentes no pueden ejecutar commits ni push automáticamente. También se delimitaron los cambios al alcance autorizado y se mantuvo la revisión humana como condición previa a la publicación.
 
 ### Prompt 2.C.9: Incorporar las exclusiones funcionales del MVP
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Revisa las restricciones funcionales del proyecto y asegúrate de que todos los agentes respeten las exclusiones establecidas en PRD §4.3.
 Las instrucciones de los agentes deben impedir:
@@ -2650,12 +2797,14 @@ Las instrucciones de los agentes deben impedir:
 Cuando un ticket o una dependencia parezca requerir una funcionalidad excluida, el agente debe detenerse y consultar al usuario.
 Asegura que estas restricciones sean transversales a todos los agentes.
 ```
-**Qué salió**: Las exclusiones del PRD §4.3 quedaron incorporadas como restricciones transversales del flujo. Se estableció que cualquier necesidad fuera del MVP debe escalarse al usuario en lugar de resolverse mediante ampliaciones autónomas.
+
+**Qué salió:** Las exclusiones del PRD §4.3 quedaron incorporadas como restricciones transversales del flujo. Se estableció que cualquier necesidad fuera del MVP debe escalarse al usuario en lugar de resolverse mediante ampliaciones autónomas.
 
 ### Prompt 2.C.10: Validar la configuración integral del flujo multiagente
 
 **Modelo:** Opus 1M xHigh
-Herramienta: Claude Code
+**Herramienta:** Claude Code
+
 ```
 Realiza una revisión integral de la configuración de agentes y del flujo de trabajo.
 Verifica:
@@ -2673,51 +2822,62 @@ Identifica inconsistencias, instrucciones contradictorias o permisos excesivos.
 No amplíes el alcance funcional ni implementes tickets durante esta revisión.
 Entrega un informe con los hallazgos y las correcciones necesarias.
 ```
-**Qué salió**: Se completó la configuración de seis subagentes, el tracker y las reglas de ejecución secuencial. Quedaron establecidos los dos controles humanos, QA independiente, seguridad de solo lectura y ausencia de commits y push automáticos.
 
-# Entrega 2.D — Implementación de tickets
+**Qué salió:** Se completó la configuración de seis subagentes, el tracker y las reglas de ejecución secuencial. Quedaron establecidos los dos controles humanos, QA independiente, seguridad de solo lectura y ausencia de commits y push automáticos.
+
+---
+
+## Entrega 2.D — Implementación de tickets
 
 ### Prompt 2.D.1: Identificar el siguiente ticket elegible
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Revisa el backlog y determina cuál es el siguiente ticket que cumple las condiciones para iniciar su ejecución.
 Evalúa sus dependencias, estado actual, orden de prioridad y documentación relacionada.
 Todavía no delegues trabajo ni modifiques archivos. Primero presenta tu análisis y justifica cuál debería ser el siguiente ticket.
 ```
+
 **Qué salió:** El coordinador identificó TK-00.1 — [INFRA] Proyecto backend como el siguiente ticket elegible. Comprobó que estaba pendiente, no tenía dependencias bloqueantes y correspondía al siguiente habilitador del backlog. Presentó la recomendación para aprobación humana.
 
 ### Prompt 2.D.2: Autorizar la preparación del ticket
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 De acuerdo con el análisis, podemos avanzar con TK-00.1.
 Antes de implementar, prepara la etapa de validación. Delega al agente QA la definición de los escenarios que permitirán comprobar los criterios de aceptación del ticket.
 No autorices todavía la implementación. Primero quiero revisar el resultado de QA.
 ```
+
 **Qué salió:** El coordinador delegó la preparación de los escenarios al agente `qa-bdd-analyst`. Se mantuvo separada la preparación de pruebas de la implementación y se dejó pendiente la aprobación humana para continuar.
 
 ### Prompt 2.D.3: Revisar los escenarios de QA
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Revisa el resultado entregado por QA para TK-00.1.
 Comprueba que los escenarios cubran los criterios de aceptación, los errores esperados y los comportamientos relevantes del backend.
 Identifica cualquier supuesto que necesite una decisión humana antes de autorizar la implementación.
 ```
+
 **Qué salió:** QA preparó 22 escenarios, organizados en seis archivos, con un total de 58 pruebas. El coordinador presentó los supuestos y observaciones para revisión humana, sin modificar el contrato ni los escenarios por iniciativa propia.
 
 ### Prompt 2.D.4: Resolver las observaciones de QA
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Presenta las observaciones identificadas por QA de forma individual, indicando el comportamiento esperado, la recomendación y las consecuencias de cada alternativa.
 No apliques cambios ni continúes con la implementación hasta recibir mis decisiones.
 ```
+
 **Qué salió:** El coordinador presentó cinco observaciones para resolución humana:
 
 - **O1:** aceptar la observación y registrarla para seguimiento en TK-00.6.
@@ -2730,6 +2890,7 @@ No apliques cambios ni continúes con la implementación hasta recibir mis decis
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Aprobar las decisiones O1 a O5 según lo acordado:
 - O1: aceptar y dar seguimiento en TK-00.6.
@@ -2741,45 +2902,53 @@ Con estas decisiones, autorizo la implementación de TK-00.1.
 Delega el trabajo a `backend-engineer`. Mantén los escenarios de QA y el contrato aprobado sin modificaciones. Respeta el límite del parser JSON inferior a 1 MB y evita exponer secretos.
 El coordinador debe supervisar el resultado, pero no sustituir al agente de implementación.
 ```
+
 **Qué salió:** El coordinador recibió la autorización y delegó la implementación a `backend-engineer`. El agente trabajó sobre el scaffold del backend con Express y TypeScript, respetando las decisiones aprobadas, los límites del ticket y los escenarios de QA. El coordinador mantuvo la responsabilidad de seguimiento y coordinación.
 
 ### Prompt 2.D.6: Revisar el resultado de implementación
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Revisa el informe  entregado y comprueba que los cambios realizados correspondan al alcance de TK-00.1 y a las decisiones aprobadas.
 Verifica qué pruebas se ejecutaron, qué resultados se obtuvieron y si existen observaciones pendientes.
 No cierres el ticket todavía.
 ```
+
 **Qué salió:** El coordinador recibió el resultado de `backend-engineer` y revisó el cumplimiento del alcance. Se confirmó la implementación de la configuración validada con Zod, la aplicación Express, el endpoint de salud, los middlewares de validación y el manejo centralizado de errores. Las observaciones identificadas durante las pruebas quedaron pendientes de resolución.
 
 ### Prompt 2.D.7: Revisar la corrección de parámetros mal codificados
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 QA identificó un comportamiento incorrecto en el tratamiento de parámetros de ruta mal codificados.
 Revisa el hallazgo y solicita al agente de implementación que lo corrija de acuerdo con la decisión O2.
 La respuesta debe ser 422 con `VALIDATION_ERROR`, mientras que las rutas inexistentes deben conservar el 404.
 Después solicita la validación de los casos afectados.
 ```
+
 **Qué salió:** El coordinador gestionó la corrección mediante `backend-engineer`. Se incorporó el tratamiento adecuado de parámetros mal codificados y la prueba `malformed-params.test.ts`. QA verificó casos como `%E0`, `%`, `%zz`, `%C3%28` y `12%E0`, confirmando que los errores de codificación respondieran con 422 y que las rutas inexistentes conservaran el 404.
 
 ### Prompt 2.D.8: Autorizar la revisión independiente de seguridad
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Autoriza una revisión de seguridad independiente mediante `security-engineer`.
 La revisión debe ser de solo lectura: identifica riesgos, evalúa su impacto y presenta recomendaciones. No permitas que el agente modifique archivos ni amplíe el alcance del ticket.
 ```
+
 **Qué salió:** El coordinador delegó la revisión a `security-engineer`. El agente analizó la implementación y presentó tres observaciones: SEC-01, SEC-02 y SEC-03. Los hallazgos fueron presentados al usuario para tomar las decisiones correspondientes.
 
 ### Prompt 2.D.9: Resolver los hallazgos de seguridad
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Presenta los tres hallazgos de seguridad con su riesgo, recomendación y posible tratamiento.
 Necesito decidir cuáles deben corregirse ahora, cuáles pueden aceptarse y cuáles deben trasladarse a otro ticket.
@@ -2795,6 +2964,7 @@ No realices cambios hasta recibir mi aprobación.
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Aprobar el siguiente tratamiento:
 - SEC-01: corregir la exposición de `X-Powered-By`.
@@ -2810,75 +2980,88 @@ Después solicita la comprobación correspondiente y confirma que no se hayan in
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Con las correcciones realizadas, solicita a QA una nueva ejecución integral de los escenarios de TK-00.1.
 Comprueba también typecheck y lint. Revisa que los resultados correspondan a la versión final de la implementación.
 No cierres el ticket ni prepares commits todavía. Presenta los resultados para mi revisión.
 ```
+
 **Qué salió:** El coordinador solicitó la validación final a QA. Se obtuvo un resultado de 72/72 pruebas aprobadas, incluyendo los escenarios originales y las pruebas incorporadas durante las correcciones. Typecheck y lint finalizaron sin errores. Se verificó el comportamiento con Node 26.13.1 y que los archivos ajenos al alcance permanecieran intactos.
 
 ### Prompt 2.D.12: Autorizar la preparación documental y el commit A
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 La validación técnica está aprobada.
 Prepara el primer commit correspondiente a la preparación documental y configuración inicial del ticket.
 Antes de ejecutarlo, revisa el diff y confirma qué archivos serán incluidos. Mantén separados los cambios documentales de la implementación del backend.
 No realices push.
 ```
+
 **Qué salió:** El coordinador preparó y ejecutó el commit A, `8a1b861`, correspondiente a la preparación documental inicial. Se conservó la separación respecto del commit de implementación. No se realizó push.
 
 ### Prompt 2.D.13: Autorizar el commit de implementación
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Prepara ahora el commit B, correspondiente exclusivamente a la implementación de TK-00.1.
 Revisa el diff y confirma que no se incorporen archivos ajenos al alcance ni cambios de documentación que deban permanecer separados.
 Una vez confirmado el contenido, ejecuta el commit. No realices push.
 ```
+
 **Qué salió:** El coordinador revisó el contenido y ejecutó el commit B, `c0e2423`, correspondiente a la implementación del backend. Los commits A y B quedaron separados y registrados en la rama `feature/entrega-2`. No se realizó push.
 
 ### Prompt 2.D.14: Resolver la actualización documental del alcance
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Durante la revisión del alcance documental identificamos que RNF-09 y las referencias operativas a `PROMPTS.md` no deben formar parte de los requisitos ni del Definition of Done del MVP.
 Analiza el impacto de retirar RNF-09 y sus referencias en la documentación del proyecto.
 No modifiques archivos todavía. Presenta los documentos afectados y las modificaciones necesarias.
 ```
+
 **Qué salió:** El coordinador identificó los documentos que requerían ajustes. Se determinó retirar RNF-09 del PRD, eliminar las referencias operativas a `PROMPTS.md` y actualizar el alcance documental sin modificar código, pruebas ni especificaciones técnicas aprobadas.
 
 ### Prompt 2.D.15: Autorizar la actualización documental
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 Aprobamos la eliminación de RNF-09 y la actualización de las referencias documentales identificadas.
 Autoriza los cambios exclusivamente en los documentos afectados. Mantén `PROMPTS.md` fuera del proyecto, de los análisis técnicos y de los commits.
 Actualiza la versión del PRD y revisa que las referencias restantes sean coherentes.
 Prepara un commit separado y no realices push.
 ```
+
 **Qué salió:** Se actualizaron cinco archivos: `CLAUDE.md`, `README.md`, `backlog/README.md`, `docs/ARCHITECTURE.md` y `docs/PRD.md`. El PRD pasó a la versión 1.3 y RNF-09 fue retirado. Se eliminaron las referencias operativas a `PROMPTS.md` sin modificar código, tests, specs ni `openapi.yaml`. Los cambios quedaron registrados en el commit `cf02b2f`. No se realizó push.
 
 ### Prompt 2.D.16: Autorizar el cierre de TK-00.1
 
 **Modelo:** Opus 1M xHigh
 **Herramienta:** Claude Code
+
 ```
 La implementación, QA, seguridad y documentación ya fueron revisadas.
 Prepara el cierre formal de TK-00.1 en el tracker.
 Actualiza exclusivamente la entrada correspondiente al ticket, registrando el estado final, el commit de implementación y la fecha de aprobación.
 No modifiques otros tickets, no inicies TK-00.2 y no realices push.
 ```
+
 **Qué salió:** El coordinador actualizó exclusivamente `backlog/TRACKER.md`, registrando TK-00.1 como `Hecho`, con el commit de implementación `c0e2423` y la fecha 2026-11-19. El cierre quedó registrado en el commit `6f0a70f`. El ticket finalizó y TK-00.2 permaneció sin iniciar.
 
 ### Prompt 2.D.17: Evaluar la elegibilidad del siguiente ticket
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 TK-00.1 ya fue cerrado y aprobado. Analiza el estado actual del backlog y determina cuál es el siguiente ticket elegible para implementación.
 Para el siguiente ticket:
@@ -2889,12 +3072,14 @@ Para el siguiente ticket:
 - No comiences la implementación ni modifiques archivos.
 Quiero que primero presentes el análisis de elegibilidad y las condiciones necesarias para iniciar el trabajo.
 ```
+
 **Qué salió:** El coordinador identificó TK-00.2, `[INFRA] Proyecto frontend`, como el siguiente ticket elegible después de TK-00.1. El ticket estaba pendiente, no tenía dependencias bloqueantes y correspondía al siguiente elemento del backlog. El coordinador no inició la implementación: presentó el análisis para revisión humana.
 
 ### Prompt 2.D.18: Preparar la validación funcional antes de implementar
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Antes de delegar la implementación de TK-00.2, quiero que preparemos una validación independiente de su alcance.
 Pasa el ticket a análisis y delega a `qa-bdd-analyst` la elaboración de escenarios de aceptación.
@@ -2907,12 +3092,14 @@ El agente QA debe:
 No delegues todavía a `frontend-engineer`. No modifiques código ni cierres el ticket.
 Presenta el resultado de QA para que podamos revisar los escenarios antes de tomar decisiones técnicas.
 ```
-**Qué salió:**El coordinador pasó TK-00.2 a `En análisis` y asignó la responsabilidad a `qa-bdd-analyst`. El agente QA preparó 25 escenarios Given/When/Then, incluyendo la cobertura de los criterios del ticket y de ESC-40, ESC-45, ESC-49 y ESC-50. Como el directorio `frontend/` todavía no existía, los escenarios quedaron inicialmente sin cumplimiento. Se estableció así una línea base independiente para comparar la implementación posterior.
+
+**Qué salió:** El coordinador pasó TK-00.2 a `En análisis` y asignó la responsabilidad a `qa-bdd-analyst`. El agente QA preparó 25 escenarios Given/When/Then, incluyendo la cobertura de los criterios del ticket y de ESC-40, ESC-45, ESC-49 y ESC-50. Como el directorio `frontend/` todavía no existía, los escenarios quedaron inicialmente sin cumplimiento. Se estableció así una línea base independiente para comparar la implementación posterior.
 
 ### Prompt 2.D.19: Revisar los escenarios y delimitar el alcance funcional
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Presenta los 25 escenarios preparados por QA y analiza su relación con el alcance real de TK-00.2.
 Necesito que distingas:
@@ -2923,6 +3110,7 @@ Necesito que distingas:
 Revisa especialmente ESC-40, ESC-45, ESC-49 y ESC-50.
 No amplíes TK-00.2 para incorporar funcionalidades que pertenecen a otros tickets. Presenta las dependencias y los escenarios que solo podrán completarse en etapas posteriores.
 ```
+
 **Qué salió:** Se delimitó el alcance entre varios tickets:
 - TK-00.2: estructura del frontend, rutas, layout provisional, menú, cliente API, configuración de entorno y proxy.
 - TK-01.2: login, sesión, protección de rutas y cierre de sesión real.
@@ -2934,7 +3122,8 @@ También se determinó que TK-00.2 no debía incorporar rutas ni entradas de men
 ### Prompt 2.D.20: Resolver las decisiones de arquitectura del frontend
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Con los escenarios de QA como referencia, prepara las decisiones técnicas necesarias para implementar TK-00.2.
 Quiero revisar explícitamente:
@@ -2950,6 +3139,7 @@ Quiero revisar explícitamente:
 - Necesidad o no de una revisión de seguridad independiente.
 Distingue las decisiones que requieren aprobación humana de las recomendaciones técnicas. No instales dependencias ni modifiques archivos todavía.
 ```
+
 **Qué salió:** El coordinador presentó las decisiones D1–D10 y las observaciones OBS-01 a OBS-09 identificadas durante el análisis de QA.
 Entre las decisiones principales quedaron:
 - Implementación a cargo de `frontend-engineer` y validación independiente a cargo de `qa-bdd-analyst`.
@@ -2965,8 +3155,10 @@ Entre las decisiones principales quedaron:
 Las decisiones quedaron pendientes de aprobación humana.
 
 ### Prompt 2.D.21: Revisar las observaciones y aprobar el alcance
+
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Revisa las observaciones OBS-01 a OBS-09 presentadas por QA y relaciónalas con las decisiones D1–D10.
 Quiero que las condiciones de implementación sean explícitas:
@@ -2981,12 +3173,15 @@ Quiero que las condiciones de implementación sean explícitas:
 - Debe documentarse la consideración de CORS cuando se configure una URL externa.
 Si no existen contradicciones, presenta el conjunto final de decisiones para mi aprobación. No implementes todavía.
 ```
-**Qué salió:**Se consolidaron las decisiones técnicas y las nueve observaciones de QA como condiciones de implementación.
+
+**Qué salió:** Se consolidaron las decisiones técnicas y las nueve observaciones de QA como condiciones de implementación.
 Se acordó que los escenarios que no pudieran automatizarse en TK-00.2 debían conservar su estado parcial y sus dependencias futuras. También se estableció que el proxy de desarrollo utilizaría el backend local y que la configuración de entorno no debía introducir secretos en el bundle.
 
 ### Prompt 2.D.22: Verificar las dependencias antes de instalarlas
+
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Antes de autorizar la instalación de dependencias, delega a `frontend-engineer` una comprobación de compatibilidad del stack aprobado.
 La verificación debe realizarse fuera del repositorio del proyecto, en un entorno temporal.
@@ -3002,13 +3197,15 @@ Debe comprobar:
 Presenta las versiones concretas y los resultados antes de instalar nada en el proyecto.
 No modifiques el repositorio.
 ```
+
 **Qué salió:** El coordinador delegó la comprobación a `frontend-engineer`. El especialista probó conjuntamente las 17 dependencias propuestas utilizando Node 26.13.1 y npm 11.20.0. La instalación, `npm ci`, `tsc -b`, `vite build` y `eslint .` finalizaron correctamente. También comprobó que `npm ls` no presentaba dependencias inválidas o incompatibles.
 La comprobación permitió detectar restricciones importantes de compatibilidad antes de introducir el stack en el proyecto.
 
 ### Prompt 2.D.23: Evaluar incompatibilidades y decisiones sobre dependencias
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Presenta los resultados de la verificación de dependencias y explícame las incompatibilidades detectadas.
 Quiero revisar especialmente:
@@ -3023,6 +3220,7 @@ Quiero revisar especialmente:
 - La justificación de cada dependencia de desarrollo.
 No cambies versiones por tu cuenta. Presenta alternativas y consecuencias para que pueda decidir.
 ```
+
 **Qué salió:** Se evaluaron las siguientes decisiones:
 
 - Ant Design 5.29.3, porque Ant Design 6 presentaba incompatibilidades de tipos con React 18.
@@ -3038,7 +3236,8 @@ La comprobación también confirmó la inclusión de `@eslint/js` y la justifica
 ### Prompt 2.D.24: Aprobar las versiones y autorizar la implementación
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Apruebo las 17 dependencias y sus versiones exactas, junto con las decisiones R1–R8 y las decisiones adicionales presentadas.
 Confirma que la implementación respetará lo siguiente:
@@ -3055,12 +3254,14 @@ Confirma que la implementación respetará lo siguiente:
 El script de instalación de `fsevents` no está aprobado. Si aparece una acción de instalación adicional que requiera autorización, detente y consúltame.
 Una vez confirmadas estas condiciones, autorizo la implementación de TK-00.2 por `frontend-engineer`.
 ```
+
 **Qué salió:** El coordinador registró la aprobación de las dependencias y las decisiones técnicas. TK-00.2 pasó a `En desarrollo`, con `frontend-engineer` como responsable de implementación. La autorización mantuvo las restricciones de alcance y las condiciones de instalación previamente acordadas.
 
 ### Prompt 2.D.25: Delegar la implementación del frontend
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Delega la implementación de TK-00.2 a `frontend-engineer`, utilizando exclusivamente las decisiones aprobadas y los escenarios de QA como referencia.
 La implementación debe contemplar:
@@ -3083,6 +3284,7 @@ Restricciones:
 - No leer, modificar ni incorporar `PROMPTS.md`.
 Si aparece una discrepancia técnica que requiera una decisión nueva, detente y preséntamela antes de continuar.
 ```
+
 **Qué salió:** El coordinador delegó la implementación al especialista frontend. Se construyeron los 21 archivos del proyecto frontend, además de los cambios autorizados en `.env.example`, `.gitignore` y la sección de comandos de `CLAUDE.md`.
 El especialista utilizó Node 26.13.1 y npm 11.20.0, generó el lockfile y comprobó la instalación desde cero.
 La aplicación incorporó las rutas MVP, el layout provisional, el menú aprobado, las pantallas iniciales, el cliente API y el proxy de desarrollo.
@@ -3091,13 +3293,15 @@ No se incorporaron autenticación, sesión, rutas V2 ni pruebas automatizadas.
 ### Prompt 2.D.26: Resolver el comportamiento de la URL base vacía
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Durnte la revisión de la implementación se identificó un detalle en la configuración de `VITE_API_BASE_URL`.
 El operador de fallback utiliza `??`, por lo que una variable definida como cadena vacía no activa el valor por defecto.
 Analiza el problema y presenta una corrección mínima que permita utilizar `/api/v1` tanto cuando la variable no existe como cuando está vacía, sin alterar los valores personalizados válidos.
 No modifiques el código hasta presentar la solución y solicitar mi aprobación.
 ```
+
 **Qué salió:** El coordinador presentó el problema y propuso utilizar `||` en lugar de `??` para resolver el fallback.
 Se aprobó el cambio.
 `frontend-engineer` modificó una línea en `frontend/src/api/client.ts` y comprobó los siguientes casos:
@@ -3110,7 +3314,8 @@ Typecheck, lint y build volvieron a pasar.
 ### Prompt 2.D.27: Solicitar validación independiente de la implementación
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 La implementación de TK-00.2 está terminada. Antes de preparar su cierre, delega la validación independiente a `qa-bdd-analyst`.
 El agente debe:
@@ -3125,14 +3330,17 @@ El agente debe:
 La validación debe ser independiente: QA no debe modificar el código del implementador.
 Solicita un informe con evidencias, escenarios aprobados, parciales, defectos y observaciones. No cierres el ticket.
 ```
+
 **Qué salió:** El coordinador pasó TK-00.2 a `En QA` y asignó la validación a `qa-bdd-analyst`.
 El especialista ejecutó las comprobaciones de forma independiente y emitió un informe con el veredicto **Aprobado con observaciones**.
 No encontró defectos bloqueantes. Confirmó el funcionamiento de las rutas, el menú, el proxy, el build, lint y typecheck, además de la ausencia de secretos en el bundle.
 También verificó que los 72 tests del backend continuaban pasando.
+
 ### Prompt 2.D.28: Evaluar el informe de QA y aceptar sus observaciones
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Presenta y analiza el informe de `qa-bdd-analyst`.
 Necesito distinguir:
@@ -3150,6 +3358,7 @@ Considera que:
 - QA-00.2-14 utilizó un método alternativo porque el cliente HTTP no es importado por ninguna pantalla y Vite lo elimina del bundle.
 Presenta tu recomendación, pero no cierres el ticket ni modifiques el tracker sin mi autorización.
 ```
+
 **Qué salió:**
 El informe de QA registró 22 escenarios aprobados y tres parciales:
 - QA-00.2-08, relacionado con ESC-40.
@@ -3160,7 +3369,8 @@ Para QA-00.2-14, el especialista compiló el cliente HTTP de forma aislada y com
 ### Prompt 2.D.29: Revisar la Definition of Done antes del cierre
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Antes de preparar el paquete de cierre, revisa la Definition of Done de `backlog/README.md` punto por punto contra la evidencia de implementación y QA.
 Distingue claramente:
@@ -3172,9 +3382,9 @@ Distingue claramente:
 No asumas que la aprobación de QA equivale automáticamente al cumplimiento completo de la Definition of Done.
 Si encuentras un criterio obligatorio que no esté cubierto por las excepciones aprobadas, detente y explícame la discrepancia.
 No modifiques archivos, no hagas commits y no cierres el ticket durante esta revisión.
-**Qué salió:**
 ```
-La revisión identificó que el punto 2 de la Definition of Done tenía dos aspectos diferentes:
+
+**Qué salió:** La revisión identificó que el punto 2 de la Definition of Done tenía dos aspectos diferentes:
 - Las pruebas de unidad e integración y los criterios automatizados estaban exceptuados por D3/OBS-03 y quedaban pendientes de TK-00.5.
 - Lint y typecheck pasaban localmente, pero todavía no podían ejecutarse en CI porque la infraestructura de integración continua correspondía a TK-00.7.
 El coordinador detectó que la excepción de D3/OBS-03 no cubría explícitamente la ejecución en CI y solicitó una decisión humana antes de preparar el cierre.
@@ -3182,7 +3392,8 @@ El coordinador detectó que la excepción de D3/OBS-03 no cubría explícitament
 ### Prompt 2.D.30: Aprobar la excepción de CI y autorizar el seguimiento
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Apruebo ampliar explícitamente la excepción del punto 2 de la Definition of Done para TK-00.2.
 El estado debe quedar documentado así:
@@ -3199,12 +3410,14 @@ También autorizo los cambios correspondientes en `backlog/TRACKER.md`:
 Después de modificar el tracker, presenta el diff exacto y el paquete de cierre.
 No realices commits, push ni cierres el ticket.
 ```
+
 **Qué salió:** El coordinador actualizó exclusivamente `backlog/TRACKER.md`, dejando TK-00.2 en `Pendiente de aprobación humana` y registrando los seguimientos correspondientes. La revisión confirmó que no se modificaron otros archivos durante esta etapa.
 
 ### Prompt 2.D.31: Corregir la presentación de la cobertura funcional y QA
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Revisa el paquete de cierre y separa dos dimensiones que no deben confundirse:
 1. El resultado individual de cada escenario QA utilizando el método de verificación acordado.
@@ -3218,6 +3431,7 @@ En particular:
 - ESC-40 y ESC-49 deben conservar sus pendientes funcionales y de automatización.
 No ejecutes nuevas pruebas ni modifiques código. Presenta una versión corregida del paquete de cierre.
 ```
+
 **Qué salió:** El coordinador presentó una versión corregida que separó los resultados de QA de la cobertura completa de los criterios funcionales.
 Quedó documentado que:
 - 22 de los 25 escenarios fueron aprobados.
@@ -3229,7 +3443,8 @@ Quedó documentado que:
 ### Prompt 2.D.32: Autorizar los commits y el cierre de TK-00.2
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code  
+**Herramienta:** Claude Code
+
 ```
 Apruebo expresamente los dos commits y el cierre de TK-00.2.
 **Commit 1 — Implementación**
@@ -3251,6 +3466,7 @@ Condiciones:
 - Verificar los hashes, el contenido del segundo commit y que el árbol de trabajo quede limpio.
 - Después de ambos commits, detenerse sin iniciar otro ticket.
 ```
+
 **Qué salió:** El coordinador ejecutó los dos commits locales, sin push:
 1. `f99cb47b826a1299b2634973c07fb4563b628ccd` — Implementación del frontend.
 2. `657325aaf2060a5fa499073592fb157f98d5f586` — Cierre de TK-00.2.
@@ -3263,10 +3479,11 @@ La verificación final confirmó:
 - El coordinador se detuvo sin iniciar TK-00.6, TK-00.3 ni otro ticket.
 **Resultado:** TK-00.2 quedó cerrado como `Hecho`, con dos commits locales y trazabilidad de implementación y cierre.
 
-## Prompt 2.D.33 — Evaluar la elegibilidad de TK-00.6
+### Prompt 2.D.33: Evaluar la elegibilidad de TK-00.6
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Necesito evaluar la elegibilidad de TK-00.6 antes de iniciar cualquier implementación.
 Actúa como coordinador del ticket. Revisa el backlog, las especificaciones aprobadas, la arquitectura existente, los requisitos no funcionales y las dependencias con los tickets anteriores.
@@ -3279,13 +3496,15 @@ Determina:
 Recuerda que MedSupply AI es un MVP académico: el evaluador debe poder clonar, configurar, levantar y probar el producto. No se desplegará en producción. Evita introducir complejidad productiva que no aporte a ese objetivo.
 No modifiques archivos ni cambies estados. Si falta información, identifícala y presenta el resultado para revisión.
 ```
+
 **Qué salió:** Se identificó TK-00.6 como un ticket habilitador de infraestructura. Se determinó que debía preparar la ejecución reproducible del producto, considerando Docker, PostgreSQL, backend, frontend y la entrega integrada.
 Se estableció que primero debía completarse el análisis y la preparación documental mediante Gate 1. No se autorizó todavía la implementación.
 
-## Prompt 2.D.34 — Construir la matriz de escenarios de QA
+### Prompt 2.D.34: Construir la matriz de escenarios de QA
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Prepara la matriz de QA de TK-00.6 antes de implementar.
 Delega el análisis de escenarios al especialista correspondiente y consolida los resultados.
@@ -3302,13 +3521,15 @@ La matriz debe cubrir:
 Separa los escenarios que pertenecen a TK-00.6 de aquellos que corresponden a otros tickets.
 No inventes criterios de aceptación ni modifiques las especificaciones aprobadas. Presenta los escenarios, sus dependencias y las dudas detectadas para revisión.
 ```
+
 **Qué salió:** Se preparó la matriz A1 con 48 escenarios de TK-00.6 y 24 escenarios diferidos a otros tickets.
 Se identificaron escenarios provisionales y dependencias que necesitaban decisiones técnicas antes de convertirse en criterios definitivos.
 
-## Prompt 2.D.35 — Analizar la arquitectura de infraestructura
+### Prompt 2.D.35: Analizar la arquitectura de infraestructura
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Analiza la arquitectura necesaria para implementar TK-00.6.
 Delega el análisis técnico a los especialistas correspondientes y consolida una propuesta de arquitectura.
@@ -3325,14 +3546,16 @@ Distingue el entorno de desarrollo de la entrega demostrable del MVP.
 Prioriza una arquitectura sencilla y reproducible. No introduzcas infraestructura adicional ni mecanismos propios de producción que no sean necesarios para ejecutar y demostrar el producto.
 Prepara el documento A2 en el scratchpad. No lo copies al repositorio ni modifiques archivos del proyecto.
 ```
+
 **Qué salió:**
 Se preparó la propuesta A2 de arquitectura, incluyendo la separación entre el Compose de desarrollo y el de entrega, el uso de PostgreSQL, la construcción del backend y el acceso al frontend mediante Nginx.
 Quedaron identificadas decisiones técnicas que debían resolverse antes de implementar.
 
-## Prompt 2.D.36 — Consolidar las decisiones técnicas pendientes
+### Prompt 2.D.36: Consolidar las decisiones técnicas pendientes
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Consolida las decisiones técnicas necesarias para TK-00.6.
 Revisa A1, A2, los requisitos, la arquitectura y las decisiones previamente aprobadas.
@@ -3344,13 +3567,15 @@ Para cada punto pendiente:
 5. Identifica si requiere aprobación humana.
 No conviertas recomendaciones en decisiones aprobadas. No modifiques los documentos ni el repositorio.
 ```
+
 **Qué salió:** Se consolidaron las decisiones D.2 y los puntos técnicos pendientes. Se estableció qué aspectos podían resolverse documentalmente y cuáles condicionaban la implementación.
 Se mantuvo la separación entre decisiones propuestas y decisiones que necesitaban autorización.
 
-## Prompt 2.D.37 — Revisar y aprobar las decisiones D.2
+### Prompt 2.D.37: Revisar y aprobar las decisiones D.2
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Prepara la revisión de las decisiones D.2 de TK-00.6.
 Presenta cada decisión con su justificación y sus consecuencias sobre:
@@ -3363,13 +3588,15 @@ Presenta cada decisión con su justificación y sus consecuencias sobre:
 Identifica cuáles necesitan una decisión expresa del usuario.
 No apliques cambios todavía. Espera la aprobación humana antes de modificar los documentos.
 ```
-**Qué salió:**Se revisaron 13 decisiones D.2.
+
+**Qué salió:** Se revisaron 13 decisiones D.2.
 El usuario aprobó ocho decisiones: #1, #2, #3, #4, #5, #8, #9 y #12. Las demás conservaron su estado según las decisiones y condiciones previamente acordadas.
 
-## Prompt 2.D.38 — Aplicar las decisiones aprobadas a la documentación
+### Prompt 2.D.38: Aplicar las decisiones aprobadas a la documentación
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Aplica exclusivamente las ocho decisiones D.2 aprobadas (#1, #2, #3, #4, #5, #8, #9 y #12) a los documentos autorizados.
 Los especialistas pueden preparar las modificaciones, pero tú debes consolidarlas y revisar su coherencia.
@@ -3380,13 +3607,15 @@ Comprueba que los cambios:
 - Mantengan la coherencia entre QA, arquitectura y backlog.
 No apliques decisiones pendientes ni modifiques archivos del repositorio. Presenta los diffs para revisión.
 ```
-**Qué salió:**Las ocho decisiones aprobadas quedaron reflejadas en los cuatro documentos autorizados.
+
+**Qué salió:** Las ocho decisiones aprobadas quedaron reflejadas en los cuatro documentos autorizados.
 Se revisaron las ediciones de los especialistas y se realizó una auditoría de coherencia. No se detectaron contradicciones en los cambios consolidados.
 
-## Prompt 2.D.39 — Auditar la documentación antes de aprobar Gate 1
+### Prompt 2.D.39: Auditar la documentación antes de aprobar Gate 1
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Realiza una auditoría documental de TK-00.6 antes de solicitar la aprobación de Gate 1.
 Revisa A1 y A2, las decisiones aplicadas y los puntos que siguen pendientes.
@@ -3399,14 +3628,15 @@ Comprueba:
 - Que las decisiones pendientes no aparezcan como aprobadas.
 Si encuentras errores, presenta el problema y propone la corrección mínima. No modifiques archivos sin autorización.
 ```
+
 **Qué salió:** Se detectaron y revisaron detalles de redacción y presentación documental. Se corrigieron únicamente los puntos autorizados y se verificó que los fragmentos señalados como defectuosos no correspondían a errores reales de los documentos.
 A1 y A2 quedaron preparadas para su aprobación y posterior incorporación al repositorio.
 
-
-## Prompt 2.D.40 — Aprobar y trasladar A1 y A2 al repositorio
+### Prompt 2.D.40: Aprobar y trasladar A1 y A2 al repositorio
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Una vez aprobados los documentos A1 y A2, prepara su incorporación al repositorio.
 Antes de copiar:
@@ -3418,16 +3648,18 @@ Antes de copiar:
 6. Comprueba que el resto del contenido existente permanezca intacto.
 No modifiques otros archivos, no hagas commits ni push y presenta los resultados.
 ```
+
 **Qué salió:** A1 quedó incorporada en `docs/qa/TK-00.6-matrix.md` y A2 en `docs/ARCHITECTURE.md`.
 Los hashes coincidieron con los documentos aprobados:
 - A1: `c4ecf64dd504…`
 - A2: `940de9d43ac6…`
 Se conservaron los 48 escenarios de TK-00.6 y los 24 diferidos. No se detectaron conflictos documentales.
 
-## Prompt 2.D.41 — Preparar el plan de implementación
+### Prompt 2.D.41: Preparar el plan de implementación
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Con Gate 1 preparado, construye el plan de implementación de TK-00.6.
 Divide el trabajo en pasos técnicos pequeños y verificables.
@@ -3446,14 +3678,16 @@ Identifica las dependencias entre pasos y los archivos que se modificarían.
 Recuerda que los pasos del plan no son Gates. Gate 2 solo puede comenzar cuando la implementación, QA, seguridad y DoD estén completos.
 No ejecutes cambios. Presenta el plan para autorización.
 ```
-**Qué salió:**Se estableció un plan de diez pasos numerados del 0 al 9.
+
+**Qué salió:** Se estableció un plan de diez pasos numerados del 0 al 9.
 Los pasos 0 a 6 corresponden a implementación; el paso 7 a QA independiente; el paso 8 a revisión de seguridad; y el paso 9 a DoD y preparación de Gate 2.
 Se mantuvo la distinción entre los dos Gates del ticket y los diez pasos del plan.
 
-## Prompt 2.D.42 — Actualizar el tracker para iniciar infraestructura
+### Prompt 2.D.42: Actualizar el tracker para iniciar infraestructura
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Con la autorización recibida, ejecuta únicamente el paso 0 del plan de TK-00.6.
 Actualiza el tracker para reflejar que el ticket inicia su etapa de infraestructura y asigna el responsable definido.
@@ -3461,13 +3695,15 @@ Antes de modificarlo, verifica el estado actual y conserva la información de lo
 No implementes componentes, no alteres otros estados, no hagas commits ni push.
 Al finalizar, presenta el diff y confirma exactamente qué cambió.
 ```
+
 **Qué salió:** TK-00.6 pasó a `En infraestructura`, con `infrastructure-engineer` como responsable.
 No se modificaron otros tickets ni se alteró el seguimiento de otros trabajos.
 
-## Prompt 2.D.43 — Construir la imagen Docker del backend
+### Prompt 2.D.43: Construir la imagen Docker del backend
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Ejecuta el paso 2 del plan de infraestructura: preparar la imagen Docker del backend.
 Delega la implementación al especialista correspondiente y supervisa los cambios.
@@ -3483,6 +3719,7 @@ No agregues herramientas o dependencias innecesarias.
 Después, verifica build, tests, lint, typecheck y ejecución de la imagen. Presenta el diff, resultados y cualquier desviación.
 No hagas commits ni push.
 ```
+
 **Qué salió:** Se incorporó el Dockerfile multi-stage del backend, la configuración de compilación y los scripts necesarios.
 Las verificaciones confirmaron:
 
@@ -3494,9 +3731,11 @@ Las verificaciones confirmaron:
 - Ausencia de dependencias de desarrollo en la imagen final.
 Se conservó la imagen construida para reutilizarla en pasos posteriores. No se realizaron commits ni push.
 
-## Prompt 2.D.44 — Configurar PostgreSQL y Compose de desarrollo
+### Prompt 2.D.44: Configurar PostgreSQL y Compose de desarrollo
+
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Ejecuta el paso 3 del plan: preparar PostgreSQL y el Compose de desarrollo.
 Implementa únicamente lo necesario para levantar la base de datos del entorno de desarrollo.
@@ -3513,6 +3752,7 @@ No introduzcas servicios adicionales ni modifiques el backend o frontend.
 Verifica inicialización, permisos, persistencia, conexión y comportamiento ante variables inválidas. Utiliza únicamente credenciales ficticias en las pruebas.
 Presenta los cambios y detente al finalizar.
 ```
+
 **Qué salió:** Se incorporaron:
 - `docker-compose.yml`.
 - `docker/postgres/init-db.sh`.
@@ -3522,10 +3762,11 @@ Se detectaron dos desviaciones de método para QA:
 - Escenario 06: Vite escucha en IPv6, por lo que se utilizará `localhost:5173`.
 - Escenario 04: al no existir `psql` en el host, se utilizarán `nc` y un contenedor temporal con la imagen PostgreSQL aprobada.
 
-## Prompt 2.D.45 — Analizar los hallazgos del Compose de desarrollo
+### Prompt 2.D.45: Analizar los hallazgos del Compose de desarrollo
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Antes de continuar con el paso 4, analiza los hallazgos detectados durante la implementación del Compose de desarrollo.
 Evalúa especialmente qué ocurre cuando falla la inicialización de PostgreSQL y se intenta recuperar el servicio conservando el volumen.
@@ -3537,16 +3778,18 @@ Determina:
 Separa los hallazgos técnicos de las decisiones que requieren autorización.
 No modifiques archivos ni inicies el paso 4.
 ```
+
 **Qué salió:**
 Se identificó que un volumen persistente puede conservar un clúster PostgreSQL inicializado aunque el script de creación de bases haya fallado.
 Por tanto, `pg_isready` por sí solo no garantiza que `medsupply` exista.
 Se recomendó añadir una comprobación de existencia de `medsupply` al healthcheck, sin contraseña y conservando la comprobación TCP.
 El usuario solicitó analizar también los posibles estados parciales antes de autorizar la modificación.
 
-## Prompt 2.D.46 — Evaluar los estados parciales de la inicialización
+### Prompt 2.D.46: Evaluar los estados parciales de la inicialización
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Investiga si el script `docker/postgres/init-db.sh` puede dejar un estado parcial que no sea detectado por un healthcheck que compruebe únicamente la existencia de `medsupply`.
 Revisa el orden real de ejecución de las sentencias SQL y determina:
@@ -3556,6 +3799,7 @@ Revisa el orden real de ejecución de las sentencias SQL y determina:
 - Qué consecuencias tendría cada escenario.
 Si encuentras un estado parcial no detectado, detente y presenta alternativas. No modifiques archivos ni implementes una solución sin autorización.
 ```
+
 **Qué salió:**
 Se identificó un caso no detectado: si se creaba `medsupply` correctamente, pero fallaba posteriormente la creación de `medsupply_test`, el healthcheck podía considerar sano el servicio aunque la inicialización de desarrollo estuviera incompleta.
 Se determinó que el usuario de aplicación no podía faltar si `medsupply` existía, porque se crea antes y la base se crea con ese usuario como propietario.
@@ -3565,10 +3809,11 @@ Se presentaron tres alternativas:
 - (c) Aceptar el riesgo residual.
 No se modificaron archivos ni se levantaron contenedores.
 
-## Prompt 2.D.47 — Corregir el orden de inicialización y el healthcheck
+### Prompt 2.D.47: Corregir el orden de inicialización y el healthcheck
 
 **Modelo:** Opus 1M xHigh
-**Herramienta:** Claude Code.
+**Herramienta:** Claude Code
+
 ```
 Con la aprobación expresa de la opción (a), ejecuta la corrección del hallazgo 1 de TK-00.6.
 Modifica exclusivamente:
@@ -3582,6 +3827,1010 @@ Respeta el alcance del MVP: no agregues infraestructura, servicios ni endurecimi
 No modifiques otros archivos, no hagas commits ni push y no inicies el paso 4.
 Al finalizar, presenta el diff, las evidencias de las pruebas y el estado de Git. Detente y espera mi revisión.
 ```
-**Qué salió:**<em>Pendiente de ejecución.</em> se indico que el usuario aprobó la opción (a) y autorizó expresamente modificar `docker/postgres/init-db.sh` y `docker-compose.yml` para corregir el orden de inicialización y el healthcheck.
+
+**Qué salió:** Pendiente de ejecución, se indico que el usuario aprobó la opción (a) y autorizó expresamente modificar `docker/postgres/init-db.sh` y `docker-compose.yml` para corregir el orden de inicialización y el healthcheck.
 La ejecución y sus resultados todavía deben verificarse antes de documentarlos como completados.
 
+### Prompt 2.D.51: Evaluar la seguridad con controles proporcionales al MVP
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Realiza la evaluación de seguridad correspondiente a TK-00.6, considerando que MedSupply AI es un MVP académico que no se desplegará en producción.
+Evalúa los riesgos y controles existentes con un enfoque proporcional al objetivo demostrativo.
+Considera especialmente:
+- Configuración de PostgreSQL y privilegios del usuario de aplicación.
+- Exposición de puertos y servicios.
+- Configuración de Docker Compose y Nginx.
+- Manejo de variables de entorno y credenciales.
+- Separación de responsabilidades entre los servicios.
+- Riesgos derivados de las limitaciones conocidas del entorno.
+Clasifica los hallazgos por severidad y distingue entre:
+- Problemas que deben corregirse antes de cerrar TK-00.6.
+- Riesgos que pueden aceptarse por el alcance académico del MVP.
+- Mejoras que pueden diferirse a tickets posteriores.
+No introduzcas infraestructura, controles ni endurecimiento exclusivo de producción. No modifiques archivos ni implementes correcciones sin autorización.
+Presenta evidencias, riesgos, recomendaciones y decisiones que requieren aprobación humana. Detente al finalizar.
+```
+
+**Qué salió:**
+- La evaluación no identificó hallazgos críticos, altos ni medios que bloquearan el cierre.
+- Se documentaron los hallazgos B-1 y B-2.
+- Se registraron cinco riesgos o limitaciones para seguimiento.
+- Se mantuvo el criterio de seguridad proporcional al MVP, sin introducir endurecimiento innecesario.
+
+### Prompt 2.D.52: Documentar hallazgos y riesgos de seguridad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Documenta los resultados de la evaluación de seguridad de TK-00.6.
+Registra los hallazgos B-1 y B-2 y los riesgos identificados, respetando las conclusiones de la evaluación.
+Al documentarlos:
+- Diferencia claramente hallazgos, riesgos aceptados y mejoras diferidas.
+- Explica el impacto y las limitaciones de cada elemento.
+- Mantén la trazabilidad de los elementos que requieren seguimiento.
+- No presentes como corregido ningún hallazgo que solo haya sido documentado.
+- No conviertas mejoras exclusivas de producción en requisitos del MVP.
+- No alteres decisiones técnicas previamente aprobadas.
+Modifica únicamente los documentos necesarios para dejar constancia de estos resultados y los seguimientos correspondientes que estén expresamente autorizados.
+No modifiques código, Docker Compose ni configuraciones técnicas. No cierres TK-00.6, no hagas commits ni push.
+Al finalizar, presenta los archivos modificados, el diff y el estado de Git. Detente y espera revisión.
+```
+
+**Qué salió:**
+- B-1 y B-2 quedaron documentados.
+- Se registraron cinco riesgos para seguimiento.
+- No se introdujeron cambios de código ni de infraestructura.
+- La documentación quedó disponible para la preparación del paso 9.
+
+### Prompt 2.D.53: Preparar el cierre técnico de TK-00.6
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Continúa con el paso 9 de TK-00.6: preparar el cierre técnico y administrativo del ticket.
+Utiliza el coordinador principal existente, respetando las responsabilidades definidas en CLAUDE.md. 
+Revisa:
+1. Resultado de Gate 2 y su aprobación humana.
+2. Estado de los criterios del DoD, incluida la excepción aprobada exclusivamente para TK-00.6.
+3. Evidencias de implementación y QA.
+4. Hallazgos B-1 y B-2.
+5. Riesgos y limitaciones registrados.
+6. Seguimientos diferidos a tickets posteriores.
+7. Estado de los commits y de la rama.
+Determina qué acciones son necesarias para cerrar correctamente el ticket y cuáles requieren autorización humana independiente.
+No confundas la aprobación de Gate 2 con la autorización para realizar commits, push, limpieza o cierre definitivo.
+No modifiques archivos, no cambies estados, no hagas commits ni push y no elimines evidencias.
+Presenta un plan de cierre ordenado, indicando los archivos que deberían modificarse y las verificaciones necesarias. Detente y espera autorización.
+```
+
+**Qué salió:**
+- Se preparó el plan de cierre utilizando el coordinador principal.
+- Se mantuvo la separación entre aprobación de Gate 2, commits, publicación y cierre.
+- Se identificaron los seguimientos pendientes y las acciones que requerían autorizaciones independientes.
+- No se ejecutó automáticamente el cierre.
+
+### Prompt 2.D.54: Crear el commit de implementación de TK-00.6
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+haz commit y push de los cambios
+```
+
+**Qué salió:**
+- Commit creado: 25915f5765adf13ddcc007ef10da613aa11344fc.
+- 17 archivos modificados.
+- 646 inserciones y 24 eliminaciones.
+- Árbol de trabajo limpio.
+- TK-00.6 todavía no se había marcado como Hecho.
+
+### Prompt 2.D.55: Registrar el cierre de TK-00.6 en el tracker
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Ejecuta exclusivamente el cierre administrativo de TK-00.6 en backlog/TRACKER.md.
+La autorización comprende únicamente:
+- Cambiar el estado de TK-00.6 a Hecho.
+luego haz commit y push de los cambios
+```
+
+**Qué salió:**
+- Commit de cierre: bf501d300715069abda901192f72416773d1f5d7.
+- Únicamente se modificó la fila de TK-00.6.
+- El estado quedó en Hecho.
+
+### Prompt 2.D.56: Validar TK-00.6 desde un clon limpio
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Realiza una validación independiente de TK-00.6 desde un clon limpio del repositorio publicado.
+Utiliza la rama feature/entrega-2 y comprueba que el clon incluya los commits publicados de TK-00.6.
+Ejecuta el entorno de entrega mediante:
+docker compose -f docker-compose.delivery.yml up -d --build --wait
+Verifica:
+1. Estado de salud de PostgreSQL, backend y Nginx.
+2. Existencia de la base medsupply.
+3. Privilegios del usuario de aplicación:
+   - No debe ser superusuario.
+   - No debe poder crear roles.
+   - No debe poder crear bases de datos.
+4. Respuesta HTTP 200 de /.
+5. Respuesta HTTP 200 de /dashboard.
+6. Respuesta HTTP 200 de /api/v1/health a través del proxy Nginx.
+7. Exposición de puertos: solo Nginx debe estar publicado en 127.0.0.1:8080.
+8. El backend no debe quedar accesible directamente desde el host.
+Registra las limitaciones observadas:
+- migrate y seed siguen siendo provisionales.
+- C2 y RNF-05 permanecen pendientes de D18.
+- No declares cumplidos requisitos que todavía no estén implementados.
+Conserva las evidencias hasta completar la revisión.
+No modifiques archivos del repositorio ni cambies el tracker. No realices limpieza de recursos todavía.
+Presenta los resultados, comandos ejecutados, códigos de salida, evidencias y limitaciones. Detente.
+```
+
+**Qué salió:**
+Validación satisfactoria
+- docker compose ... up -d --build --wait: código de salida 0.
+- PostgreSQL, backend y Nginx quedaron saludables.
+- PostgreSQL aceptó conexiones y la base medsupply existía.
+- Usuario medsupplyapp: sin privilegios de superusuario, creación de roles ni creación de bases (f | f | f).
+- /: HTTP 200.
+- /dashboard: HTTP 200.
+- /api/v1/health: HTTP 200, respuesta {"status":"ok"}.
+- Solo Nginx expuso 127.0.0.1:8080.
+- Backend en puerto 3000 no accesible directamente desde el host.
+Limitaciones documentadas:
+- migrate y seed imprimieron PROVISIONAL: y no ejecutaron migraciones ni carga de datos.
+- C2 y RNF-05 no quedaron cumplidos.
+- D18 y las dependencias TK-00.3/TK-00.4 continuaron pendientes.
+
+### Prompt 2.D.57: Limpiar los recursos temporales de QA y entrega
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Realiza la limpieza de los recursos temporales utilizados para la validación de TK-00.6.
+Limita las operaciones exclusivamente a los recursos identificados como pertenecientes a la prueba de entrega de MedSupply AI.
+Puedes eliminar:
+- Contenedores del proyecto de entrega.
+- Volumen medsupply-delivery_pgdata.
+- Red Docker del proyecto de entrega.
+- Clon temporal utilizado para QA y sus logs.
+- Scratchpads:
+  - tk006-qa-oxCn
+  - tk006-qa2-Jm9f
+  - qa-00.6
+  - arch-proposal
+- Imágenes temporales:
+  - medsupply-backend:tk006
+  - medsupply-frontend:tk006
+Conserva expresamente:
+- Los cinco contenedores ajenos pertenecientes a flowsync-ai4devs.
+- Las imágenes medsupply-backend:delivery y medsupply-frontend:delivery, regeneradas durante la prueba.
+Antes de eliminar cualquier recurso:
+- Comprueba su pertenencia al proyecto.
+- No utilices comandos globales como docker system prune.
+- No elimines recursos cuyo origen no puedas confirmar.
+Después:
+- Verifica que los recursos temporales autorizados hayan sido eliminados.
+- Confirma que los cinco contenedores ajenos continúen intactos.
+- Confirma que las dos imágenes de entrega se hayan conservado.
+- Comprueba que el repositorio permanezca sincronizado con origin y con el árbol limpio.
+No modifiques archivos ni commits. No alteres el tracker.
+Entrega un informe de recursos eliminados y conservados. Detente.
+```
+
+**Qué salió:**
+- Se eliminaron los contenedores, volumen y red del proyecto medsupply-delivery.
+- Se eliminó el clon temporal y sus logs.
+- Se eliminaron los cuatro scratchpads indicados.
+- Se eliminaron las imágenes temporales medsupply-backend:tk006 y medsupply-frontend:tk006.
+- Se conservaron las imágenes medsupply-backend:delivery y medsupply-frontend:delivery.
+- Los cinco contenedores de flowsync-ai4devs permanecieron intactos.
+- El repositorio quedó sincronizado con origin/feature/entrega-2, árbol limpio y TK-00.6 en Hecho.
+
+### Prompt 2.D.58: Recuperar el contexto del ticket
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Necesito trabajar en el ticket TK-00.3: [DB] Esquema Prisma y migración inicial.
+Consulta el tracker y la documentación existente para recuperar la definición actual del ticket.
+Por ahora, limítate a identificar y presentar:
+- Descripción del ticket.
+- Objetivo.
+- Alcance.
+- Criterios de aceptación.
+- Dependencias registradas.
+- Restricciones conocidas.
+No evalúes todavía su elegibilidad, no propongas soluciones técnicas y no modifiques archivos ni estados.
+Quiero revisar primero que estemos trabajando con la definición correcta del ticket. Detente al terminar.
+```
+
+**Qué salió:**
+Se recuperó la definición de TK-00.3 y su alcance registrado. El trabajo quedó centrado en el esquema de datos y la migración inicial con Prisma, sin comenzar todavía el análisis de viabilidad ni asumir decisiones de implementación.
+
+### Prompt 2.D.59: Evaluar la elegibilidad técnica
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+A partir de la definición recuperada de TK-00.3, analiza si el ticket está en condiciones de avanzar.
+Evalúa exclusivamente su viabilidad técnica, considerando la arquitectura actual, PostgreSQL, Prisma, las dependencias y el alcance del MVP.
+Identifica cualquier condición que deba resolverse antes de especificar o implementar.
+No modifiques archivos ni cambies el estado del ticket. Presenta una recomendación de elegibilidad y detente.
+```
+
+**Qué salió:**
+TK-00.3 fue clasificado como elegible con condiciones. Prisma y PostgreSQL resultaron viables, pero era necesario resolver decisiones sobre migraciones, integridad de datos, pruebas, seguridad y responsabilidades antes de implementar.
+
+### Prompt 2.D.60: Comprobar la compatibilidad de Prisma
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Evalúa la compatibilidad de Prisma con la versión de Node.js, PostgreSQL y la arquitectura backend definidas para MedSupply AI.
+Revisa la configuración requerida por Prisma 7, sus paquetes, el cliente generado y el uso de PostgreSQL.
+Identifica incompatibilidades, dependencias adicionales y riesgos de configuración.
+No instales paquetes ni modifiques archivos. Entrega únicamente el análisis técnico.
+```
+
+**Qué salió:**
+Se confirmó la viabilidad de Prisma 7. Se definió trabajar con las versiones exactas 7.10.1 de prisma, @prisma/client y @prisma/adapter-pg, junto con una versión compatible de pg.
+
+### Prompt 2.D.61: Analizar la estrategia de conexión y roles
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Analiza cómo debe gestionar Prisma las conexiones a PostgreSQL en este MVP.
+Evalúa si necesitamos separar los roles de migración y ejecución, considerando la simplicidad del entorno académico y los riesgos reales.
+Presenta las alternativas, sus implicaciones y una recomendación proporcional al proyecto.
+No implementes ni modifiques permisos de base de datos.
+```
+
+**Qué salió:** Se acordó utilizar un único rol propietario para migrar y ejecutar la aplicación. Se aceptó expresamente esta limitación para el MVP, acompañada de restricciones sobre el uso de consultas SQL inseguras.
+
+### Prompt 2.D.62: Definir los requisitos del esquema de datos
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Analiza las entidades que necesita el dominio de MedSupply AI para soportar el catálogo de productos médicos, los clientes, los usuarios y el flujo de pedidos.
+Identifica las relaciones, atributos, tipos de datos, restricciones e índices que deben formar parte del esquema inicial.
+Contrasta las necesidades del negocio con el alcance de TK-00.3. No agregues entidades de funcionalidades que pertenecen a otros tickets.
+Entrega una propuesta conceptual, sin crear archivos Prisma ni SQL.
+```
+
+**Qué salió:** Se delimitó el esquema inicial a seis tablas: User, Customer, Product, Order y OrderItem, además del enum OrderStatus. No se incorporaron entidades de reclamaciones ni órdenes de compra, porque no correspondían al alcance aprobado.
+
+### Prompt 2.D.63: Analizar las restricciones de integridad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Revisa las reglas de integridad que deben garantizarse directamente en PostgreSQL para el esquema de TK-00.3.
+Considera stock, cantidades, precios, totales, teléfonos, claves foráneas y relaciones entre pedidos y sus detalles.
+Distingue las reglas que deben quedar en la base de datos de las que corresponden a validaciones de aplicación.
+No escribas migraciones ni modifiques el esquema. Presenta las restricciones necesarias y sus justificaciones.
+```
+
+**Qué salió:** Se identificaron siete restricciones CHECK que debían verificarse en PostgreSQL. También se definieron las reglas de integridad referencial y los índices requeridos por la especificación.
+
+### Prompt 2.D.64: Resolver la numeración de pedidos
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Analiza cómo generar identificadores visibles para los pedidos del sistema.
+El formato requerido es MED- seguido de al menos cinco dígitos, sin un máximo de longitud establecido.
+Evalúa una estrategia compatible con PostgreSQL que evite colisiones y no dependa de calcular el siguiente número mediante consultas sobre los pedidos existentes.
+No implementes la función ni modifiques archivos. Presenta una recomendación técnica.
+```
+
+**Qué salió:** Se acordó utilizar una secuencia de PostgreSQL y una función next_order_number() para generar el formato MED-00001, manteniendo la posibilidad de superar los cinco dígitos sin un límite máximo.
+
+### Prompt 2.D.65: Definir la estrategia de migraciones
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Analiza cómo debe gestionarse la migración inicial de TK-00.3.
+Compara las alternativas de Prisma para generar y aplicar migraciones, considerando que el proyecto debe poder levantarse de manera reproducible desde un clon limpio.
+Define qué debe ejecutarse en desarrollo, qué debe ejecutarse en el entorno de entrega y qué prácticas deben evitarse.
+No ejecutes comandos ni generes archivos. Entrega la estrategia recomendada.
+```
+
+**Qué salió:** Se acordó utilizar migraciones versionadas de Prisma y evitar mecanismos que sincronicen directamente el esquema sin historial. La migración debía poder aplicarse de manera reproducible, sin depender de una base de datos sombra.
+
+### Prompt 2.D.66: Definir la estrategia de pruebas de base de datos
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Diseña una estrategia mínima de pruebas para verificar el esquema y la migración inicial.
+Considera PostgreSQL real, las restricciones CHECK, las claves foráneas, la secuencia de pedidos y la integridad de los datos.
+Define cómo aislar la base de pruebas y proteger cualquier otra base existente.
+No implementes pruebas todavía. Prioriza un arnés sencillo y reproducible para el MVP.
+```
+
+**Qué salió:** Se acordó crear un arnés mínimo en tests/db/, con los scripts test:db y db:migrate:test. Se estableció que la URL de pruebas debía derivarse de DATABASE_URL y que el nombre real de la base debía verificarse antes de cualquier operación destructiva.
+
+### Prompt 2.D.67: Evaluar los riesgos de seguridad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Revisa los riesgos de seguridad asociados a la implementación de TK-00.3.
+Concéntrate en las operaciones de migración, las credenciales, la conexión a PostgreSQL, el uso de consultas SQL, los mensajes de error y la protección de la base de pruebas.
+Distingue riesgos reales del MVP de medidas de endurecimiento propias de producción que no aporten valor suficiente.
+No modifiques archivos ni implementes controles. Entrega los hallazgos y recomendaciones.
+```
+
+**Qué salió:** Se identificaron controles necesarios para evitar operaciones destructivas sobre bases equivocadas, limitar consultas SQL inseguras y prevenir la exposición de credenciales. Se acordó prohibir $queryRawUnsafe y $executeRawUnsafe en el alcance de este ticket.
+
+### Prompt 2.D.68: Consolidar las decisiones técnicas
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Consolida las decisiones técnicas analizadas para TK-00.3.
+Prepara una lista numerada de decisiones que incluya:
+- Versiones y paquetes Prisma.
+- Estrategia de conexión y roles.
+- Generación del cliente.
+- Estrategia de migraciones.
+- Pruebas de base de datos.
+- Restricciones de integridad.
+- Numeración de pedidos.
+- Manejo de fechas.
+- CI y alcance de las excepciones.
+- Dependencias y responsabilidades de los agentes.
+Para cada decisión, presenta la recomendación y sus consecuencias.
+No implementes ni actualices la especificación. Necesito revisar las decisiones antes de aprobarlas.
+```
+
+**Qué salió:** Se consolidaron las decisiones técnicas que luego fueron aprobadas por el usuario. Entre ellas quedaron las versiones exactas de Prisma, el rol único, el target independiente de migraciones, las pruebas PostgreSQL, las siete restricciones CHECK y la estrategia de numeración.
+
+### Prompt 2.D.69: Aprobar las condiciones de elegibilidad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Actualiza el análisis de TK-00.3 incorporando las decisiones técnicas que acabo de aprobar.
+Comprueba que no existan contradicciones entre el alcance, las dependencias, las restricciones y las decisiones.
+Registra el resultado de la evaluación de Puerta 1 y la estimación acordada.
+No inicies implementación, no crees commits y no avances a la siguiente puerta sin autorización.
+```
+
+**Qué salió:** Se aprobó la Puerta 1. TK-00.3 quedó elegible para avanzar, con las once decisiones técnicas confirmadas y una estimación ajustada de tres a cinco puntos.
+
+**Especificación y planificación**
+
+### Prompt 2.D.70: Preparar la especificación técnica
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Preara la especificación técnica de TK-00.3 utilizando las decisiones aprobadas y los requisitos vigentes.
+La especificación debe describir el esquema de datos, las relaciones, los tipos, las restricciones, la migración inicial, la generación del cliente y las pruebas requeridas.
+No agregues decisiones nuevas ni amplíes el alcance del ticket.
+Mantén la especificación enfocada en lo necesario para el MVP y deja explícitas las condiciones y limitaciones aprobadas.
+```
+
+**Qué salió:** Se preparó la especificación técnica del ticket, incluyendo el esquema inicial, la migración, la estrategia de pruebas y las restricciones acordadas.
+
+### Prompt 2.D.71: Revisar la consistencia de la especificación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Revisa la especificación de TK-00.3 contra los requisitos originales y las once decisiones aprobadas.
+Busca contradicciones, omisiones, criterios ambiguos y requisitos que no tengan una forma verificable de validación.
+No implementes ni amplíes el alcance. Presenta los problemas encontrados y las correcciones necesarias.
+```
+
+**Qué salió:** La revisión permitió ajustar la especificación y consolidarla como versión 1.1. Se mantuvieron fuera del alcance las funcionalidades que correspondían a tickets posteriores.
+
+### Prompt 2.D.72: Definir las responsabilidades de implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Prepara la distribución de responsabilidades para implementar TK-00.3.
+Considera los agentes especialistas existentes:
+- database-engineer para Prisma, esquema, migraciones y pruebas de base de datos.
+- infrastructure-engineer para Docker, Compose y documentación de ejecución.
+- qa-bdd-analyst para la validación funcional y técnica.
+- security-engineer para la revisión de riesgos y controles.
+Define qué entregable corresponde a cada agente, sus dependencias y el orden de ejecución.
+El coordinador debe conservar la responsabilidad de dirigir el flujo, integrar resultados y actualizar el estado de las tareas.
+
+No crees agentes nuevos ni delegues todavía.
+```
+
+**Qué salió:** Se definió database-engineer como responsable principal de la implementación de base de datos. infrastructure-engineer quedó encargado de los cambios de infraestructura en una fase posterior y en serie. QA y Seguridad fueron definidos como revisores obligatorios.
+
+### Prompt 2.D.73: Preparar el plan de ejecución
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+```
+Construye un plan de ejecución para TK-00.3 a partir de la especificación aprobada.
+Divide el trabajo en pasos pequeños y verificables, contemplando:
+1. Preparación del entorno.
+2. Pruebas iniciales de base de datos.
+3. Implementación del esquema y migración.
+4. Configuración de infraestructura necesaria.
+5. Validación de QA.
+6. Revisión de seguridad.
+7. Correcciones y validación final.
+Identifica dependencias y criterios para avanzar entre etapas.
+No ejecutes tareas ni cambies estados. Presenta el plan para autorización.
+```
+
+**Qué salió:** Se estableció una ejecución secuencial con preparación y pruebas antes de la implementación, seguida de infraestructura, QA, seguridad y correcciones. Se mantuvo la separación entre autorización de implementación y futuras autorizaciones de cierre.
+
+### Prompt 2.D.74: Autorizar el inicio de implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Revisa el plan de ejecución aprobado para TK-00.3 y prepara el inicio de la fase de implementación.
+Confirma que el alcance se limita a la especificación 01 v1.1 y a las decisiones aprobadas.
+El primer paso debe ser preparar y validar el entorno de pruebas, sin implementar todavía el esquema definitivo.
+No realices commits, push, cambios de estado de cierre ni avances de Gate 2.
+```
+
+**Qué salió:** Se dio paso a la implementación bajo el alcance aprobado. La primera fase quedó limitada a la preparación del entorno y la validación de la estrategia de pruebas.
+
+**Implementación y pruebas**
+
+### Prompt 2.D.75: Preparar el entorno de pruebas
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Delega al database-engineer la preparación del entorno de pruebas de TK-00.3.
+Antes de implementar el esquema, debe comprobar:
+- Versiones de Node.js, Prisma y PostgreSQL.
+- Conectividad con PostgreSQL.
+- Configuración de la URL de pruebas.
+- Protección frente a operaciones sobre bases distintas de la base autorizada.
+- Funcionamiento de los scripts previstos para las pruebas.
+Debe utilizar el entorno existente y evitar modificar bases de datos ajenas al ticket.
+Entrega evidencias de las comprobaciones. No implementes todavía el esquema definitivo.
+```
+
+**Qué salió:** Se validó la compatibilidad del entorno y la configuración necesaria para ejecutar las pruebas de base de datos. La preparación permitió avanzar a la fase de pruebas iniciales.
+
+### Prompt 2.D.76: Ejecutar las pruebas iniciales en rojo
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Solicita al database-engineer implementar y ejecutar el conjunto inicial de pruebas de TK-00.3 antes de completar el esquema.
+Las pruebas deben cubrir las reglas de integridad, restricciones CHECK, relaciones, secuencia de pedidos y comportamiento esperado de la migración.
+Aplica el enfoque TDD: primero comprueba qué escenarios fallan porque la funcionalidad aún no está implementada y cuáles ya pasan.
+No relajes las expectativas de las pruebas para obtener un resultado verde. Presenta el resumen de ejecución y detente.
+```
+
+**Qué salió:** Se prepararon 70 casos de prueba de base de datos. En la ejecución inicial, 41 fallaron como se esperaba por la ausencia de la implementación correspondiente y 29 pasaron. La suite general existente se mantuvo verde con 72 de 72 pruebas.
+
+### Prompt 2.D.77: Revisar el resultado de las pruebas iniciales
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Analiza los resultados de la ejecución inicial de las pruebas de TK-00.3.
+Verifica que los fallos correspondan a funcionalidades todavía no implementadas y que no existan errores ajenos al comportamiento esperado.
+Comprueba también que los controles de seguridad de la base de pruebas impidan operar sobre una base no autorizada.
+No implementes el esquema todavía. Informa si la suite está en condiciones de servir como referencia para el desarrollo.
+```
+
+**Qué salió:** Se confirmó que los fallos iniciales correspondían a la ausencia de la funcionalidad que debía construirse. El guard de seguridad de la base de pruebas fue revisado y se mantuvo como condición para continuar.
+
+### Prompt 2.D.78: Implementar el esquema Prisma
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Delega al database-engineer la implementación del esquema Prisma de TK-00.3, siguiendo exclusivamente la especificación 01 v1.1.
+Implementa los modelos, enum, relaciones, índices, tipos y restricciones acordados.
+Respeta las versiones de dependencias aprobadas y las convenciones de nombres establecidas.
+No agregues entidades fuera del alcance, no modifiques decisiones aprobadas y no intervengas en Docker ni en infraestructura.
+Ejecuta las validaciones propias de Prisma y entrega un resumen de archivos modificados y resultados.
+```
+
+**Qué salió:** Se implementó el esquema Prisma con los seis modelos/estructuras acordados, sus relaciones, índices y tipos. El cliente generado quedó configurado en src/generated/prisma, sin versionar los artefactos generados.
+
+### Prompt 2.D.79: Implementar la migración inicial
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Cotinúa con la migración inicial de TK-00.3.
+Implementa la migración PostgreSQL a partir del esquema aprobado, incluyendo:
+- Creación de tablas, relaciones e índices.
+- Las siete restricciones CHECK.
+- La secuencia y función de numeración de pedidos.
+- La configuración de precisión y tipos temporales.
+- La aplicación transaccional de la migración.
+No utilices una base de datos sombra ni ejecutes operaciones destructivas sobre bases ajenas a las autorizadas.
+Valida el SQL generado y presenta evidencias de la migración.
+```
+
+**Qué salió:** Se creó la migración inicial 20261120000000_init. Incluyó la secuencia order_number_seq, la función next_order_number() y las restricciones aprobadas. La migración fue construida sin utilizar una base de datos sombra.
+
+### Prompt 2.D.80: Implementar el guard de pruebas de migración
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Revisa e implementa el mecanismo de protección del script db:migrate:test.
+El script debe validar que la conexión apunte exclusivamente a la base de pruebas autorizada, derivada de DATABASE_URL.
+Debe rechazar URLs inválidas o nombres de bases no permitidos antes de ejecutar cualquier operación de migración.
+No debe revelar credenciales en los mensajes de error.
+Implementa las comprobaciones necesarias y prueba tanto los casos permitidos como los rechazados.
+```
+
+**Qué salió:** Se implementó el guard para proteger la ejecución de migraciones de prueba. La validación comprobó que las operaciones solo pudieran dirigirse a la base autorizada y que las URLs maliciosas o incorrectas fueran rechazadas.
+
+### Prompt 2.D.81: Validar la implementación de base de datos
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Ejecuta la suite de pruebas de base de datos contra PostgreSQL real después de implementar el esquema y la migración.
+Verifica los 70 casos previstos, las restricciones CHECK, las relaciones, la secuencia de pedidos y la aplicación de la migración.
+Ejecuta también la suite general del backend para detectar regresiones.
+Entrega los comandos ejecutados, resultados y cualquier fallo encontrado. No declares el ticket terminado.
+```
+
+**Qué salió:** Las 70 pruebas de base de datos pasaron y la suite general del backend obtuvo 72 de 72 pruebas exitosas. La implementación de base de datos quedó validada localmente.
+
+### Prompt 2.D.82: Revisar dependencias y vulnerabilidades conocidas
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Analiza los resultados de auditoría de dependencias generados durante la implementación de TK-00.3.
+Distingue vulnerabilidades de dependencias de desarrollo y producción, identifica su origen y evalúa su impacto en el MVP.
+No ejecutes npm audit fix ni actualices dependencias automáticamente.
+Si existen avisos moderados conocidos, documenta su alcance y recomienda si pueden aceptarse. Si aparecen avisos high o critical, detén el avance y solicita revisión.
+```
+
+**Qué salió:** Se identificaron 18 avisos moderados asociados a dependencias de desarrollo, principalmente en la cadena de Jest mediante glob y minimatch. No se encontraron avisos high o critical y no había avisos al excluir dependencias de desarrollo. Se aceptaron y documentaron los avisos moderados, sin aplicar actualizaciones automáticas.
+
+**Infraestructura y reproducibilidad**
+
+### Prompt 2.D.83: Analizar los cambios de infraestructura necesarios
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Solicita al coordinador evaluar qué cambios de infraestructura son necesarios para ejecutar TK-00.3 de forma reproducible.
+Considera el Dockerfile del backend, el cliente Prisma generado, las migraciones y la ejecución de la aplicación.
+Define qué debe construirse en la imagen de migraciones y qué debe estar disponible en la imagen final del backend.
+No modifiques archivos todavía. Presenta una propuesta mínima que respete la arquitectura del MVP.
+```
+
+**Qué salió:** Se determinó que la migración debía ejecutarse en un target independiente, derivado del proceso de build, mientras que la imagen final del backend no debía incluir la CLI ni el motor de Prisma.
+
+### Prompt 2.D.84: Implementar los cambios de Docker
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Delega al infrastructure-engineer la implementación de los cambios de infraestructura aprobados para TK-00.3.
+Debe actualizar el Dockerfile del backend, los archivos de exclusión y la configuración Compose de entrega para:
+- Generar el cliente Prisma durante el build.
+- Disponer de un target independiente para ejecutar migraciones.
+- Mantener el runtime del backend separado de las herramientas de migración.
+- Ejecutar los procesos con el usuario no privilegiado previsto.
+- No introducir secretos en las imágenes ni publicar puertos innecesarios.
+No modifiques el esquema Prisma ni amplíes la infraestructura más allá de lo aprobado.
+Enrega los cambios y sus validaciones. Detente antes de commits o push.
+```
+
+**Qué salió:** Se implementaron las etapas build, migrate y runtime en el Dockerfile, el .dockerignore y docker-compose.delivery.yml. La imagen final del backend quedó separada de la CLI y del motor de migraciones. Se incorporó además una protección de build para evitar imágenes sin migraciones.
+
+### Prompt 2.D.85: Revisar la separación entre migración y runtime
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Revisa los cambios de infraestructura realizados para TK-00.3.
+Comprueba que:
+- El target migrate contiene las herramientas necesarias.
+- El runtime del backend no incluye la CLI ni el motor de migraciones.
+- El backend no ejecuta migraciones automáticamente al arrancar.
+- Los procesos utilizan el usuario esperado.
+- No se incorporan credenciales a las imágenes.
+- La configuración Compose mantiene los límites de exposición previstos.
+No modifiques archivos. Informa los incumplimientos encontrados.
+```
+
+**Qué salió:** La revisión confirmó la separación entre la imagen de migraciones y el runtime. El backend no ejecutaba migraciones al arrancar, se ejecutaba como usuario node y no incorporaba credenciales en sus variables de entorno de imagen.
+
+### Prompt 2.D.86: Validar la ejecución del entorno de entrega
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Ejecuta una validación del entorno de entrega de TK-00.3 utilizando Docker Compose.
+Comprueba que las imágenes puedan construirse, que las migraciones se apliquen y que el backend pueda iniciar correctamente.
+Verifica los servicios, sus estados de salud y los endpoints de comprobación disponibles.
+No realices limpieza global de Docker ni elimines recursos ajenos al proyecto.
+Entrega las evidencias de ejecución y cualquier limitación encontrada.
+```
+
+**Qué salió:** La validación de entrega confirmó que los servicios podían construirse y arrancar correctamente. La migración inicial se aplicó y los servicios de base de datos, backend y Nginx alcanzaron estado saludable. El endpoint / respondió 200 y /api/v1/health devolvió {"status":"ok"}.
+
+**QA y revisión de seguridad**
+
+### Prompt 2.D.87: Solicitar revisión funcional y técnica de QA
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Delega al qa-bdd-analyst la revisión de TK-00.3 contra la especificación 01 v1.1 y sus criterios de aceptación.
+Debe revisar:
+- Modelos y relaciones.
+- Restricciones de integridad.
+- Migración inicial.
+- Pruebas PostgreSQL.
+- Configuración de ejecución.
+- Docker y Compose.
+- Reproducibilidad del entorno.
+Distingue defectos reales, observaciones y elementos que pertenecen a otros tickets.
+No modifiques archivos ni cierres hallazgos sin evidencia. Entrega un informe priorizado.
+```
+
+**Qué salió:** QA realizó una primera revisión y detectó observaciones que requerían corrección o aclaración, entre ellas aspectos de la protección del build, configuración de infraestructura y validaciones de comportamiento.
+
+### Prompt 2.D.88: Corregir los hallazgos de QA
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Analiza los hallazgos de la primera revisión de QA para TK-00.3.
+Clasifica cada observación según su severidad y relación con la especificación.
+Delega las correcciones a los agentes responsables, respetando la separación entre base de datos e infraestructura.
+No cambies los criterios de aceptación para hacer desaparecer fallos. No amplíes el alcance del ticket.
+Al terminar, presenta cada hallazgo con su corrección y evidencia de validación.
+```
+
+**Qué salió:** Se atendieron las correcciones identificadas como M-1, B-1, B-2, B-3, N-1 y N-2. La observación N-3 fue aceptada como una limitación no bloqueante y quedó documentada.
+
+### Prompt 2.D.89: Ejecutar segunda ronda de QA
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Solicita al qa-bdd-analyst una segunda revisión de TK-00.3 después de las correcciones.
+Debe verificar específicamente que los hallazgos de la primera ronda hayan quedado resueltos y repetir las pruebas necesarias sobre la implementación.
+No debe limitarse a aceptar las declaraciones de los agentes: necesita evidencia de los resultados.
+Clasifica el resultado como aprobado, aprobado con observaciones o bloqueado. Detente al entregar el informe.
+```
+
+**Qué salió:** QA completó la segunda ronda y aprobó la implementación. Las correcciones se verificaron y N-3 permaneció como observación aceptada, sin bloquear el avance.
+
+### Prompt 2.D.90: Solicitar auditoría de seguridad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Delega al security-engineer la auditoría de seguridad de TK-00.3.
+Revisa específicamente:
+- Protección de la base de pruebas.
+- Validación de DATABASE_URL.
+- Exposición de credenciales en errores y logs.
+- Uso de consultas SQL inseguras.
+- Permisos y ejecución de migraciones.
+- Separación entre imágenes migrate y runtime.
+- Dependencias con vulnerabilidades conocidas.
+Distingue hallazgos bloqueantes de observaciones informativas. No modifiques archivos ni declares aprobado el ticket sin evidencias.
+```
+
+**Qué salió:** La auditoría no encontró hallazgos bloqueantes en la implementación revisada. Se verificó el guard de seguridad de la base de pruebas y se mantuvieron documentados los avisos moderados de dependencias.
+
+### Prompt 2.D.91: Revisar el hallazgo L-1 de seguridad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Analiza el hallazgo L-1 reportado por Seguridad en el script db:migrate:test.
+El problema señalado es que un error al construir una URL mediante new URL() podría incluir credenciales en el mensaje de error.
+Revisa el comportamiento real del script y determina cómo evitar la exposición de datos sensibles sin alterar innecesariamente el tratamiento de errores de Prisma.
+No cambies otros componentes ni amplíes el alcance.
+```
+
+**Qué salió:** Se confirmó el riesgo de exposición de credenciales cuando la URL era malformada. Se definió corregirlo con manejo controlado de errores y mensajes fijos que no reprodujeran la URL original.
+
+### Prompt 2.D.92: Corregir la exposición potencial de credenciales
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Delega al responsable de base de datos la corrección del hallazgo L-1.
+El scipt db:migrate:test debe manejar de forma segura los errores de construcción y validación de DATABASE_URL.
+Ante una URL ausente o inválida debe emitir un mensaje fijo, sin incluir usuario, contraseña ni URL original.
+Conserva el código de salida de Prisma cuando la URL sea válida y el fallo provenga de la ejecución de Prisma.
+Implementa únicamente esta corrección y presenta las pruebas realizadas.
+```
+
+**Qué salió:** El script quedó protegido mediante un try/catch que cubre la construcción y validación de la URL. El mensaje de error pasó a ser db:migrate:test: DATABASE_URL ausente o inválida, sin reproducir credenciales.
+
+### Prompt 2.D.93: Verificar la corrección de seguridad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Solicita al security-engineer verificar específicamente la corrección de L-1.
+Debe probar URLs inválidas, puertos no numéricos, URLs vacías y casos con credenciales falsas.
+Comprueba que ningún mensaje o salida de error exponga usuario, contraseña o la URL completa.
+Verifica también que un error de conexión de Prisma conserve su código de salida original.
+No realices nuevas modificaciones durante esta revisión. Entrega evidencias y una conclusión puntual sobre L-1.
+```
+
+**Qué salió:** Seguridad confirmó que L-1 quedó resuelto. Las pruebas no encontraron credenciales ni cadenas postgres:// en los errores examinados. También se comprobó que un error de conexión de Prisma conservaba su código de salida.
+
+### Prompt 2.D.94: Consolidar el resultado de QA y Seguridad
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Consolida los resultados de QA y Seguridad de TK-00.3.
+
+Verifica que cada hallazgo tenga un estado respaldado por evidencia y que no queden observaciones bloqueantes sin resolver.
+
+Distingue expresamente:
+- Hallazgos corregidos.
+- Observaciones aceptadas.
+- Limitaciones documentadas.
+- Trabajo diferido a otros tickets.
+No cambies el estado del ticket ni solicites todavía el cierre. Presenta el informe consolidado.
+```
+
+**Qué salió:** Se consolidó la revisión: QA aprobó la segunda ronda, Seguridad no mantuvo hallazgos bloqueantes y L-1 quedó resuelto. N-3 y los 18 avisos moderados de dependencias permanecieron documentados como aceptaciones. La parte de seed quedó expresamente pendiente de TK-00.4.
+
+**Validación final y cierre**
+
+### Prompt 2.D.95: Verificar la trazabilidad del alcance
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Revisa la trazabilidad final de TK-00.3 contra la especificación 01 v1.1, los criterios de aceptación y las decisiones aprobadas.
+Comprueba que cada requisito tenga evidencia de implementación o validación.
+Identifica qué aspectos se resolvieron dentro del ticket y cuáles fueron reasignados o diferidos a tickets posteriores.
+No marques como cumplido ningún criterio que tenga una excepción aprobada. No modifiques archivos.
+```
+
+**Qué salió:** Se verificó la trazabilidad del alcance. Se retiraron del seguimiento de TK-00.3 los puntos D01–D06 y D08–D10 que ya estaban validados. Se conservaron los pendientes y diferidos que correspondían a otros tickets.
+
+### Prompt 2.D.96: Verificar la excepción de CI y los pendientes
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Revisa los criterios de aceptación de TK-00.3 relacionados con CI y los pendientes que deben continuar en otros tickets.
+omprueba que la excepción local de CI quede registrada como excepción aprobada y no como cumplimiento del criterio.
+Verifica que la responsabilidad de CI esté asignada al ticket correspondiente y que los pendientes de seed y otros seguimientos no se declaren resueltos prematuramente.
+No modifiques la matriz histórica de QA ni cierres otros tickets.
+```
+
+**Qué salió:** La excepción de CI de TK-00.3 se mantuvo documentada como excepción aprobada. El cumplimiento de CI quedó asignado a TK-00.7. La validación del seed se mantuvo provisional y diferida a TK-00.4.
+
+### Prompt 2.D.97: Preparar la validación desde un clon limpio
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Prepara una validación de reproducibilidad de TK-00.3 desde un clon limpio del repositorio.
+El objetivo es demostrar que el evaluador puede obtener el código, configurar el entorno, construir las imágenes, aplicar las migraciones y levantar los servicios.
+Define los pasos y las comprobaciones que se deben realizar.
+Utiliza un proyecto Compose aislado y no reutilices ni elimines contenedores, volúmenes o redes de otros proyectos.
+No ejecutes limpiezas globales de Docker.
+```
+
+**Qué salió:** Se preparó una validación aislada del entorno de entrega, utilizando un nombre de proyecto Compose independiente para evitar interferir con los recursos existentes.
+
+### Prompt 2.D.98: Ejecutar la validación desde el clon limpio
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Ejecuta la validación de TK-00.3 desde el clon limpio y en la rama de entrega.
+Comprueba:
+- Construcción de las imágenes.
+- Aplicación de la migración inicial.
+- Estado de salud de PostgreSQL, backend y Nginx.
+- Respuesta del endpoint principal.
+- Respuesta del endpoint de health.
+- Ausencia de credenciales en los logs de migración.
+Registra los comandos y resultados reales. No elimines recursos Docker ajenos al proyecto ni declares el cierre sin autorización.
+```
+
+**Qué salió:** La validación desde el clon limpio finalizó correctamente. docker compose up -d --build --wait terminó con código 0. La migración 20261120000000_init se aplicó, los servicios quedaron saludables y los endpoints respondieron 200. No se encontraron contraseñas ni URLs PostgreSQL completas en los logs de migración.
+
+### Prompt 2.D.99: Revisar el estado de Git antes del commit
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Prepara la revisión final de los cambios de TK-00.3 antes de crear el commit.
+Comprueba exclusivamente los archivos pertenecientes al alcance aprobado del ticket.
+Verifica que no se incluyan archivos de entorno, secretos, artefactos generados ni archivos externos al proyecto.
+No leas ni inspecciones archivos excluidos de este flujo. No incluyas archivos de evaluación metodológica externos al repositorio de trabajo.
+Presenta la lista de archivos que se propone incluir y detente antes del commit.
+```
+
+**Qué salió:** Se verificó el conjunto de cambios de TK-00.3. Se prepararon 24 archivos para el commit de implementación, excluyendo .env, backend/src/generated/prisma y PROMPTS.md.
+
+### Prompt 2.D.100: Autorizar y crear el commit de implementación
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Con la revisión de archivos completada, prepara el commit de implementación de TK-00.3.
+Incluye únicamente los 24 archivos aprobados y utiliza un mensaje que identifique el ticket y el resultado implementado.
+Antes de ejecutar, confirma que el staging contenga exclusivamente esos archivos.
+No cambies el estado del ticket, no crees el commit de cierre y no hagas push todavía sin autorización expresa.
+```
+
+**Qué salió:** Se creó el commit de implementación 7e9a5a8f34b1…, con el mensaje TK-00.3: esquema Prisma y migración inicial con migrate real en la entrega. Incluyó 24 archivos, con 3103 inserciones y 71 eliminaciones.
+
+### Prompt 2.D.101: Solicitar aprobación humana de Gate 2
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Presenta el expediente de TK-00.3 para la aprobación humana de Gate 2.
+Incluye:
+- Implementación realizada.
+- Evidencias de las 70 pruebas de base de datos y 72 pruebas generales.
+- Validación Docker desde clon limpio.
+- Resultados de QA y Seguridad.
+- Corrección de L-1.
+- Excepciones y observaciones aceptadas.
+- Pendientes reasignados a TK-00.4 y TK-00.7.
+- Hash del commit de implementación.
+No cambies el estado del ticket, no hagas push ni crees el commit de cierre hasta recibir mi aprobación explícita.
+```
+
+**Qué salió:** Se presentó la evidencia de implementación, pruebas, QA, Seguridad y reproducibilidad. El usuario aprobó Gate 2 el 20-11-2026, habilitando el avance al cierre humano del ticket.
+
+### Prompt 2.D.102: Actualizar el estado del ticket
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Con la aprobación humana de Gate 2 recibida, actualiza el estado de TK-00.3 siguiendo el flujo definido en el tracker.
+Registra el paso por Pendiente de aprobación humana y el estado final Hecho, conservando la trazabilidad de la aprobación y el commit de implementación.
+No modifiques otros tickets ni elimines observaciones históricas.
+Detente después de verificar el cambio en el tracker.
+```
+
+**Qué salió:** TK-00.3 pasó de En revisión de seguridad a Pendiente de aprobación humana y finalmente a Hecho, con la aprobación humana registrada.
+
+### Prompt 2.D.103: Preparar el commit de cierre del ticket
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Prepara el commit de cierre de TK-00.3.
+El cambio debe limitarse al registro correspondiente del tracker, incluyendo el estado final, la referencia al commit de implementación y la fecha de aprobación humana.
+No incluyas cambios de código ni archivos ajenos al cierre.
+Presenta el diff limitado al archivo del tracker y espera autorización antes de crear el commit.
+```
+
+**Qué salió:** Se preparó un cambio exclusivo en backlog/TRACKER.md, con el estado final Hecho, la referencia al commit de implementación y la aprobación del 20-11-2026.
+
+### Prompt 2.D.104: Crear el commit de cierre
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Con la autorización recibida, crea el commit de cierre de TK-00.3.
+Incluye únicamente backlog/TRACKER.md.
+Utiliza un mensaje que identifique el ticket, el cambio de estado y la referencia al commit de implementación.
+Verifica el hash generado y el estado de la rama después del commit. No hagas push todavía.
+```
+
+**Qué salió:** Se creó el commit de cierre a55b7a0857a5…, con el mensaje TK-00.3: cerrar ticket en el tracker (Hecho, commit 7e9a5a8, aprobado 2026-11-20). Solo modificó backlog/TRACKER.md.
+
+### Prompt 2.D.105: Publicar los cambios aprobados
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Publica los commits aprobados de TK-00.3 en origin/feature/entrega-2.
+Antes de ejecutar el push, verifica la rama actual y que no existan cambios inesperados.
+Después del push, comprueba que la rama local y remota estén sincronizadas y registra el hash final.
+No realices operaciones de limpieza ni modifiques otros recursos.
+```
+
+**Qué salió:** Se publicó el trabajo en origin/feature/entrega-2. La rama local y remota quedaron sincronizadas en a55b7a0.
+
+### Prompt 2.D.106: Verificar el estado final y la limpieza selectiva
+
+**Modelo:** Opus 1M xHigh
+**Herramienta:** Claude Code
+
+```
+Realiza una verificación final del estado de TK-00.3 después del push.
+
+Comprueba:
+- Rama y commit actual.
+- Sincronización con el remoto.
+- Estado del tracker.
+- Recursos temporales creados exclusivamente para la validación del clon.
+- Conservación de los recursos Docker ajenos al proyecto.
+Si es necesario limpiar recursos temporales, identifica primero cada contenedor, volumen y red por su proyecto y pertenencia. No utilices prune global ni elimines recursos compartidos o ajenos.
+
+No modifiques archivos de trabajo ni alteres datos existentes.
+```
+
+**Qué salió:** Se verificó la sincronización final en a55b7a0. Se retiraron selectivamente los cinco contenedores, el volumen y la red pertenecientes al proyecto aislado de validación, además de los scratchpads temporales. Se conservaron los recursos de otros proyectos y los datos de medsupply-dev.
+
+El estado final de Git quedó con PROMPTS.md como único archivo modificado en el working tree, fuera del alcance y sin incluirlo en los commits.
