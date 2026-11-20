@@ -81,7 +81,7 @@ Detalle y justificación en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## 5. Estado
 
-**Entrega 2 — Implementación en curso.** Existen el proyecto backend (`backend/`, TK-00.1) y el proyecto frontend (`frontend/`, TK-00.2). Existen los archivos de Docker Compose `docker-compose.yml` y `docker-compose.delivery.yml` (TK-00.6, en QA). Todavía no existe el pipeline de CI (TK-00.7). El PRD v1.3 está aprobado; la arquitectura, el modelo de datos y el backlog están alineados con él. El contrato `docs/openapi.yaml` (TK-00.8) es el contrato base aprobado para la Entrega 2, con aspectos provisionales pendientes de revisión documentados en OBS-03 de la spec 03. Las cinco specs están aprobadas: 01 (v1.1), 02 (v1.2), 03 (v1.1), 04 (v1.0) y 05 (v1.1). DP-04 de la spec 02 (resaltado de stock crítico cruzando `listProducts` con `listStockAlerts`) está resuelta en la spec 02 v1.2, y su presentación en el dashboard está documentada en la spec 05 v1.1. Las alineaciones de tickets OBS-03, OBS-04 y OBS-08 de la spec 05 están cerradas. Siguen vigentes las observaciones y limitaciones conocidas que documenta cada spec. Siguientes pasos: continuar implementando el backlog `MVP` en orden.
+**Entrega 2 — Implementación en curso.** Existen el proyecto backend (`backend/`, TK-00.1) y el proyecto frontend (`frontend/`, TK-00.2). Existen los archivos de Docker Compose `docker-compose.yml` y `docker-compose.delivery.yml` (TK-00.6) y, en TK-00.3 (en curso), el esquema Prisma con su migración inicial, que el servicio `migrate` de la entrega aplica. Todavía no existe el pipeline de CI (TK-00.7). El PRD v1.3 está aprobado; la arquitectura, el modelo de datos y el backlog están alineados con él. El contrato `docs/openapi.yaml` (TK-00.8) es el contrato base aprobado para la Entrega 2, con aspectos provisionales pendientes de revisión documentados en OBS-03 de la spec 03. Las cinco specs están aprobadas: 01 (v1.1), 02 (v1.2), 03 (v1.1), 04 (v1.0) y 05 (v1.1). DP-04 de la spec 02 (resaltado de stock crítico cruzando `listProducts` con `listStockAlerts`) está resuelta en la spec 02 v1.2, y su presentación en el dashboard está documentada en la spec 05 v1.1. Las alineaciones de tickets OBS-03, OBS-04 y OBS-08 de la spec 05 están cerradas. Siguen vigentes las observaciones y limitaciones conocidas que documenta cada spec. Siguientes pasos: continuar implementando el backlog `MVP` en orden.
 
 ## 6. Instalación y ejecución
 
@@ -104,7 +104,7 @@ Rellenar en `.env` las variables obligatorias que indica [.env.example](.env.exa
 docker compose -f docker-compose.delivery.yml up -d --build --wait
 ```
 
-La aplicación queda en http://127.0.0.1:8080, accesible solo desde la misma máquina. Mientras no existan las migraciones (TK-00.3) y el seed (TK-00.4), los servicios `migrate` y `seed` solo muestran un aviso `PROVISIONAL:` y la aplicación no tiene datos.
+La aplicación queda en http://127.0.0.1:8080, accesible solo desde la misma máquina. El servicio `migrate` aplica las migraciones; hasta que exista el seed (TK-00.4), `seed` solo muestra un aviso `PROVISIONAL:` y la aplicación no tiene datos.
 
 En la entrega, la sesión del operador dura 8 horas y la del chat 30 minutos (valores por defecto). `JWT_EXPIRES_IN` y `CHAT_SESSION_TTL_MINUTES` no se transmiten al backend de entrega, así que cambiarlas en `.env` no altera esos valores; solo tienen efecto en desarrollo (backend en el host).
 
@@ -117,13 +117,19 @@ docker compose -f docker-compose.delivery.yml down -v   # reiniciar desde cero: 
 
 Si la inicialización de la base falla (por ejemplo, por una contraseña no alfanumérica), corregir `.env` y ejecutar `down -v` antes de volver a levantar: el script de inicialización solo se ejecuta con el volumen vacío.
 
+Si una migración falla, `migrate` termina con error y el backend no arranca. En la entrega no hay datos que preservar: corregir la migración y ejecutar `down -v` (borra los datos) antes de volver a levantar. Esto vale solo para la entrega; en desarrollo `down -v` borraría también `medsupply` (ver "Migración fallida en desarrollo").
+
 ### Desarrollo
 
 Compose levanta solo PostgreSQL en `127.0.0.1:5432`; backend y frontend corren en el host, cada uno en su propia terminal desde la raíz del repositorio.
 
 ```bash
 docker compose up -d                      # PostgreSQL
-cd backend && npm ci && npm run dev       # API en http://localhost:3000
+cd backend && npm ci && npm run db:generate   # genera el cliente de Prisma (primera vez y tras cambiar el esquema)
+cd backend && npm run db:migrate:deploy   # aplica las migraciones a la base medsupply (DATABASE_URL del .env)
+cd backend && npm run db:migrate:test     # aplica las migraciones a medsupply_test
+cd backend && npm run test:db             # pruebas contra PostgreSQL (medsupply_test)
+cd backend && npm run dev                 # API en http://localhost:3000
 cd frontend && npm ci && npm run dev      # http://localhost:5173, proxy /api → backend
 ```
 
@@ -132,5 +138,44 @@ docker compose ps        # estado
 docker compose down      # detener (conserva los datos)
 docker compose down -v   # reiniciar desde cero: elimina los volúmenes y los datos
 ```
+
+#### Migración fallida en desarrollo
+
+Las migraciones van envueltas en `BEGIN;`/`COMMIT;`, así que una migración fallida se revierte entera, pero Prisma deja su fila en `_prisma_migrations` sin terminar y los siguientes `migrate deploy` fallan con P3009.
+
+**Leer bien el error.** Tras un fallo, PostgreSQL responde `current transaction is aborted, commands ignored until end of transaction block` a las sentencias siguientes, y Prisma puede mostrar ese mensaje en lugar de la causa. Es un error secundario: la salida de `migrate` puede mostrar solo ese mensaje. La causa original (por ejemplo, `relation "…" does not exist`) se busca en los logs de PostgreSQL (desarrollo: `docker compose logs db`; entrega: `docker compose -f docker-compose.delivery.yml logs db`), sin decidir por el último mensaje. Antes de reintentar, revisar `migrate status` (abajo) y el estado real de la base.
+
+**`medsupply_test` (base exclusiva de pruebas, se puede vaciar).** Pasos: (1) conectar a `medsupply_test` con el rol de aplicación; (2) comprobar que `current_database()` es exactamente `medsupply_test` y abortar si no; (3) `DROP SCHEMA public CASCADE; CREATE SCHEMA public;` en esa misma conexión; (4) `npm run db:migrate:test` desde `backend/`. Comando propuesto para los pasos 1 a 3, desde la raíz con el Compose de desarrollo levantado (el rol de aplicación entra por el socket local del contenedor):
+
+```bash
+docker compose exec -T db sh -c 'psql -v ON_ERROR_STOP=1 -U "$APP_DB_USER" -d medsupply_test' <<'SQL'
+SELECT current_database() = 'medsupply_test' AS ok \gset
+\if :ok
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+\else
+SELECT 1/0; -- no es medsupply_test: aborta con error sin tocar nada
+\endif
+SQL
+```
+
+Nunca usar `down -v` para este caso. Este comando fue ejecutado y validado por QA en una instancia PostgreSQL desechable y aislada, incluida la comprobación negativa del guard contra otras bases de esa instancia (aborta sin tocarlas).
+
+**`medsupply` (desarrollo).** No se elimina como recuperación rutinaria ni se recomienda `down -v`: se perderían sus datos. Una migración fallida allí requiere un procedimiento separado: inspeccionar `migrate status` y el estado real de la base antes de decidir, y preservar sus datos.
+
+**`migrate status` y `migrate resolve`.** No tienen script de npm; se ejecutan desde `backend/` con el binario local (nunca `npx`) y apuntan a la `DATABASE_URL` del `.env`, es decir, a `medsupply`:
+
+```bash
+node_modules/.bin/prisma migrate status
+node_modules/.bin/prisma migrate resolve --rolled-back <migración>
+node_modules/.bin/prisma migrate resolve --applied <migración>
+```
+
+- `--rolled-back`: cuando la migración fallida no dejó cambios (con `BEGIN`/`COMMIT` se revierte entera; confirmarlo en la base) y se quiere reintentar tras corregirla.
+- `--applied`: solo si se verificó que todos sus cambios quedaron aplicados aunque Prisma no la registrara como exitosa.
+- Ninguno sin inspeccionar antes la base y `migrate status`. No son una solución automática para cualquier P3009.
+- Para `medsupply_test` habría que pasar la URL de pruebas como `DATABASE_URL`; no hay forma verificada y sencilla de hacerlo, así que el camino para esa base es el vaciado de arriba.
+
+`prisma migrate status` se ejecutó y confirmó que la migración está aplicada. `prisma migrate resolve` no se ha ejecutado: sus instrucciones siguen condicionadas a inspeccionar antes el estado real de la base.
 
 Detalle de los entornos en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).

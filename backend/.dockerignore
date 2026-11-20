@@ -5,3 +5,7 @@
 !tsconfig.json
 !tsconfig.build.json
 !src
+!prisma
+!prisma.config.ts
+# El cliente de Prisma lo genera la imagen; nunca se copia del host.
+src/generated

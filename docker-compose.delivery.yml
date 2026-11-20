@@ -1,4 +1,4 @@
-# Entrega (TK-00.6): PostgreSQL, migrate, seed, backend y Nginx desde un clon limpio.
+# Entrega (TK-00.6, TK-00.3): PostgreSQL, migrate, seed, backend y Nginx desde un clon limpio.
 # Ver docs/ARCHITECTURE.md, "Entornos" y "Docker Compose".
 # Uso: `docker compose -f docker-compose.delivery.yml up -d --build --wait`. La aplicación queda en http://127.0.0.1:8080.
 name: medsupply-delivery
@@ -27,11 +27,19 @@ services:
       retries: 12
       start_period: 10s
 
-  # Paso provisional: las migraciones llegan con TK-00.3, que reemplaza este comando por la operación real.
+  # Aplica las migraciones de Prisma (TK-00.3) con una imagen propia, distinta de la del backend (target `migrate`).
+  # Rol único dueño de la base para migrar y ejecutar: limitación aceptada del MVP (docs/ARCHITECTURE.md).
   migrate:
-    image: medsupply-backend:delivery
-    pull_policy: never
-    command: ["node", "-e", "console.log('PROVISIONAL: migrate no aplica migraciones hasta TK-00.3')"]
+    build:
+      context: ./backend
+      target: migrate
+    image: medsupply-migrate:delivery
+    pull_policy: build
+    command: ["/app/node_modules/.bin/prisma", "migrate", "deploy"]
+    environment:
+      DATABASE_URL: postgresql://${APP_DB_USER:?APP_DB_USER es obligatoria en .env}:${APP_DB_PASSWORD:?APP_DB_PASSWORD es obligatoria en .env}@db:5432/medsupply
+      PRISMA_HIDE_UPDATE_MESSAGE: "1"
+    restart: "no"
     depends_on:
       db:
         condition: service_healthy

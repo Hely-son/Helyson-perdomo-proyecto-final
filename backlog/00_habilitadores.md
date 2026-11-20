@@ -2,7 +2,7 @@
 
 | Fase | Requisitos | Puntos | Depende de |
 |---|---|---|---|
-| `MVP` | RNF-01, RNF-02, RNF-05, RNF-06, RNF-08 | 26 | — (TK-00.4 depende además de TK-02.4) |
+| `MVP` | RNF-01, RNF-02, RNF-05, RNF-06, RNF-08 | 28 | — (TK-00.4 depende además de TK-02.4) |
 
 Estos tickets no entregan valor directo al usuario, pero todas las historias los necesitan. Base: [ARCHITECTURE](../docs/ARCHITECTURE.md).
 
@@ -78,7 +78,7 @@ Crear `docker-compose.yml` (desarrollo: solo PostgreSQL 16) y `docker-compose.de
 - Las credenciales salen del archivo de variables, no del `docker-compose.yml`.
 
 ### TK-00.3 · [DB] Esquema Prisma y migración inicial
-**Fase:** `MVP` · **Puntos:** 3 · **Depende de:** TK-00.1, TK-00.6 · **Spec:** specs/01_data_models.spec.md
+**Fase:** `MVP` · **Puntos:** 5 (reestimado de 3 en la puerta 1) · **Depende de:** TK-00.1, TK-00.6 · **Spec:** specs/01_data_models.spec.md
 
 Implementar las entidades `MVP`, enums, índices, restricciones, la secuencia y `next_order_number()` de la spec 01. No se crean `Claim` ni `PurchaseOrder` (PRD §7).
 
@@ -87,6 +87,46 @@ Implementar las entidades `MVP`, enums, índices, restricciones, la secuencia y 
 - Los `CHECK` rechazan stock negativo, precio ≤ 0, cantidades ≤ 0 y teléfonos sin normalizar.
 - Borrar un producto con pedidos falla (`Restrict`).
 - Insertar pedidos asigna `MED-00001`, `MED-00002`… y un valor de secuencia superior a 99 999 produce un número de 6 dígitos sin recortarse (RN-04).
+
+**Decisiones de la puerta 1 (aprobadas por el usuario, 2026-11-20):**
+1. `prisma`, `@prisma/client` y `@prisma/adapter-pg` en 7.10.1 exacta, y `pg` en una versión exacta compatible. Sin versiones RC ni rangos abiertos. Nunca `npx prisma` en Compose, Dockerfile ni scripts.
+2. Un único rol de aplicación, dueño de las bases, para migrar y ejecutar: limitación aceptada del MVP, a documentar en ARCHITECTURE. Prohibidos `$queryRawUnsafe` y `$executeRawUnsafe`.
+3. `migrate` de entrega usa un target propio del Dockerfile derivado de la etapa de build. El CLI de Prisma no entra en la imagen final del backend.
+4. Arnés mínimo de pruebas en `backend/tests/db/`, con los scripts `test:db` y `db:migrate:test`. La URL de pruebas se deriva de `DATABASE_URL` y se comprueba el nombre real de la base (`medsupply_test`) antes de cualquier operación destructiva. La recreación automática de la base sigue siendo de TK-00.5.
+5. Excepción limitada a TK-00.3 en el criterio 2 de la DoD ("también en CI"): pruebas locales contra PostgreSQL 16 con evidencia; la CI es de TK-00.7 (ver Seguimientos del tracker).
+6. Los seguimientos de logging y SEC-03 de TK-00.1 pasan a TK-01.1. TK-00.3 conserva QA-00.6-D10 (logs de `migrate`).
+7. Se prueban los siete `CHECK` de la spec 01, ESC-02 solo en su parte de base de datos (`INSERT` directos) y ESC-17.
+8. `updated_at` se declara `@default(now()) @updatedAt`.
+9. Reestimado a 5 puntos, como una sola unidad.
+10. Los 18 avisos moderados de `npm audit` (SEC-02 de TK-00.1) se aceptan condicionalmente también en la imagen de `migrate`, documentando dependencias, severidad, exposición y justificación. Avisos altos o críticos se consultan antes de aceptarlos.
+11. Responsables: `database-engineer` (principal); `infrastructure-engineer` (Dockerfile, Compose, `.dockerignore` y documentación de infraestructura, después y en serie); `qa-bdd-analyst`; revisión de `security-engineer` obligatoria.
+12. Primera tarea del desarrollo: comprobación acotada de Prisma 7.10.1 con Node 26 y TypeScript 6 (instalación, adaptador `pg`, migraciones, deriva con el SQL manual y transaccionalidad ante fallo). Si falla, `Bloqueado` y consulta; no se cambia de versión automáticamente.
+
+**Decisiones posteriores a la comprobación de viabilidad (aprobadas por el usuario, 2026-11-20):**
+13. `overrides` con `effect` en 3.22.5 exacta (resuelve los 3 avisos `high` de GHSA-7589-6fvf-x4pw que arrastra `@prisma/config` 7.10.1), manteniendo Prisma 7.10.1. Sin `npm audit fix --force` ni otras actualizaciones indirectas. Versiones exactas adicionales: `pg` 8.23.1 y `@types/pg` 8.23.1.
+14. Las migraciones SQL editadas a mano se envuelven en `BEGIN;`/`COMMIT;` (Prisma no revierte una migración fallida). La recuperación se documenta, sin automatizarla.
+15. El arnés de pruebas usa un helper mínimo con `deriveTestDatabaseUrl`, `connectTestDatabase` y `resetDatabase`. Los tests de integración pueden usar `pg` directamente con consultas parametrizadas para validar el SQLSTATE.
+16. La preparación del entorno (dependencias, `.env` local y PostgreSQL de desarrollo) precede a la escritura y ejecución de las pruebas en rojo. QA no implementa el esquema ni resuelve anticipadamente los fallos.
+17. Sin `GRANT` ni `REVOKE` innecesarios: se mantienen los permisos predeterminados de PostgreSQL.
+18. Se incorporan el escenario QA-00.3-37 (un `ROLLBACK` consume un número de la secuencia) y `PRISMA_HIDE_UPDATE_MESSAGE=1` en el servicio `migrate`. La nota sobre el `detail` de los errores de PostgreSQL va al seguimiento de logging de TK-01.1.
+
+**Limitación aceptada en la fase de QA (aprobada por el usuario, 2026-11-20):**
+19. La imagen `medsupply-migrate:delivery` pesa ~1,25 GB porque hereda de la etapa `build` (con dependencias de desarrollo). Se acepta para el MVP: un target mínimo exigiría una instalación selectiva más compleja. No se optimiza por este motivo.
+
+**SEC-02 en TK-00.3: detalle de los 18 avisos moderados aceptados (decisión 10; datos de `npm audit` real, fase de QA, 2026-11-20):**
+- `npm audit`: 18 moderados, 0 high, 0 critical. `npm audit --omit=dev`: 0. Sin avisos nuevos respecto a SEC-02 de TK-00.1.
+- Avisos de origen: `glob` 13.0.7 y 10.5.0 (GHSA-3g3m-2fjr-6pw4, rango 9.0.0–14.0.1) y `minimatch` 10.2.6 y 9.0.9 (GHSA-g3hv-75wg-m249, rango 7.0.0–11.0.0). Los otros 16 paquetes figuran solo por la cadena de dependencias: `test-exclude` 7.0.2, `babel-plugin-istanbul` 8.0.0, `@jest/transform`, `babel-jest`, `@jest/reporters`, `@jest/core`, `jest` (directa), `jest-cli`, `jest-config`, `jest-runner`, `jest-runtime`, `jest-circus`, `jest-snapshot`, `jest-resolve-dependencies`, `@jest/expect` y `@jest/globals`, todos 30.5.2.
+- Vía: `jest`/`ts-jest` → `@jest/*` → `glob`/`test-exclude` → `minimatch`. Todos son solo de desarrollo.
+- Exposición: viajan en `medsupply-migrate:delivery` (hereda la etapa `build`; contenedor de un solo uso, sin puertos, que solo ejecuta `prisma migrate deploy` y nunca Jest), y no en `medsupply-backend:delivery`.
+- Justificación: código de pruebas que no se ejecuta en entrega; `npm audit` solo propone bajar a `jest` 29.7.0, que no se aplica. Avisos high o critical no quedan cubiertos por esta aceptación.
+
+**Condición obligatoria del paso de infraestructura y de la puerta 2 (aprobada por el usuario, 2026-11-20):**
+- **SEC-00.3-01 · La imagen final del backend incorpora el CLI de Prisma por dependencias `devOptional`** (`npm ci --omit=dev` instala 221 paquetes, `prisma` incluido; con `--omit=dev --omit=optional`, 88). Condición:
+  - la instalación de la imagen final añade `--omit=optional` a los parámetros existentes;
+  - `node_modules/prisma` no existe en la imagen final;
+  - el backend funciona sin el CLI de Prisma;
+  - el target de `migrate` sí tiene el CLI y el motor de migraciones;
+  - se mantiene la separación entre ambas imágenes (decisión 3).
 
 ### TK-00.5 · [TEST] Infraestructura de pruebas
 **Fase:** `MVP` · **Puntos:** 5 · **Depende de:** TK-00.3 · **Spec:** docs/ARCHITECTURE.md

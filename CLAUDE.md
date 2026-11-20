@@ -103,6 +103,10 @@ npm start           # node dist/server.js
 npm test            # Jest
 npm run lint        # ESLint
 npm run typecheck   # tsc --noEmit
+npm run db:generate        # genera el cliente de Prisma en src/generated (no versionado)
+npm run db:migrate:deploy  # aplica las migraciones a la base de DATABASE_URL
+npm run db:migrate:test    # aplica las migraciones a medsupply_test (deriva la URL de DATABASE_URL)
+npm run test:db            # pruebas contra PostgreSQL real (medsupply_test)
 ```
 
 Frontend (`cd frontend`). Requiere Node 26 (p. ej. `nvm use 26`). Vite lee las variables `VITE_*` del `.env` de la raíz (`envDir`).
