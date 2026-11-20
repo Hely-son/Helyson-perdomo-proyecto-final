@@ -69,7 +69,7 @@ Crear `frontend/` con Vite + React 18 + TypeScript + Ant Design + React Router.
 ### TK-00.6 · [INFRA] Docker Compose
 **Fase:** `MVP` · **Puntos:** 3 · **Depende de:** TK-00.1, TK-00.2 · **Spec:** docs/ARCHITECTURE.md
 
-Crear `docker-compose.yml` con PostgreSQL 16, backend y frontend, según la tabla de entornos de la arquitectura (RNF-01, RNF-05).
+Crear `docker-compose.yml` (desarrollo: solo PostgreSQL 16) y `docker-compose.delivery.yml` (entrega: PostgreSQL 16, backend y frontend), según la tabla de entornos de la arquitectura (RNF-01, RNF-05).
 
 **Hecho cuando:**
 - En desarrollo, Compose levanta solo PostgreSQL con las bases `medsupply` y `medsupply_test`, y backend y frontend corren en el host.

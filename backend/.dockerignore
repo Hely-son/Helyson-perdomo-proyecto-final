@@ -1,0 +1,7 @@
+# Lista blanca: se excluye todo y solo entra lo necesario para compilar (TK-00.6).
+*
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.build.json
+!src

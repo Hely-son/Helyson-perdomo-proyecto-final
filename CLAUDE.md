@@ -98,6 +98,8 @@ Backend (`cd backend`). Requiere Node 26 (p. ej. `nvm use 26`). `dev` carga `../
 ```bash
 npm ci              # instala dependencias exactas del lockfile (primera vez)
 npm run dev         # servidor con recarga
+npm run build       # compila src/ a dist/ (tsconfig.build.json)
+npm start           # node dist/server.js
 npm test            # Jest
 npm run lint        # ESLint
 npm run typecheck   # tsc --noEmit
@@ -113,4 +115,12 @@ npm run lint        # ESLint
 npm run typecheck   # tsc -b --noEmit
 ```
 
-Docker se documentará en TK-00.6.
+Docker (desde la raíz; requiere `.env` basado en `.env.example`). `down -v` elimina los volúmenes y los datos; el script de inicialización de PostgreSQL solo se ejecuta con el volumen vacío.
+
+```bash
+docker compose up -d                                                  # desarrollo: solo PostgreSQL en 127.0.0.1:5432
+docker compose down                                                   # detener (conserva datos); down -v reinicia desde cero
+docker compose -f docker-compose.delivery.yml up -d --build --wait    # entrega: http://127.0.0.1:8080
+docker compose -f docker-compose.delivery.yml ps -a                   # estado (migrate y seed terminan con exit 0)
+docker compose -f docker-compose.delivery.yml down                    # detener (conserva datos); down -v reinicia desde cero
+```

@@ -34,6 +34,26 @@ flowchart LR
     services -->|Prisma| db
 ```
 
+Cómo llegan las peticiones del navegador al backend en cada entorno (detalle en [Entornos](#entornos)). La flecha del backend a la base es el diseño previsto: TK-00.3 prepara el esquema y las migraciones, y la primera conexión funcional de la aplicación llega con el login (TK-01.1).
+
+```mermaid
+flowchart LR
+    subgraph dev[Desarrollo]
+        navD([Navegador]) -->|localhost:5173| vite[Vite dev server<br/>en el host]
+        vite -->|proxy /api| beD[Backend en el host<br/>npm run dev<br/>localhost:3000]
+        beD -.->|diseño previsto, desde TK-01.1| dbD[(PostgreSQL 16 en Compose<br/>127.0.0.1:5432)]
+    end
+
+    subgraph ent[Entrega · docker-compose.delivery.yml]
+        navE([Navegador]) -->|127.0.0.1:8080| nginx[Nginx<br/>único puerto publicado]
+        nginx -->|GET / y rutas SPA| build[Build estático de Vite<br/>fallback a index.html solo en rutas SPA<br/>/assets/ inexistente: 404 real]
+        nginx -->|/api/ por la red interna| beE[Backend<br/>node dist/server.js<br/>sin puerto publicado]
+        beE -.->|diseño previsto, desde TK-01.1| dbE[(PostgreSQL 16<br/>sin puerto publicado)]
+    end
+```
+
+> **Validación del diagrama pendiente.** Este diagrama representa la arquitectura propuesta y sus flujos previstos. Su sintaxis y su representación visual todavía no se han validado con una herramienta Mermaid: en la revisión anterior no había ninguna disponible para hacerlo. La falta de validación no demuestra que el diagrama sea incorrecto, pero tampoco permite afirmar que esté validado.
+
 ## Backend
 
 ### Capas
@@ -123,7 +143,7 @@ No existe ningún endpoint de borrado (RN-10). `GET /products/alerts` se declara
 
 ### Decisiones transversales
 
-- **Errores:** siempre `{ "error": { "code": "STOCK_INSUFFICIENT", "message": "…" } }` con el status HTTP correspondiente (400, 401, 404, 409, 422). Los conflictos de estado o de concurrencia (`STOCK_INSUFFICIENT`, `PRODUCT_INACTIVE`, `PRICE_CHANGED`, `STOCK_CHANGED`, transiciones de pedido no permitidas) responden 409 cuando llegan por HTTP; dentro del chat, el FSM los traduce a mensajes. El catálogo de códigos vive en `docs/openapi.yaml`.
+- **Errores:** las respuestas de error que genera el backend son siempre `{ "error": { "code": "STOCK_INSUFFICIENT", "message": "…" } }` con el status HTTP correspondiente (400, 401, 404, 409, 422); las respuestas HTML que Nginx genera en la entrega para 413, 502 y 504 son una limitación de infraestructura (ver [Limitaciones conocidas del MVP](#limitaciones-conocidas-del-mvp)). Los conflictos de estado o de concurrencia (`STOCK_INSUFFICIENT`, `PRODUCT_INACTIVE`, `PRICE_CHANGED`, `STOCK_CHANGED`, transiciones de pedido no permitidas) responden 409 cuando llegan por HTTP; dentro del chat, el FSM los traduce a mensajes. El catálogo de códigos vive en `docs/openapi.yaml`.
 - **Transacciones:** confirmar un pedido (RN-02), cancelarlo (RN-05) y ajustar stock (IN-02) se ejecutan en transacciones interactivas de Prisma (`prisma.$transaction(async (tx) => …)`) con el aislamiento por defecto de PostgreSQL (`READ COMMITTED`).
 - **Concurrencia de stock (RN-02, RNF-03):** el stock se descuenta con una actualización condicional (`current_stock >= cantidad`). En PostgreSQL, la fila queda bloqueada por la primera transacción y la segunda reevalúa la condición tras el commit, así que nunca descuenta de más. No se usan `SELECT … FOR UPDATE` ni niveles de aislamiento más altos.
 - **Prevención de interbloqueos (RNF-04 b):** dentro de una transacción, los ítems se actualizan siempre en orden ascendente de `productId`. Si PostgreSQL aun así aborta la transacción por interbloqueo o conflicto de serialización (Prisma `P2034`), el servicio la reintenta entera hasta 3 veces antes de responder error.
@@ -163,35 +183,51 @@ Una sola SPA con dos áreas:
 | Autenticación | JWT + bcrypt | Stateless, suficiente para un único rol (AU-02). |
 | Contrato API | OpenAPI 3 (`docs/openapi.yaml`) | Contrato único y versionado (RNF-02). |
 | Testing | Jest + Supertest · Jest · Playwright | Jest + Supertest: unit e integración de la API contra PostgreSQL real. Jest: unit de la lógica del frontend, sin renderizar componentes. Playwright: E2E de los criterios `CA-` del MVP. |
-| Contenedores | Docker Compose | Entorno local y despliegue de la entrega reproducibles (RNF-05). |
+| Contenedores | Docker Compose · imágenes oficiales `postgres` 16 (Debian), `node` 26 (slim) para el backend y para la etapa de build del frontend, y `nginx` (alpine) para servir el frontend | Entorno local y despliegue de la entrega reproducibles (RNF-05), sin plataforma externa. PostgreSQL en su variante Debian, igual que el servicio `postgres:16` de CI. Las imágenes se fijan por versión exacta y digest para que un clon limpio construya siempre lo mismo. |
+| Servidor web (entrega) | Nginx | Sirve el build estático de Vite y hace de proxy inverso de `/api/` hacia el backend: el navegador ve un solo origen, no hace falta CORS y el backend no se publica. En desarrollo ese papel lo cumple el proxy de Vite. |
 | CI | GitHub Actions | Lint, typecheck y tests en cada push y pull request contra PostgreSQL real (RNF-06). |
 | Metodología | SDD con Claude Code | Specs aprobadas antes de generar código (ver [CLAUDE.md](../CLAUDE.md)). |
 
 ## Estructura del repositorio
 
 ```
-├── backend/              API Express + Prisma (se crea en TK-00.1)
-├── frontend/             SPA React (se crea en TK-00.2)
-├── docs/                 PRD, arquitectura y openapi.yaml
-├── specs/                Especificación técnica por módulo
-├── backlog/              Historias de usuario con sus tickets
-├── .github/workflows/    Pipeline de CI
-├── docker-compose.yml    PostgreSQL, backend y frontend
-├── .env.example          Variables de entorno sin valores reales
-└── CLAUDE.md             Reglas para el agente
+├── backend/                      API Express (Prisma desde TK-00.3) y su Dockerfile de entrega
+├── frontend/                     SPA React, su Dockerfile de entrega y la configuración de Nginx
+├── docker/                       Script de inicialización de PostgreSQL (rol de aplicación y medsupply_test)
+├── docs/                         PRD, arquitectura y openapi.yaml
+├── specs/                        Especificación técnica por módulo
+├── backlog/                      Historias de usuario con sus tickets
+├── .github/workflows/            Pipeline de CI
+├── docker-compose.yml            Desarrollo: solo PostgreSQL
+├── docker-compose.delivery.yml   Entrega: PostgreSQL, migrate, seed, backend y Nginx
+├── .env.example                  Variables de entorno sin valores reales
+└── CLAUDE.md                     Reglas para el agente
 ```
 
 ## Entornos
 
 | Entorno | Base de datos | Cómo se ejecuta |
 |---|---|---|
-| Desarrollo | PostgreSQL 16 en Docker Compose, base `medsupply` | Compose levanta la base. Backend y frontend corren con `npm run dev` en el host. Seed con datos de ejemplo. |
-| Test | Misma instancia de Compose, base aparte `medsupply_test` | Se recrea con las migraciones al iniciar la suite y se vacía entre tests. El pool de conexiones tiene más de una conexión para que las pruebas de concurrencia sean reales (RNF-04). |
+| Desarrollo | PostgreSQL 16 en Docker Compose (`docker-compose.yml`), base `medsupply` | `docker compose up -d` levanta solo la base, publicada en `127.0.0.1:5432`. Backend y frontend corren con `npm run dev` en el host; Vite reenvía `/api` al backend en `localhost:3000`. Seed con datos de ejemplo (TK-00.4). |
+| Test | Misma instancia de Compose de desarrollo, base aparte `medsupply_test` | Diseño objetivo (TK-00.3, TK-00.5): se recrea con las migraciones al iniciar la suite y se vacía entre tests. El pool de conexiones tiene más de una conexión para que las pruebas de concurrencia sean reales (RNF-04). |
 | CI | Servicio `postgres:16` de GitHub Actions | Instala dependencias, aplica migraciones y corre lint, typecheck, tests de unidad e integración (incluida concurrencia) y E2E. El pipeline falla si falla cualquier paso (RNF-06). |
-| Entrega | PostgreSQL 16 en Docker Compose | Un comando documentado levanta base, backend y frontend desde un clon limpio, aplica migraciones y carga el seed (RNF-05). No hay plataforma externa. |
+| Entrega | PostgreSQL 16 en Docker Compose (`docker-compose.delivery.yml`), base `medsupply` | `docker compose -f docker-compose.delivery.yml up -d --build --wait` levanta base, backend y frontend desde un clon limpio. Por diseño, el mismo comando aplica las migraciones y carga el seed. Las migraciones llegan con TK-00.3 y el seed con TK-00.4; hasta entonces los pasos `migrate` y `seed` muestran un aviso fijo `PROVISIONAL:` y terminan sin operar sobre la base. La autenticación (TK-01.1, TK-01.2) y los listados de productos y pedidos (TK-03.1, TK-03.3, TK-06.2, TK-06.4) llegan después. La demostración funcional completa de RNF-05 se acredita en una validación de integración final, cuando estén todos. La aplicación queda en `http://127.0.0.1:8080`. No hay plataforma externa. |
+
+### Docker Compose
+
+- **Dos archivos independientes.** `docker-compose.yml` (desarrollo) y `docker-compose.delivery.yml` (entrega), cada uno con su propio nombre de proyecto y sus propios volúmenes: levantar o borrar uno no toca los datos del otro. No hay `docker-compose.override.yml`; cada comando usa solo el archivo que nombra.
+- **Bases y rol de aplicación.** Un script de inicialización de PostgreSQL, montado en solo lectura, crea un rol de aplicación `NOSUPERUSER`, dueño de las bases, con la contraseña tomada de una variable de entorno. En desarrollo el rol tiene además `CREATEDB` y el script crea `medsupply_test` junto a `medsupply`; en entrega no existe `medsupply_test` y el rol no tiene `CREATEDB`, así que el script distingue el entorno. La contraseña del superusuario de la imagen debe ser distinta de la del rol de aplicación (ver Variables). La aplicación se conecta con el rol de aplicación, nunca con el superusuario. TK-00.3 prepara el esquema y las migraciones; la primera conexión funcional de la aplicación llega con el login (TK-01.1). La separación entre un rol de migración y otro de ejecución se decide con el esquema (TK-00.3).
+- **Reinicio de la base.** PostgreSQL ejecuta los scripts de inicialización solo cuando el volumen de datos está vacío. Para volver a ejecutarlos se recrea el volumen con `docker compose down -v` (con `-f docker-compose.delivery.yml` en entrega), lo que borra los datos.
+- **Orden de arranque de la entrega.** `db` (sano según `pg_isready`) → `migrate` (un solo uso, aplica las migraciones de TK-00.3) → `seed` (un solo uso, carga el seed de TK-00.4) → `backend` (sano) → Nginx (sano). El backend depende de `db` con `service_healthy` y de `migrate` y `seed` con `service_completed_successfully`: si cualquiera de los dos falla, el backend no arranca. Mientras no exista la operación real, `migrate` y `seed` solo muestran un aviso fijo con prefijo `PROVISIONAL:` y terminan con 0: no detectan scripts ni artefactos y no operan sobre la base. TK-00.3 y TK-00.4 reemplazan el comando completo por la operación real, sin ninguna ruta alternativa que vuelva en silencio al modo provisional.
+- **Healthchecks.** La base usa `pg_isready`; el backend, una petición a `GET /api/v1/health` con `node -e` y `fetch`; Nginx, `wget`. Ninguno usa credenciales ni requiere `curl` en la imagen.
+- **Red y puertos.** Solo se publican puertos en `127.0.0.1`. En desarrollo, únicamente PostgreSQL (`5432`). En entrega, únicamente Nginx (`8080`); la base y el backend solo son accesibles por la red interna de Compose. Nginx sirve el build de Vite y reenvía `/api/` al backend, así que frontend y API comparten origen. Las rutas de navegación de la SPA reciben `index.html` (fallback); lo que no existe bajo `/assets/` responde 404 real, sin fallback ni `index.html`; `/api` sin barra final responde 4xx, sin redirección ni fallback. El 404 no se extiende a otras rutas. Nginx limita el cuerpo de las peticiones con `client_max_body_size` de 1m como máximo y rechaza con 413 los que lo superan. Además aplica `server_tokens off` y las cabeceras `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` y `Referrer-Policy: no-referrer`, y sirve `index.html` con `Cache-Control: no-cache`. La política de seguridad de contenido (CSP) queda fuera del alcance del MVP.
+- **Imágenes.** Oficiales y fijadas por versión exacta y digest del índice multiarquitectura. El backend se construye en varias etapas: compila con `npm run build` (`tsconfig.build.json`, solo `src/`). En la imagen arranca con `node dist/server.js` directamente; el script `npm start` ejecuta lo mismo en el host. La etapa final lleva solo dependencias de producción, sin `tsx` ni modo watch, corre con un usuario no root y `NODE_ENV=production`, con `init: true` para reenviar señales y `restart: "no"`. El frontend fija `VITE_API_BASE_URL=/api/v1` con `ENV` en su Dockerfile, antes de `npm run build`, sin `ARG` que lo sobrescriba; Compose no declara `build.args` para él. Eso fija la configuración de build; que el bundle use esa base y que el tráfico real vaya al mismo origen se verifica cuando una pantalla importe el cliente HTTP (TK-01.2) y en la validación de integración final. La etapa de build del frontend usa `node` 26 slim. Las dependencias se instalan con `npm ci --ignore-scripts`.
+- **Variables (RNF-08).** Un único `.env.example` versionado, sin valores reales; el `.env` de la raíz no se versiona. Compose exige las credenciales con `${VAR:?}` y no arranca si falta alguna, y construye la `DATABASE_URL` interna con el nombre del servicio de base como host. No hay `env_file` global: cada servicio recibe solo las variables que usa, con una excepción documentada: `db` recibe también la contraseña del rol de aplicación, porque su script de inicialización crea ese rol. La variable de la contraseña del superusuario solo la recibe `db`. Las dos contraseñas son exclusivamente alfanuméricas. Los valores de ambas contraseñas deben ser distintos, como requisito de configuración y garantía documental, sin validación programática; las variables tienen nombres distintos. Mientras sean provisionales, `migrate` y `seed` no reciben credenciales; las recibirán con TK-00.3 y TK-00.4. Ninguna imagen lleva secretos en `ARG` ni `ENV`, y no hay argumentos de build: D.2 #11 B sustituye la excepción de D4 que permitía un único argumento de build.
 
 ## Limitaciones conocidas del MVP
 
 - **Identidad en el chat:** el simulador confía en el teléfono que se ingresa. En WhatsApp real el canal verificaría el número. Tampoco se valida la existencia ni la titularidad del número (RN-12).
 - **Sesiones en memoria:** se pierden al reiniciar el backend y no escalan a varias instancias. Es aceptable para el MVP (PRD §10).
 - **Token en `localStorage`:** queda expuesto si existiera una vulnerabilidad XSS. Es aceptable para un MVP académico sin datos reales.
+- **Acceso solo local:** la entrega queda accesible solo desde la misma máquina, en `http://127.0.0.1:8080`. La dirección de escucha no es configurable.
+- **Errores de Nginx:** las respuestas de error que genera el propio Nginx (413, 502, 504) son HTML y pueden quedar fuera del formato JSON del contrato (`docs/openapi.yaml`). El contrato no cambia y esa salida no se transforma. El límite de cuerpo y el rechazo con 413 están aprobados y no dependen de esta limitación (ver [Entornos](#entornos)).

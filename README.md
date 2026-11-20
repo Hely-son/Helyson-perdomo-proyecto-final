@@ -81,4 +81,56 @@ Detalle y justificación en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## 5. Estado
 
-**Entrega 2 — Documentación y diseño.** Todavía no hay código: no existen `backend/`, `frontend/`, `docker-compose.yml` ni el pipeline de CI. El PRD v1.3 está aprobado; la arquitectura, el modelo de datos y el backlog están alineados con él. El contrato `docs/openapi.yaml` (TK-00.8) es el contrato base aprobado para la Entrega 2, con aspectos provisionales pendientes de revisión documentados en OBS-03 de la spec 03. Las cinco specs están aprobadas: 01 (v1.1), 02 (v1.2), 03 (v1.1), 04 (v1.0) y 05 (v1.1). DP-04 de la spec 02 (resaltado de stock crítico cruzando `listProducts` con `listStockAlerts`) está resuelta en la spec 02 v1.2, y su presentación en el dashboard está documentada en la spec 05 v1.1. Las alineaciones de tickets OBS-03, OBS-04 y OBS-08 de la spec 05 están cerradas. Siguen vigentes las observaciones y limitaciones conocidas que documenta cada spec. Siguientes pasos: implementar el backlog `MVP` en orden.
+**Entrega 2 — Implementación en curso.** Existen el proyecto backend (`backend/`, TK-00.1) y el proyecto frontend (`frontend/`, TK-00.2). Existen los archivos de Docker Compose `docker-compose.yml` y `docker-compose.delivery.yml` (TK-00.6, en QA). Todavía no existe el pipeline de CI (TK-00.7). El PRD v1.3 está aprobado; la arquitectura, el modelo de datos y el backlog están alineados con él. El contrato `docs/openapi.yaml` (TK-00.8) es el contrato base aprobado para la Entrega 2, con aspectos provisionales pendientes de revisión documentados en OBS-03 de la spec 03. Las cinco specs están aprobadas: 01 (v1.1), 02 (v1.2), 03 (v1.1), 04 (v1.0) y 05 (v1.1). DP-04 de la spec 02 (resaltado de stock crítico cruzando `listProducts` con `listStockAlerts`) está resuelta en la spec 02 v1.2, y su presentación en el dashboard está documentada en la spec 05 v1.1. Las alineaciones de tickets OBS-03, OBS-04 y OBS-08 de la spec 05 están cerradas. Siguen vigentes las observaciones y limitaciones conocidas que documenta cada spec. Siguientes pasos: continuar implementando el backlog `MVP` en orden.
+
+## 6. Instalación y ejecución
+
+### Requisitos
+
+- Docker con Docker Compose. Probado con Docker 29.7.2 y Compose v5.5.1.
+- Solo para desarrollo en el host: Node 26.
+
+### Configuración
+
+```bash
+cp .env.example .env
+```
+
+Rellenar en `.env` las variables obligatorias que indica [.env.example](.env.example): `POSTGRES_USER`, `POSTGRES_PASSWORD`, `APP_DB_USER`, `APP_DB_PASSWORD` y `JWT_SECRET` (al menos 32 bytes). Para desarrollo en el host, también `DATABASE_URL` con el usuario y la contraseña de aplicación. Las dos contraseñas deben ser exclusivamente alfanuméricas y distintas entre sí. El archivo `.env` nunca se commitea.
+
+### Entrega
+
+```bash
+docker compose -f docker-compose.delivery.yml up -d --build --wait
+```
+
+La aplicación queda en http://127.0.0.1:8080, accesible solo desde la misma máquina. Mientras no existan las migraciones (TK-00.3) y el seed (TK-00.4), los servicios `migrate` y `seed` solo muestran un aviso `PROVISIONAL:` y la aplicación no tiene datos.
+
+En la entrega, la sesión del operador dura 8 horas y la del chat 30 minutos (valores por defecto). `JWT_EXPIRES_IN` y `CHAT_SESSION_TTL_MINUTES` no se transmiten al backend de entrega, así que cambiarlas en `.env` no altera esos valores; solo tienen efecto en desarrollo (backend en el host).
+
+```bash
+docker compose -f docker-compose.delivery.yml ps -a     # estado de los servicios
+docker compose -f docker-compose.delivery.yml logs      # logs
+docker compose -f docker-compose.delivery.yml down      # detener (conserva los datos)
+docker compose -f docker-compose.delivery.yml down -v   # reiniciar desde cero: elimina los volúmenes y los datos
+```
+
+Si la inicialización de la base falla (por ejemplo, por una contraseña no alfanumérica), corregir `.env` y ejecutar `down -v` antes de volver a levantar: el script de inicialización solo se ejecuta con el volumen vacío.
+
+### Desarrollo
+
+Compose levanta solo PostgreSQL en `127.0.0.1:5432`; backend y frontend corren en el host, cada uno en su propia terminal desde la raíz del repositorio.
+
+```bash
+docker compose up -d                      # PostgreSQL
+cd backend && npm ci && npm run dev       # API en http://localhost:3000
+cd frontend && npm ci && npm run dev      # http://localhost:5173, proxy /api → backend
+```
+
+```bash
+docker compose ps        # estado
+docker compose down      # detener (conserva los datos)
+docker compose down -v   # reiniciar desde cero: elimina los volúmenes y los datos
+```
+
+Detalle de los entornos en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).

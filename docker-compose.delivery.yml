@@ -1,0 +1,93 @@
+# Entrega (TK-00.6): PostgreSQL, migrate, seed, backend y Nginx desde un clon limpio.
+# Ver docs/ARCHITECTURE.md, "Entornos" y "Docker Compose".
+# Uso: `docker compose -f docker-compose.delivery.yml up -d --build --wait`. La aplicación queda en http://127.0.0.1:8080.
+name: medsupply-delivery
+
+services:
+  db:
+    image: postgres:16.16@sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f
+    environment:
+      # Credenciales obligatorias del .env de la raíz (RNF-08). db recibe también la del rol de aplicación,
+      # porque su script de inicialización crea ese rol (excepción documentada, D.2 #7 ii).
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER es obligatoria en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatoria en .env}
+      APP_DB_USER: ${APP_DB_USER:?APP_DB_USER es obligatoria en .env}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD es obligatoria en .env}
+      POSTGRES_DB: postgres
+      MEDSUPPLY_DB_ENV: delivery
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      # Por TCP: durante la inicialización el servidor temporal solo escucha en el socket local.
+      # Además exige que exista medsupply (la última base que crea el script de inicialización).
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d postgres && psql -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname = 'medsupply'\" | grep -q 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  # Paso provisional: las migraciones llegan con TK-00.3, que reemplaza este comando por la operación real.
+  migrate:
+    image: medsupply-backend:delivery
+    pull_policy: never
+    command: ["node", "-e", "console.log('PROVISIONAL: migrate no aplica migraciones hasta TK-00.3')"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Paso provisional: el seed llega con TK-00.4, que reemplaza este comando por la operación real.
+  seed:
+    image: medsupply-backend:delivery
+    pull_policy: never
+    command: ["node", "-e", "console.log('PROVISIONAL: seed no carga datos hasta TK-00.4')"]
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  backend:
+    build: ./backend
+    image: medsupply-backend:delivery
+    pull_policy: build
+    environment:
+      PORT: "3000"
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET es obligatoria en .env}
+      DATABASE_URL: postgresql://${APP_DB_USER:?APP_DB_USER es obligatoria en .env}:${APP_DB_PASSWORD:?APP_DB_PASSWORD es obligatoria en .env}@db:5432/medsupply
+    init: true
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      seed:
+        condition: service_completed_successfully
+
+  nginx:
+    build: ./frontend
+    image: medsupply-frontend:delivery
+    pull_policy: build
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  pgdata:

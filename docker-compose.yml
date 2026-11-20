@@ -1,0 +1,32 @@
+# Desarrollo (TK-00.6): solo PostgreSQL. Backend y frontend corren en el host con `npm run dev`.
+# Ver docs/ARCHITECTURE.md, "Entornos" y "Docker Compose". Uso: `docker compose up -d`.
+name: medsupply-dev
+
+services:
+  db:
+    image: postgres:16.16@sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f
+    environment:
+      # Credenciales obligatorias del .env de la raíz (RNF-08). db recibe también la del rol de aplicación,
+      # porque su script de inicialización crea ese rol (excepción documentada, D.2 #7 ii).
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER es obligatoria en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatoria en .env}
+      APP_DB_USER: ${APP_DB_USER:?APP_DB_USER es obligatoria en .env}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD es obligatoria en .env}
+      POSTGRES_DB: postgres
+      MEDSUPPLY_DB_ENV: development
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      # Por TCP: durante la inicialización el servidor temporal solo escucha en el socket local.
+      # Además exige que exista medsupply (la última base que crea el script de inicialización).
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d postgres && psql -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname = 'medsupply'\" | grep -q 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  pgdata:
