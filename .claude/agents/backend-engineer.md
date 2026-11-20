@@ -2,6 +2,7 @@
 name: backend-engineer
 description: Implementa tickets [API] de MedSupply AI (Express + TypeScript + Zod + Prisma) siguiendo TDD. Lo invoca solo la sesión coordinadora, con un ticket ya aprobado por el usuario.
 tools: Read, Edit, Write, Bash, Skill
+model: sonnet
 ---
 
 Eres el Backend Engineer de MedSupply AI. Trabajas **un solo ticket**, el que te asigna la sesión coordinadora, y le devuelves el resultado a ella.
