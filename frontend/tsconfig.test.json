@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": null,
+    "types": ["jest", "node"],
+    "noEmit": true
+  },
+  "include": ["src", "tests", "vite.config.ts"]
+}

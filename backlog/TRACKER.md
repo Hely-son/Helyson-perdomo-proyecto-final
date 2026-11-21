@@ -22,7 +22,7 @@ Seguimiento operativo del MVP. Solo registra estado: la definición de cada tick
 | TK-00.2 | Hecho | — | `f99cb47` | 2026-11-19 |
 | TK-00.6 | Hecho | — | `25915f5` | 2026-11-20 |
 | TK-00.3 | Hecho | — | `7e9a5a8` | 2026-11-20 |
-| TK-00.5 | Pendiente | — | — | — |
+| TK-00.5 | En análisis | qa-bdd-analyst | — | — |
 | TK-00.4 | Pendiente | — | — | — |
 | TK-00.7 | Pendiente | — | — | — |
 | TK-01.1 | Pendiente | — | — | — |
@@ -84,6 +84,7 @@ Observaciones operativas que surgieron durante un ticket y deben revisarse en ot
 | TK-00.6 (R-04) | Decidir qué imagen o etapa ejecutará las migraciones y el seed reales (CLI de Prisma, `prisma generate` explícito con `--ignore-scripts`, seed en TypeScript sin `tsx` en la imagen final). La estructura multi-etapa de TK-00.6 no lo impide (QA-00.6-D08). Decidido en la puerta 1 de TK-00.3: target propio derivado de la etapa de build, sin CLI en la imagen final (decisión 3 del ticket). Implementado en TK-00.3 para `migrate` (target `migrate`, CLI y motor solo en esa imagen; QA-00.3-54); queda decidir cómo ejecuta el seed | TK-00.4 (seed) |
 | TK-00.6 (D18) | Validación de integración final de C2 y RNF-05 desde la interfaz (QA-00.6-D18): es el único escenario que puede declararlos cumplidos. Ejecutable cuando estén en `Hecho` TK-00.4, TK-01.1, TK-01.2, TK-03.1, TK-03.3, TK-06.2 y TK-06.4. Ningún ticket existente reúne todas las dependencias; el ticket de validación final está pendiente de autorización (no creado) | Ticket de validación final (pendiente de autorización) |
 | TK-00.6 (diferidos) | Escenarios diferidos de `docs/qa/TK-00.6-matrix.md`, sección B, a verificar en su ticket: TK-00.4 D11–D17 y D19; TK-00.5 D20–D21; TK-00.7 D22–D23; TK-01.1 D07; TK-01.2 D24. D18 en la fila anterior. Los de TK-00.3 (D01–D06 y D08–D10) quedaron verificados por QA en TK-00.3 (QA-00.3-43 a 55) | TK-00.4, TK-00.5, TK-00.7, TK-01.1 y TK-01.2 |
+| TK-00.5 (DoD 2, excepción) | **Excepción aprobada por el usuario en la puerta 1 (2026-11-20, decisión D-1), limitada a TK-00.5; no es cumplimiento íntegro del criterio 2 ni modifica la DoD general.** TK-00.7 (CI) depende de TK-00.5, así que la CI no puede existir dentro de este ticket. TK-00.5 aporta evidencia local, contra PostgreSQL 16, de sus suites, de lint y de typecheck de backend y frontend, y no implementa ni configura CI. TK-00.7 debe ejecutar en CI: (1) `npm test` del backend (suite unitaria, incluidos los tests existentes); (2) `npm run test:db` del backend (suite de integración contra PostgreSQL); (3) `npm test` del frontend (suite unitaria); (4) `npm run test:e2e` (E2E con Chromium); (5) lint y (6) typecheck de backend y frontend. El requisito de CI no se declara cumplido en TK-00.5 | TK-00.7 (CI) |
 
 ## Specs
 
