@@ -44,11 +44,18 @@ services:
       db:
         condition: service_healthy
 
-  # Paso provisional: el seed llega con TK-00.4, que reemplaza este comando por la operación real.
+  # Seed idempotente (TK-00.4) con la imagen del backend. Rol de aplicación; sin JWT_SECRET ni superusuario.
+  # Termina con código distinto de 0 ante un conflicto de datos, y entonces el backend no arranca.
   seed:
     image: medsupply-backend:delivery
     pull_policy: never
-    command: ["node", "-e", "console.log('PROVISIONAL: seed no carga datos hasta TK-00.4')"]
+    command: ["node", "dist/seed/index.js"]
+    environment:
+      DATABASE_URL: postgresql://${APP_DB_USER:?APP_DB_USER es obligatoria en .env}:${APP_DB_PASSWORD:?APP_DB_PASSWORD es obligatoria en .env}@db:5432/medsupply
+      SEED_OPERATOR_EMAIL: ${SEED_OPERATOR_EMAIL:?SEED_OPERATOR_EMAIL es obligatoria en .env}
+      SEED_OPERATOR_PASSWORD: ${SEED_OPERATOR_PASSWORD:?SEED_OPERATOR_PASSWORD es obligatoria en .env}
+      SEED_OPERATOR_NAME: ${SEED_OPERATOR_NAME:?SEED_OPERATOR_NAME es obligatoria en .env}
+    restart: "no"
     depends_on:
       db:
         condition: service_healthy

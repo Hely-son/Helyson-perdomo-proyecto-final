@@ -96,7 +96,7 @@ Detalle y justificación en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 cp .env.example .env
 ```
 
-Rellenar en `.env` las variables obligatorias que indica [.env.example](.env.example): `POSTGRES_USER`, `POSTGRES_PASSWORD`, `APP_DB_USER`, `APP_DB_PASSWORD` y `JWT_SECRET` (al menos 32 bytes). Para desarrollo en el host, también `DATABASE_URL` con el usuario y la contraseña de aplicación. Las dos contraseñas deben ser exclusivamente alfanuméricas y distintas entre sí. El archivo `.env` nunca se commitea.
+Rellenar en `.env` las variables obligatorias que indica [.env.example](.env.example): `POSTGRES_USER`, `POSTGRES_PASSWORD`, `APP_DB_USER`, `APP_DB_PASSWORD`, `JWT_SECRET` (al menos 32 bytes) y las del operador del seed: `SEED_OPERATOR_EMAIL`, `SEED_OPERATOR_PASSWORD` y `SEED_OPERATOR_NAME`. Para desarrollo en el host, también `DATABASE_URL` con el usuario y la contraseña de aplicación. Las dos contraseñas deben ser exclusivamente alfanuméricas y distintas entre sí. El archivo `.env` nunca se commitea.
 
 ### Entrega
 
@@ -104,7 +104,7 @@ Rellenar en `.env` las variables obligatorias que indica [.env.example](.env.exa
 docker compose -f docker-compose.delivery.yml up -d --build --wait
 ```
 
-La aplicación queda en http://127.0.0.1:8080, accesible solo desde la misma máquina. El servicio `migrate` aplica las migraciones; hasta que exista el seed (TK-00.4), `seed` solo muestra un aviso `PROVISIONAL:` y la aplicación no tiene datos.
+La aplicación queda en http://127.0.0.1:8080, accesible solo desde la misma máquina. El servicio `migrate` aplica las migraciones y el servicio `seed` (`node dist/seed/index.js`) carga el operador y los datos de ejemplo. El seed es idempotente: repetirlo no duplica ni modifica datos existentes. Si detecta un conflicto de datos termina con código distinto de 0 y el backend no arranca. En desarrollo se ejecuta con `cd backend && npm run db:seed` (Node 26; carga `../.env`).
 
 En la entrega, la sesión del operador dura 8 horas y la del chat 30 minutos (valores por defecto). `JWT_EXPIRES_IN` y `CHAT_SESSION_TTL_MINUTES` no se transmiten al backend de entrega, así que cambiarlas en `.env` no altera esos valores; solo tienen efecto en desarrollo (backend en el host).
 

@@ -260,7 +260,7 @@ Sin cambios respecto del informe de QA: 02, 04, 05, 10, 13, 14–18, 20, 21, 23�
 Cargar los datos de la sección Seed de la spec 01. Usa la normalización de RN-12 de TK-02.4 para los teléfonos de los clientes. La idempotencia se evalúa **por separado en cada tabla**: clientes por `tax_id` (spec 05 §7.3); productos y pedidos solo cuando su tabla está vacía. Por integridad referencial, los pedidos solo se cargan si los productos del fixture se insertaron en la misma ejecución. Los registros existentes nunca se sobrescriben.
 
 **Hecho cuando:**
-- `npx prisma db seed` es idempotente: correrlo dos veces no duplica datos.
+- El seed es idempotente: correrlo dos veces no duplica datos. Se ejecuta con `npm run db:seed` en desarrollo y con `node dist/seed/index.js` en entrega, nunca con `npx` (decisión 1 de TK-00.3; R1 de la puerta 1 de TK-00.4, aprobada por el usuario el 2026-11-24).
 - Cada tabla se evalúa por separado: que una tenga registros no impide cargar los fixtures de otra que esté vacía, con una única excepción por integridad referencial: los pedidos dependen de los productos insertados en la misma ejecución (ver Pedidos). El orden de carga respeta las relaciones: clientes, productos y, por último, pedidos con sus ítems.
 - Productos: los fixtures se insertan **solo si la tabla de productos está vacía**, en una única transacción (se cargan todos o ninguno). Si ya hay productos, no se inserta ningún fixture ni se modifica ningún registro existente.
 - Pedidos: los fixtures se insertan **solo si la tabla de pedidos está vacía** y **todos los productos del fixture se insertaron correctamente en esa misma ejecución del seed**, en una única transacción junto con sus ítems (todos o ninguno).
