@@ -9,6 +9,8 @@ import { createAuthRouter } from './modules/auth/auth.routes';
 import { createAuthService } from './modules/auth/auth.service';
 import type { AuthOptions } from './modules/auth/token';
 import { healthRouter } from './modules/health/health.routes';
+import { createProductsRouter } from './modules/products/products.routes';
+import { createProductService } from './modules/products/products.service';
 
 export interface CreateAppOptions {
   auth: AuthOptions;
@@ -32,6 +34,7 @@ export function createApp(options: CreateAppOptions): Express {
   if (options.testRouter) {
     app.use(API_PREFIX, options.testRouter);
   }
+  app.use(API_PREFIX, createProductsRouter(createProductService({ prisma: options.prisma })));
   app.use(notFound);
   app.use(errorHandler);
 
