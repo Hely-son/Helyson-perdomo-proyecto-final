@@ -125,7 +125,7 @@ Compose levanta solo PostgreSQL en `127.0.0.1:5432`; backend y frontend corren e
 
 ```bash
 docker compose up -d                      # PostgreSQL
-cd backend && npm ci && npm run db:generate   # genera el cliente de Prisma (primera vez y tras cambiar el esquema)
+cd backend && npm ci && npm run db:generate   # genera el cliente de Prisma: precondición de build, typecheck, npm test, test:db y del test:e2e del frontend (tras npm ci y tras cambiar el esquema)
 cd backend && npm run db:migrate:deploy   # aplica las migraciones a la base medsupply (DATABASE_URL del .env)
 cd backend && npm test                    # pruebas del backend (no requieren PostgreSQL)
 cd backend && npm run test:db             # integración: recrea y migra medsupply_test al iniciar (db:migrate:test ya no es obligatorio)
@@ -135,6 +135,8 @@ cd frontend && npm run test:e2e           # E2E: levanta backend (3100) y Vite (
 cd backend && npm run dev                 # API en http://localhost:3000
 cd frontend && npm ci && npm run dev      # http://localhost:5173, proxy /api → backend
 ```
+
+`test:db` se ejecuta con `node --experimental-vm-modules` (el aviso experimental de Node es esperado): el cliente generado de Prisma usa `import()` dinámico, que Jest solo admite con esa opción (TK-02.4).
 
 **Orden de las pruebas.** Ejecutar en serie `cd backend && npm run test:db` y después `cd frontend && npm run test:e2e`; nunca a la vez, porque comparten `medsupply_test`. `test:e2e` no recrea ni migra la base: usa la que dejó `test:db`. Requisitos de `test:e2e`: PostgreSQL de desarrollo arriba, puertos 3100 y 5174 libres (no reutiliza servidores existentes; ver la limitación conocida más abajo) y `DATABASE_URL` en el entorno o en el `.env` de la raíz (`playwright.config.ts` la necesita siempre, también con `playwright test --list`). El backend de E2E se compila con `npm run build` y arranca con `node dist/server.js`; no toca la entrega (8080).
 

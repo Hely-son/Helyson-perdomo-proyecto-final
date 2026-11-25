@@ -28,7 +28,7 @@ Seguimiento operativo del MVP. Solo registra estado: la definición de cada tick
 | TK-01.1 | Pendiente | — | — | — |
 | TK-01.2 | Pendiente | — | — | — |
 | TK-01.3 | Pendiente | — | — | — |
-| TK-02.4 | Pendiente | — | — | — |
+| TK-02.4 | Hecho | — | commit único `TK-02.4: normalización de teléfonos y consulta de clientes` (implementación y cierre) | 2026-11-24 |
 | TK-03.1 | Pendiente | — | — | — |
 | TK-03.2 | Pendiente | — | — | — |
 | TK-03.3 | Pendiente | — | — | — |
@@ -84,6 +84,10 @@ Observaciones operativas que surgieron durante un ticket y deben revisarse en ot
 | TK-00.5 (DoD 2, excepción) | **Excepción aprobada por el usuario en la puerta 1 (2026-11-20, decisión D-1), limitada a TK-00.5; no es cumplimiento íntegro del criterio 2 ni modifica la DoD general.** TK-00.7 (CI) depende de TK-00.5, así que la CI no puede existir dentro de este ticket. TK-00.5 aporta evidencia local, contra PostgreSQL 16, de sus suites, de lint y de typecheck de backend y frontend, y no implementa ni configura CI. TK-00.7 debe ejecutar en CI: (1) `npm test` del backend (suite unitaria, incluidos los tests existentes); (2) `npm run test:db` del backend (suite de integración contra PostgreSQL); (3) `npm test` del frontend (suite unitaria); (4) `npm run test:e2e` (E2E con Chromium); (5) lint y (6) typecheck de backend y frontend. El requisito de CI no se declara cumplido en TK-00.5 | TK-00.7 (CI) |
 | TK-00.5 (escenario 35) | **Limitación aceptada, cumplimiento parcial** (puerta 2, 2026-11-20). Con `reuseExistingServer: false`, si un servicio que responde HTTP ocupa 3100 o 5174, `test:e2e` falla en seguida; si lo ocupa un listener que acepta conexiones sin responder HTTP, la comprobación previa de Playwright 1.64.1 puede bloquearse más allá del `timeout` del `webServer`. Documentado en el README (§6) | Reevaluar si cambia la versión de Playwright o la forma de arrancar los servidores de E2E |
 | TK-00.5 (O-4) | **Informativo.** Playwright ejecuta los E2E con 2 workers sobre la `medsupply_test` compartida. Hoy los E2E no escriben en la base | Revisar cuando existan E2E que escriban en la base (por ejemplo, TK-01.2 o los flujos de pedidos) |
+| TK-02.4 (DoD 2, excepción) | **Excepción aprobada por el usuario (2026-11-20), limitada a TK-02.4; no es cumplimiento íntegro del criterio 2 ni modifica la DoD general.** Evidencia local de `npm test`, `npm run test:db` (contra PostgreSQL 16), lint, typecheck, build y el E2E existente; su ejecución en CI corresponde a TK-00.7. El requisito de CI no se declara cumplido en TK-02.4 | TK-00.7 (CI) |
+| TK-02.4 (D-C, `db:generate`) | Desde TK-02.4, `src/` importa el cliente generado de Prisma (`src/generated`, no versionado): `npm run db:generate` es precondición de lint, typecheck, build y tests del backend, y del `test:e2e` del frontend (su `webServer` compila el backend). La CI debe ejecutarlo tras `npm ci` y antes de esos pasos. El Dockerfile ya lo hace. Además, desde TK-02.4 el script `test:db` usa `--experimental-vm-modules` (el cliente generado carga su motor con `import()` dinámico dentro de Jest): la CI debe ejecutar `npm run test:db` tal cual, con Node 26 | TK-00.7 (CI) |
+| TK-02.4 (seguridad, longitud) | **Informativo** (revisión de seguridad de TK-02.4, 2026-11-24). `normalizePhone` no limita la longitud en la ruta internacional (spec 05 §6, sin límites E.164). El contrato ya define `maxLength: 30` para `phone` en `startChatSession`: validarlo con Zod antes de llamar a `identifyCustomerByPhone`, para acotar la entrada pública | TK-05.1 |
+| TK-02.4 (seguridad, errores) | **Informativo** (revisión de seguridad de TK-02.4, 2026-11-24). Los errores de Prisma que propaga `identifyCustomerByPhone` pueden incluir los argumentos de la consulta (el teléfono). Hoy nada los registra; si se añade logging, no volcar `err.message` de Prisma ni el teléfono (RNF-08). Relacionado con la política de logging de TK-01.1 | TK-05.1 y TK-01.1 |
 
 ## Specs
 

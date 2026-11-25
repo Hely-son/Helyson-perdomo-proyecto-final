@@ -10,7 +10,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "test": "jest",
-    "test:db": "node --env-file-if-exists=../.env node_modules/jest/bin/jest.js --config jest.db.config.js --runInBand",
+    "test:db": "node --experimental-vm-modules --env-file-if-exists=../.env node_modules/jest/bin/jest.js --config jest.db.config.js --runInBand",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "db:generate": "PRISMA_HIDE_UPDATE_MESSAGE=1 node_modules/.bin/prisma generate",

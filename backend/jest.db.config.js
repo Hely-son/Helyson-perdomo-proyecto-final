@@ -6,6 +6,8 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/tests/db'],
   testMatch: ['**/*.test.ts'],
+  // Compatibilidad de Jest con los imports `.js` del cliente generado de Prisma (TK-02.4).
+  moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' },
   maxWorkers: 1,
   globalSetup: '<rootDir>/tests/db/global-setup.ts',
   setupFilesAfterEnv: ['<rootDir>/tests/db/reset-before-each.ts'],

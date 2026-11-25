@@ -34,21 +34,21 @@ flowchart LR
     services -->|Prisma| db
 ```
 
-Cómo llegan las peticiones del navegador al backend en cada entorno (detalle en [Entornos](#entornos)). La flecha del backend a la base es el diseño previsto: TK-00.3 prepara el esquema y las migraciones, y la primera conexión funcional de la aplicación llega con el login (TK-01.1).
+Cómo llegan las peticiones del navegador al backend en cada entorno (detalle en [Entornos](#entornos)). La flecha del backend a la base es el diseño previsto: TK-00.3 prepara el esquema y las migraciones, y la primera conexión funcional de la aplicación es la consulta de clientes (CL-03, TK-02.4), todavía sin endpoints; TK-01.1 reutilizará el cliente creando la instancia única en el servidor.
 
 ```mermaid
 flowchart LR
     subgraph dev[Desarrollo]
         navD([Navegador]) -->|localhost:5173| vite[Vite dev server<br/>en el host]
         vite -->|proxy /api| beD[Backend en el host<br/>npm run dev<br/>localhost:3000]
-        beD -.->|diseño previsto, desde TK-01.1| dbD[(PostgreSQL 16 en Compose<br/>127.0.0.1:5432)]
+        beD -.->|diseño previsto, desde TK-02.4| dbD[(PostgreSQL 16 en Compose<br/>127.0.0.1:5432)]
     end
 
     subgraph ent[Entrega · docker-compose.delivery.yml]
         navE([Navegador]) -->|127.0.0.1:8080| nginx[Nginx<br/>único puerto publicado]
         nginx -->|GET / y rutas SPA| build[Build estático de Vite<br/>fallback a index.html solo en rutas SPA<br/>/assets/ inexistente: 404 real]
         nginx -->|/api/ por la red interna| beE[Backend<br/>node dist/server.js<br/>sin puerto publicado]
-        beE -.->|diseño previsto, desde TK-01.1| dbE[(PostgreSQL 16<br/>sin puerto publicado)]
+        beE -.->|diseño previsto, desde TK-02.4| dbE[(PostgreSQL 16<br/>sin puerto publicado)]
     end
 ```
 
@@ -66,6 +66,10 @@ flowchart LR
 | Controllers | Validar la entrada (Zod), llamar al servicio y formatear la respuesta | Acceder a Prisma ni aplicar reglas RN |
 | Services | Reglas de negocio y transacciones | Conocer HTTP (`req`, `res`) |
 | Chat FSM | Interpretar mensajes, mantener estado y carrito por sesión, llamar a servicios | Duplicar reglas de los servicios ni acceder a Prisma |
+
+### Cliente de base de datos
+
+`backend/src/lib/prisma.ts` expone `createPrismaClient(databaseUrl)`, una fábrica con URL explícita y adaptador `pg` (TK-02.4). No crea instancias al importarse ni lee el entorno: quien crea el cliente lo cierra con `$disconnect()`. Los servicios lo reciben como dependencia.
 
 ### Módulos
 
@@ -216,7 +220,7 @@ Una sola SPA con dos áreas:
 ### Docker Compose
 
 - **Dos archivos independientes.** `docker-compose.yml` (desarrollo) y `docker-compose.delivery.yml` (entrega), cada uno con su propio nombre de proyecto y sus propios volúmenes: levantar o borrar uno no toca los datos del otro. No hay `docker-compose.override.yml`; cada comando usa solo el archivo que nombra.
-- **Bases y rol de aplicación.** Un script de inicialización de PostgreSQL, montado en solo lectura, crea un rol de aplicación `NOSUPERUSER`, dueño de las bases, con la contraseña tomada de una variable de entorno. En desarrollo el rol tiene además `CREATEDB` y el script crea `medsupply_test` junto a `medsupply`; en entrega no existe `medsupply_test` y el rol no tiene `CREATEDB`, así que el script distingue el entorno. La contraseña del superusuario de la imagen debe ser distinta de la del rol de aplicación (ver Variables). La aplicación se conecta con el rol de aplicación, nunca con el superusuario. La primera conexión funcional de la aplicación llega con el login (TK-01.1). Un único rol, dueño de las bases, sirve para migrar y para ejecutar la aplicación: es una limitación aceptada del MVP (ver Limitaciones conocidas).
+- **Bases y rol de aplicación.** Un script de inicialización de PostgreSQL, montado en solo lectura, crea un rol de aplicación `NOSUPERUSER`, dueño de las bases, con la contraseña tomada de una variable de entorno. En desarrollo el rol tiene además `CREATEDB` y el script crea `medsupply_test` junto a `medsupply`; en entrega no existe `medsupply_test` y el rol no tiene `CREATEDB`, así que el script distingue el entorno. La contraseña del superusuario de la imagen debe ser distinta de la del rol de aplicación (ver Variables). La aplicación se conecta con el rol de aplicación, nunca con el superusuario. La primera conexión funcional de la aplicación es la consulta de clientes (CL-03, TK-02.4), sin endpoints; TK-01.1 reutilizará el cliente creando la instancia única en el servidor. Un único rol, dueño de las bases, sirve para migrar y para ejecutar la aplicación: es una limitación aceptada del MVP (ver Limitaciones conocidas).
 - **Reinicio de la base.** PostgreSQL ejecuta los scripts de inicialización solo cuando el volumen de datos está vacío. Para volver a ejecutarlos se recrea el volumen con `docker compose down -v` (con `-f docker-compose.delivery.yml` en entrega), lo que borra los datos.
 - **Orden de arranque de la entrega.** `db` (sano según `pg_isready`) → `migrate` (un solo uso, ejecuta `prisma migrate deploy` con las migraciones de `backend/prisma/migrations`) → `seed` (un solo uso, carga el seed de TK-00.4) → `backend` (sano) → Nginx (sano). El backend depende de `db` con `service_healthy` y de `migrate` y `seed` con `service_completed_successfully`: si cualquiera de los dos falla, el backend no arranca. El backend nunca ejecuta migraciones al arrancar. `migrate` ya es real (TK-00.3). `seed` sigue siendo provisional hasta TK-00.4: solo muestra un aviso fijo con prefijo `PROVISIONAL:` y termina con 0, sin operar sobre la base; TK-00.4 reemplaza su comando completo por la operación real.
 - **Healthchecks.** La base usa `pg_isready`; el backend, una petición a `GET /api/v1/health` con `node -e` y `fetch`; Nginx, `wget`. Ninguno usa credenciales ni requiere `curl` en la imagen.
