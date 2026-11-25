@@ -1,4 +1,4 @@
-import { createApp } from '../../src/app';
+import { createTestApp } from '../helpers/app';
 import { withRealServer, fireConcurrent } from '../helpers/concurrent-http';
 import { connectTestDatabase, createTestPool } from './helpers/test-database';
 
@@ -59,7 +59,7 @@ describe('TK-00.5 · ejemplo de integración del arnés', () => {
   });
 
   test('QA-00.5-22 petición HTTP real a /api/v1/health con la utilidad', async () => {
-    await withRealServer(createApp(), async (server) => {
+    await withRealServer(createTestApp(), async (server) => {
       const [res] = await fireConcurrent(server, 1, '/api/v1/health');
       expect(res.status).toBe(200);
       expect(JSON.parse(res.body)).toEqual({ status: 'ok' });

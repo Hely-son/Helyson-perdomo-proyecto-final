@@ -2,7 +2,7 @@
 
 | Fase | Requisitos | Criterios PRD | Puntos | Depende de |
 |---|---|---|---|---|
-| `MVP` | AU-01, AU-02, AU-03, RNF-08 | CA-11 | 7 | Habilitadores |
+| `MVP` | AU-01, AU-02, AU-03, RNF-08 | CA-11 | 9 | Habilitadores |
 
 ## Historia
 
@@ -21,7 +21,7 @@
 ## Tickets
 
 ### TK-01.1 · [API] Login y middleware JWT
-**Fase:** `MVP` · **Puntos:** 3 · **Depende de:** TK-00.3, TK-00.5 · **Spec:** specs/05_operator_dashboard.spec.md
+**Fase:** `MVP` · **Puntos:** 5 (reestimado de 3 en la puerta 1) · **Depende de:** TK-00.3, TK-00.5 · **Spec:** specs/05_operator_dashboard.spec.md
 
 Crear `POST /auth/login` (bcrypt + JWT con la expiración de `JWT_EXPIRES_IN`, por defecto `8h`) y el middleware que protege todas las rutas de operador.
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createApp } from '../../src/app';
+import { createTestApp } from '../helpers/app';
 import { withRealServer, fireConcurrent } from '../helpers/concurrent-http';
 
 // Pruebas de TK-00.5 · utilidad de peticiones HTTP simultáneas contra un http.Server real (A9).
@@ -42,7 +42,7 @@ describe('TK-00.5 · utilidad HTTP concurrente', () => {
   test('QA-00.5-19 N peticiones simultáneas contra un servidor real: todas 200 y el servidor registra N a la vez', async () => {
     const N = 5;
     const { router, state } = barrierRouter(N);
-    await withRealServer(createApp({ testRouter: router }), async (server) => {
+    await withRealServer(createTestApp({ testRouter: router }), async (server) => {
       expect(server.address.address).toBe('127.0.0.1');
       expect(server.address.port).toBeGreaterThan(0);
       const responses = await fireConcurrent(server, N, '/api/v1/__test/barrier');
@@ -56,7 +56,7 @@ describe('TK-00.5 · utilidad HTTP concurrente', () => {
   test('QA-00.5-19 control negativo: con barrera N+1 la espera vence y la prueba lo detecta', async () => {
     const N = 4;
     const { router, state } = barrierRouter(N + 1);
-    await withRealServer(createApp({ testRouter: router }), async (server) => {
+    await withRealServer(createTestApp({ testRouter: router }), async (server) => {
       const responses = await fireConcurrent(server, N, '/api/v1/__test/barrier');
       expect(responses.map((r) => r.status)).toEqual(Array(N).fill(504));
     });
@@ -67,7 +67,7 @@ describe('TK-00.5 · utilidad HTTP concurrente', () => {
   test('QA-00.5-20 N GET /api/v1/health simultáneos: N respuestas 200 { status: "ok" }; el puerto queda libre', async () => {
     const N = 10;
     let port = 0;
-    await withRealServer(createApp(), async (server) => {
+    await withRealServer(createTestApp(), async (server) => {
       port = server.address.port;
       const responses = await fireConcurrent(server, N, '/api/v1/health');
       expect(responses).toHaveLength(N);

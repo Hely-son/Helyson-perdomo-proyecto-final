@@ -11,7 +11,7 @@ El seguimiento operativo (estado de cada ticket `MVP`, responsable, commit y apr
 | Orden | Historia | Fase | Requisitos | Depende de | Puntos MVP | Puntos V2 |
 |---|---|---|---|---|---|---|
 | 0 | [Habilitadores técnicos](00_habilitadores.md) | `MVP` | RNF-01, 02, 05, 06, 08 | — | 28 | — |
-| 1 | [US-01 Acceso del operador](US-01_acceso_operador.md) | `MVP` | AU | Habilitadores | 7 | — |
+| 1 | [US-01 Acceso del operador](US-01_acceso_operador.md) | `MVP` | AU | Habilitadores | 9 | — |
 | 2 | [US-02 Clientes: identificación y gestión](US-02_gestion_clientes.md) | `MVP` + `V2` | CL-02, CL-03 · V2: CL-01 | Habilitadores (TK-00.3, TK-00.5) | 2 | 7 |
 | 3 | [US-03 Catálogo e inventario](US-03_catalogo_inventario.md) | `MVP` | IN-01, IN-02 | US-01 | 9 | — |
 | 4 | [US-04 Alertas de stock y reposición](US-04_alertas_reposicion.md) | `MVP` + `V2` | IN-03 · V2: IN-03 (reposición), RP | US-03 | 4 | 6 |

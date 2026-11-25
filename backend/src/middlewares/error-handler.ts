@@ -9,7 +9,7 @@ function isParamDecodeError(err: unknown): boolean {
 
 // Manejador global: cuerpo exactamente { error: { code, message } }. Un error no controlado
 // responde 500 con mensaje genérico, sin stack ni el mensaje original.
-export const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
+export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   if (res.headersSent) {
     next(err);
     return;
@@ -24,5 +24,8 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
     });
     return;
   }
+  // Registro mínimo: solo nombre del error, método y ruta sin query. Nunca message, stack, cause ni detalles.
+  const name = err instanceof Error ? err.name : 'UnknownError';
+  process.stderr.write(`${name} ${req.method} ${req.baseUrl}${req.path}\n`);
   res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Ocurrió un error inesperado.' } });
 };

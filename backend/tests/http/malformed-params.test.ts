@@ -2,7 +2,7 @@ import request from 'supertest';
 import { Router } from 'express';
 import type { Express } from 'express';
 import { z } from 'zod';
-import { createApp } from '../../src/app';
+import { createTestApp } from '../helpers/app';
 import { validate } from '../../src/middlewares/validate';
 import { expectErrorResponse } from '../helpers/error-response';
 
@@ -57,7 +57,7 @@ function buildApp(): Express {
     throw Object.assign(new Error(INTERNAL_SECRET), { status: 403, statusCode: 403, expose: true });
   });
 
-  return createApp({ testRouter: router });
+  return createTestApp({ testRouter: router });
 }
 
 function expectNoLeak(text: string): void {

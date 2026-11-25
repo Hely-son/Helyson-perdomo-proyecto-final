@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import request from 'supertest';
 import { z } from 'zod';
-import { createApp } from '../../src/app';
+import { createTestApp } from '../helpers/app';
 import { validate } from '../../src/middlewares/validate';
 
 // Pruebas propias del Backend Engineer (TK-00.1, condición 4): los handlers reciben en
@@ -28,7 +28,7 @@ function buildApp(seen: unknown[]) {
       res.status(200).json({ ok: true });
     },
   );
-  return createApp({ testRouter: router });
+  return createTestApp({ testRouter: router });
 }
 
 describe('TK-00.1 · validate() entrega los datos validados', () => {

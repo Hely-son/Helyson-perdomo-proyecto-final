@@ -1,6 +1,6 @@
 import request from 'supertest';
 import type { Express } from 'express';
-import { createApp } from '../../src/app';
+import { createTestApp } from '../helpers/app';
 import { expectErrorResponse } from '../helpers/error-response';
 import {
   buildTestRouter,
@@ -11,13 +11,13 @@ import {
 } from '../helpers/test-router';
 
 // Pruebas de aceptación de TK-00.1 (middleware validate con Zod y manejador global de errores).
-// Supertest sobre createApp({ testRouter }), sin listen ni BD.
+// Supertest sobre createTestApp({ testRouter }), sin listen ni BD.
 
 let calls: HandlerCalls;
 
 function buildApp(): Express {
   calls = { body: [], query: 0, params: 0 };
-  return createApp({ testRouter: buildTestRouter(calls) });
+  return createTestApp({ testRouter: buildTestRouter(calls) });
 }
 
 function postJson(app: Express, url: string, raw: string) {
