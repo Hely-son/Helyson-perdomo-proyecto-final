@@ -27,6 +27,12 @@ import {
 // Los pedidos de ESC-03 y ESC-06 se insertan como fixtures Prisma (D2). Las partes de listStockAlerts (TK-04.1)
 // y del catálogo del chat (TK-05.x) quedan pendientes en la matriz.
 // La limpieza global vacía la base antes de cada test. Secretos y datos ficticios; ningún test imprime tokens.
+//
+// Pruebas de aceptación de TK-03.2 · ajuste manual de stock con control optimista (adjustProductStock, IN-02, CA-13).
+// Spec 02 F-5, §7, §8.1, §9, §11.2 y §11.5; contrato PATCH /products/{productId}/stock, schema AdjustStockRequest.
+// Escenarios: ESC-11, 12, 13 (fixture, D1), 16, 17 parcial, 34 parcial (nivel I) y la rama adjustProductStock de
+// ESC-09, §9 id, ESC-10 y O-3. ESC-15 y ESC-37 completo están en products-concurrency.test.ts.
+// Matriz: docs/qa/TK-03.2-matrix.md.
 
 let db: Db;
 let app: Express;
@@ -50,6 +56,9 @@ const createProduct = (body: unknown) =>
 const updateProduct = (id: number | string, body: unknown) =>
   request(app).patch(byId(id)).set('Authorization', auth()).set('Content-Type', 'application/json').send(JSON.stringify(body));
 const deactivateProduct = (id: number | string) => request(app).post(deactivatePath(id)).set('Authorization', auth());
+const stockPath = (id: number | string) => `${PRODUCTS}/${id}/stock`;
+const adjustProductStock = (id: number | string, body: unknown) =>
+  request(app).patch(stockPath(id)).set('Authorization', auth()).set('Content-Type', 'application/json').send(JSON.stringify(body));
 
 const VALID_CREATE = { name: 'Guantes de nitrilo', price: '1250.00', currentStock: 10, minStockAlert: 3 };
 
@@ -413,13 +422,14 @@ describe('TK-03.1 · ESC-08 no existe borrado de productos', () => {
 // ESC-09 · producto inexistente; id no entero (spec 02 §9)
 // ---------------------------------------------------------------------------------------------
 
-describe('TK-03.1 · ESC-09 producto inexistente → PRODUCT_NOT_FOUND sin efectos (adjustProductStock: TK-03.2)', () => {
+describe('TK-03.1 y TK-03.2 · ESC-09 producto inexistente → PRODUCT_NOT_FOUND sin efectos', () => {
   const MISSING = 999999;
 
   test.each([
     ['getProduct', () => getProduct(MISSING)],
     ['updateProduct', () => updateProduct(MISSING, { name: 'No existe' })],
     ['deactivateProduct', () => deactivateProduct(MISSING)],
+    ['adjustProductStock', () => adjustProductStock(MISSING, { newStock: 5, expectedStock: 10 })],
   ])('ESC-09 %s con id inexistente → 404 PRODUCT_NOT_FOUND; no se crea ni modifica nada', async (_op, call) => {
     await insertProduct(db);
     const before = await allProductRows(db);
@@ -429,12 +439,13 @@ describe('TK-03.1 · ESC-09 producto inexistente → PRODUCT_NOT_FOUND sin efect
   });
 });
 
-describe('TK-03.1 · contrato: productId no entero o < 1 → 422 VALIDATION_ERROR sin efectos', () => {
+describe('TK-03.1 y TK-03.2 · contrato: productId no entero o < 1 → 422 VALIDATION_ERROR sin efectos', () => {
   const BAD_IDS = ['abc', '1.5', '0', '-1'];
   const OPS: [string, (id: string) => request.Test][] = [
     ['getProduct', (id) => getProduct(id)],
     ['updateProduct', (id) => updateProduct(id, { name: 'X' })],
     ['deactivateProduct', (id) => deactivateProduct(id)],
+    ['adjustProductStock', (id) => adjustProductStock(id, { newStock: 5, expectedStock: 10 })],
   ];
   const CASES = OPS.flatMap(([op, call]) => BAD_IDS.map((bad) => [op, bad, call] as const));
 
@@ -460,7 +471,7 @@ describe('TK-03.1 · contrato: productId no entero o < 1 → 422 VALIDATION_ERRO
 // ESC-10 · sin token / token inválido / expirado (AU-01, AU-03, CA-11) y O-3 de TK-01.1
 // ---------------------------------------------------------------------------------------------
 
-describe('TK-03.1 · ESC-10 operaciones de productos sin sesión válida → 401 UNAUTHORIZED sin efectos', () => {
+describe('TK-03.1 y TK-03.2 · ESC-10 operaciones de productos sin sesión válida → 401 UNAUTHORIZED sin efectos', () => {
   const expired = () => {
     const iat = nowSeconds() - 7200;
     return signTestJwt({ sub: '1', iat, exp: iat + 3600 });
@@ -476,6 +487,7 @@ describe('TK-03.1 · ESC-10 operaciones de productos sin sesión válida → 401
     ['getProduct', 'get', (id) => byId(id), undefined],
     ['updateProduct', 'patch', (id) => byId(id), { name: 'Cambiado sin sesión', price: '1.00' }],
     ['deactivateProduct', 'post', (id) => deactivatePath(id), undefined],
+    ['adjustProductStock', 'patch', (id) => stockPath(id), { newStock: 0, expectedStock: 10 }],
   ];
   const CASES = OPS.flatMap((op) => CREDENTIALS.map((cred) => [op[0], cred[0], op, cred[1]] as const));
 
@@ -492,7 +504,7 @@ describe('TK-03.1 · ESC-10 operaciones de productos sin sesión válida → 401
   });
 });
 
-describe('TK-03.1 · O-3 (TK-01.1) variantes de ruta sin token no quedan sin protección', () => {
+describe('TK-03.1 y TK-03.2 · O-3 (TK-01.1) variantes de ruta sin token no quedan sin protección', () => {
   const VARIANTS: [string, string, unknown][] = [
     ['get', '/API/V1/PRODUCTS', undefined],
     ['post', '/API/V1/PRODUCTS', VALID_CREATE],
@@ -506,6 +518,8 @@ describe('TK-03.1 · O-3 (TK-01.1) variantes de ruta sin token no quedan sin pro
     ['post', '/API/V1/PRODUCTS/{id}/DEACTIVATE', undefined],
     ['post', '/api/v1/products/{id}/deactivate/', undefined],
     ['delete', '/API/V1/PRODUCTS/{id}', undefined],
+    ['patch', '/API/V1/PRODUCTS/{id}/STOCK', { newStock: 0, expectedStock: 10 }],
+    ['patch', '/api/v1/products/{id}/stock/', { newStock: 0, expectedStock: 10 }],
   ];
 
   test.each(VARIANTS)('O-3: %s %s sin token → 401 UNAUTHORIZED y la base no cambia', async (method, template, body) => {
@@ -625,4 +639,167 @@ describe('TK-03.1 · ESC-33 updateProduct no admite isActive; no existe operaci�
     expect(got.status).toBe(200);
     expect(got.body.isActive).toBe(false);
   });
+});
+
+// =============================================================================================
+// TK-03.2 · adjustProductStock: ajuste absoluto con control optimista (IN-02, RN-01, CA-13)
+// =============================================================================================
+
+/** Campos de la fila que el ajuste no puede tocar (solo cambian current_stock y updated_at). */
+function untouchedByAdjust(row: { name: string; description: string | null; price: string; min_stock_alert: number; is_active: boolean; created_at: Date; id: number }) {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    price: row.price,
+    min_stock_alert: row.min_stock_alert,
+    is_active: row.is_active,
+    created_at: row.created_at,
+  };
+}
+
+const STOCK_BASE = { name: 'Guantes de látex', description: 'Caja de 100', price: '100.00', currentStock: 10, minStockAlert: 3, isActive: true };
+
+describe('TK-03.2 · ESC-11 / CA-13 adjustProductStock con el stock vigente se aplica', () => {
+  test('ESC-11 stock 10; newStock 25, expectedStock 10 → 200 Product con stock 25 igual a la fila; el resto de campos intactos', async () => {
+    const id = await insertProduct(db, STOCK_BASE);
+    const before = await productRowOrThrow(db, id);
+
+    const res = await adjustProductStock(id, { newStock: 25, expectedStock: 10 });
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/^application\/json/);
+    const after = await productRowOrThrow(db, id);
+    expectProductMatchesRow(res.body, after);
+    expect(res.body.currentStock).toBe(25);
+    expect(after.current_stock).toBe(25);
+    expect(untouchedByAdjust(after)).toEqual(untouchedByAdjust(before));
+    expect(await allProductRows(db)).toHaveLength(1);
+  });
+
+  test('ESC-11 límite: newStock igual a expectedStock (10 → 10) → 200 con stock 10 (sin exigir nada sobre updated_at)', async () => {
+    const id = await insertProduct(db, STOCK_BASE);
+    const before = await productRowOrThrow(db, id);
+
+    const res = await adjustProductStock(id, { newStock: 10, expectedStock: 10 });
+    expect(res.status).toBe(200);
+    const after = await productRowOrThrow(db, id);
+    expectProductMatchesRow(res.body, after);
+    expect(after.current_stock).toBe(10);
+    expect(untouchedByAdjust(after)).toEqual(untouchedByAdjust(before));
+  });
+});
+
+describe('TK-03.2 · ESC-12 / CA-13 adjustProductStock con expectedStock desactualizado → STOCK_CHANGED', () => {
+  test('ESC-12 stock 10; newStock 25, expectedStock 8 → 409 STOCK_CHANGED; la fila queda idéntica', async () => {
+    const id = await insertProduct(db, STOCK_BASE);
+    const before = await productRowOrThrow(db, id);
+
+    const res = await adjustProductStock(id, { newStock: 25, expectedStock: 8 });
+    expectErrorResponse(res, 409, 'STOCK_CHANGED');
+    expect(await productRowOrThrow(db, id)).toEqual(before);
+  });
+});
+
+describe('TK-03.2 · ESC-13 (fixture, D1) el stock cambia entre la lectura del operador y el ajuste', () => {
+  test('ESC-13 getProduct lee 10; el stock pasa a 7 directamente en PostgreSQL; ajuste newStock 25, expectedStock 10 → 409 STOCK_CHANGED; queda 7 y getProduct devuelve 7', async () => {
+    const id = await insertProduct(db, STOCK_BASE);
+    const read = await getProduct(id);
+    expect(read.status).toBe(200);
+    expect(read.body.currentStock).toBe(10);
+
+    // Fixture (D1): simula el descuento de un pedido confirmado de 3 unidades. El pedido real queda para TK-05.3.
+    await db.$executeRaw`UPDATE products SET current_stock = 7 WHERE id = ${id}`;
+    const changed = await productRowOrThrow(db, id);
+    expect(changed.current_stock).toBe(7);
+
+    const res = await adjustProductStock(id, { newStock: 25, expectedStock: read.body.currentStock });
+    expectErrorResponse(res, 409, 'STOCK_CHANGED');
+    expect(await productRowOrThrow(db, id)).toEqual(changed);
+
+    const reread = await getProduct(id);
+    expect(reread.status).toBe(200);
+    expect(reread.body.currentStock).toBe(7);
+  });
+});
+
+describe('TK-03.2 · ESC-17 (parcial) ajustar a 0 un producto activo', () => {
+  test('ESC-17 activo stock 10; newStock 0, expectedStock 10 → 200 stock 0; sigue activo (alertas: TK-04.1; "Sin stock" del chat: TK-05.2)', async () => {
+    const id = await insertProduct(db, STOCK_BASE);
+    const before = await productRowOrThrow(db, id);
+
+    const res = await adjustProductStock(id, { newStock: 0, expectedStock: 10 });
+    expect(res.status).toBe(200);
+    const after = await productRowOrThrow(db, id);
+    expectProductMatchesRow(res.body, after);
+    expect(res.body).toMatchObject({ currentStock: 0, isActive: true });
+    expect(untouchedByAdjust(after)).toEqual(untouchedByAdjust(before));
+  });
+});
+
+describe('TK-03.2 · ESC-34 (parcial, DP-02) ajuste de stock de un producto inactivo', () => {
+  test('ESC-34 inactivo stock 5; ajuste a 0 con expectedStock 5 → 200 stock 0 e inactivo; repetirlo → 409 STOCK_CHANGED, stock 0 e inactivo (alertas: TK-04.1)', async () => {
+    const id = await insertProduct(db, { ...STOCK_BASE, currentStock: 5, minStockAlert: 2, isActive: false });
+    const before = await productRowOrThrow(db, id);
+
+    const first = await adjustProductStock(id, { newStock: 0, expectedStock: 5 });
+    expect(first.status).toBe(200);
+    const afterFirst = await productRowOrThrow(db, id);
+    expectProductMatchesRow(first.body, afterFirst);
+    expect(first.body).toMatchObject({ currentStock: 0, isActive: false });
+    expect(untouchedByAdjust(afterFirst)).toEqual(untouchedByAdjust(before));
+
+    const second = await adjustProductStock(id, { newStock: 0, expectedStock: 5 });
+    expectErrorResponse(second, 409, 'STOCK_CHANGED');
+    const afterSecond = await productRowOrThrow(db, id);
+    expect(afterSecond).toEqual(afterFirst);
+    expect(afterSecond).toMatchObject({ current_stock: 0, is_active: false });
+  });
+});
+
+describe('TK-03.2 · ESC-16 y contrato AdjustStockRequest: validación estricta sin cambiar el stock', () => {
+  const INVALID: [string, unknown][] = [
+    // Casos literales de ESC-16 (IN-02, RN-01).
+    ['newStock −1', { newStock: -1, expectedStock: 10 }],
+    ['newStock 2.5 (no entero)', { newStock: 2.5, expectedStock: 10 }],
+    ['sin expectedStock', { newStock: 25 }],
+    // Resto del esquema AdjustStockRequest (RNF-02): enteros 0..2147483647, ambos requeridos, additionalProperties: false.
+    ['newStock como texto "5"', { newStock: '5', expectedStock: 10 }],
+    ['newStock null', { newStock: null, expectedStock: 10 }],
+    ['newStock 2147483648 (> int32)', { newStock: 2147483648, expectedStock: 10 }],
+    ['expectedStock −1', { newStock: 25, expectedStock: -1 }],
+    ['expectedStock 1.5 (no entero)', { newStock: 25, expectedStock: 1.5 }],
+    ['expectedStock 2147483648 (> int32)', { newStock: 25, expectedStock: 2147483648 }],
+    ['expectedStock como texto "10"', { newStock: 25, expectedStock: '10' }],
+    ['expectedStock null', { newStock: 25, expectedStock: null }],
+    ['sin newStock', { expectedStock: 10 }],
+    ['cuerpo vacío {}', {}],
+    ['campo no permitido currentStock', { newStock: 25, expectedStock: 10, currentStock: 25 }],
+    ['campo no permitido price', { newStock: 25, expectedStock: 10, price: '1.00' }],
+    ['campo no permitido isActive', { newStock: 25, expectedStock: 10, isActive: false }],
+    ['campo desconocido', { newStock: 25, expectedStock: 10, motivo: 'inventario' }],
+    ['cuerpo arreglo', [{ newStock: 25, expectedStock: 10 }]],
+    ['cuerpo null', null],
+    ['cuerpo cadena JSON', 'ajuste'],
+  ];
+
+  test.each(INVALID)('ESC-16 adjustProductStock con %s → 422 VALIDATION_ERROR y la fila no cambia (stock 10)', async (_label, body) => {
+    const id = await insertProduct(db, STOCK_BASE);
+    const before = await productRowOrThrow(db, id);
+    const res = await adjustProductStock(id, body);
+    expectValidationError(res);
+    const after = await productRowOrThrow(db, id);
+    expect(after).toEqual(before);
+    expect(after.current_stock).toBe(10);
+  });
+
+  test.each(['{"newStock": 25, "expectedStock": ', 'no es json', '{newStock: 25}'])(
+    'contrato: adjustProductStock con cuerpo que no es JSON válido (%s) → 400 MALFORMED_REQUEST y la fila no cambia',
+    async (raw) => {
+      const id = await insertProduct(db, STOCK_BASE);
+      const before = await productRowOrThrow(db, id);
+      const res = await request(app).patch(stockPath(id)).set('Authorization', auth()).set('Content-Type', 'application/json').send(raw);
+      expectErrorResponse(res, 400, 'MALFORMED_REQUEST');
+      expect(await productRowOrThrow(db, id)).toEqual(before);
+    },
+  );
 });

@@ -26,6 +26,9 @@ export const updateProductBody = z
   })
   .refine((body) => Object.values(body).some((v) => v !== undefined));
 
+// AdjustStockRequest (additionalProperties false): ambos enteros 0..INT32_MAX, requeridos.
+export const adjustStockBody = z.strictObject({ newStock: stockInt, expectedStock: stockInt });
+
 // Parámetro ProductId: entero >= 1. Fuera de int4 se rechaza con 422 (nunca llega a la base).
 export const productIdParams = z.object({
   productId: z

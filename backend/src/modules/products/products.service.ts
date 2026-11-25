@@ -42,13 +42,21 @@ export interface UpdateProductInput {
   minStockAlert?: number;
 }
 
+export interface AdjustStockInput {
+  newStock: number;
+  expectedStock: number;
+}
+
 /** Lo único que el servicio necesita de la base; el PrismaClient lo cumple. */
 export interface ProductDb {
   product: {
     findMany(args: { orderBy: { name: 'asc' } | Array<{ name: 'asc' } | { id: 'asc' }> }): Promise<ProductRecord[]>;
     findUnique(args: { where: { id: number } }): Promise<ProductRecord | null>;
     create(args: { data: CreateProductInput }): Promise<ProductRecord>;
-    update(args: { where: { id: number }; data: UpdateProductInput }): Promise<ProductRecord>;
+    update(args: {
+      where: { id: number; currentStock?: number };
+      data: UpdateProductInput | { currentStock: number };
+    }): Promise<ProductRecord>;
     updateMany(args: { where: { id: number; isActive: boolean }; data: { isActive: boolean } }): Promise<{ count: number }>;
   };
 }
@@ -59,6 +67,7 @@ export interface ProductService {
   create(input: CreateProductInput): Promise<Product>;
   update(id: number, input: UpdateProductInput): Promise<Product>;
   deactivate(id: number): Promise<Product>;
+  adjustStock(id: number, input: AdjustStockInput): Promise<Product>;
 }
 
 const notFound = () => new AppError(404, 'PRODUCT_NOT_FOUND', 'El producto no existe.');
@@ -130,6 +139,22 @@ export function createProductService(deps: { prisma: ProductDb }): ProductServic
       const row = await db.findUnique({ where: { id } });
       if (row === null) throw notFound();
       return toProduct(row);
+    },
+
+    async adjustStock(id, input) {
+      // Compare-and-set atómico (F-5, RN-01): una sola sentencia condicionada al stock esperado.
+      // Solo toca current_stock; permitido sobre productos inactivos.
+      try {
+        const row = await db.update({
+          where: { id, currentStock: input.expectedStock },
+          data: { currentStock: input.newStock },
+        });
+        return toProduct(row);
+      } catch (err) {
+        if (!isRecordNotFound(err)) throw err;
+        if ((await db.findUnique({ where: { id } })) === null) throw notFound();
+        throw new AppError(409, 'STOCK_CHANGED', 'El stock cambió desde que lo consultaste. Recarga e inténtalo de nuevo.');
+      }
     },
   };
 }

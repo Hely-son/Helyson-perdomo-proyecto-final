@@ -1,5 +1,5 @@
 import type { Request, RequestHandler } from 'express';
-import type { CreateProductInput, ProductService, UpdateProductInput } from './products.service';
+import type { AdjustStockInput, CreateProductInput, ProductService, UpdateProductInput } from './products.service';
 
 // Los parámetros ya fueron validados y convertidos por productIdParams.
 const idOf = (req: Request) => (req.params as unknown as { productId: number }).productId;
@@ -10,6 +10,7 @@ export interface ProductController {
   get: RequestHandler;
   update: RequestHandler;
   deactivate: RequestHandler;
+  adjustStock: RequestHandler;
 }
 
 export function createProductController(service: ProductService): ProductController {
@@ -28,6 +29,9 @@ export function createProductController(service: ProductService): ProductControl
     },
     deactivate: async (req, res) => {
       res.status(200).json(await service.deactivate(idOf(req)));
+    },
+    adjustStock: async (req, res) => {
+      res.status(200).json(await service.adjustStock(idOf(req), req.body as AdjustStockInput));
     },
   };
 }
