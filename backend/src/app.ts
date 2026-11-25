@@ -34,7 +34,7 @@ export function createApp(options: CreateAppOptions): Express {
   if (options.testRouter) {
     app.use(API_PREFIX, options.testRouter);
   }
-  app.use(API_PREFIX, createProductsRouter(createProductService({ prisma: options.prisma })));
+  app.use(`${API_PREFIX}/products`, createProductsRouter(createProductService({ prisma: options.prisma })));
   app.use(notFound);
   app.use(errorHandler);
 

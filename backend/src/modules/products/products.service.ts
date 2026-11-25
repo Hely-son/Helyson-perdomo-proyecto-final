@@ -47,10 +47,18 @@ export interface AdjustStockInput {
   expectedStock: number;
 }
 
+/** Forma de la referencia de campo de Prisma (FieldRef) que el servicio necesita. */
+export type IntFieldRef = { readonly modelName: 'Product'; readonly name: string; readonly typeName: 'Int'; readonly isList: boolean };
+
 /** Lo único que el servicio necesita de la base; el PrismaClient lo cumple. */
 export interface ProductDb {
   product: {
-    findMany(args: { orderBy: { name: 'asc' } | Array<{ name: 'asc' } | { id: 'asc' }> }): Promise<ProductRecord[]>;
+    findMany(args: {
+      where?: { isActive: boolean; currentStock: { lte: IntFieldRef } };
+      orderBy: { name: 'asc' } | Array<{ name: 'asc' } | { id: 'asc' }>;
+    }): Promise<ProductRecord[]>;
+    /** Referencias de campo de Prisma: permiten comparar columnas en el filtro. */
+    fields: { minStockAlert: IntFieldRef };
     findUnique(args: { where: { id: number } }): Promise<ProductRecord | null>;
     create(args: { data: CreateProductInput }): Promise<ProductRecord>;
     update(args: {
@@ -63,6 +71,7 @@ export interface ProductDb {
 
 export interface ProductService {
   list(): Promise<{ items: Product[] }>;
+  listStockAlerts(): Promise<{ items: Product[] }>;
   get(id: number): Promise<Product>;
   create(input: CreateProductInput): Promise<Product>;
   update(id: number, input: UpdateProductInput): Promise<Product>;
@@ -95,6 +104,16 @@ export function createProductService(deps: { prisma: ProductDb }): ProductServic
   return {
     async list() {
       const rows = await db.findMany({ orderBy: [{ name: 'asc' }, { id: 'asc' }] });
+      return { items: rows.map(toProduct) };
+    },
+
+    async listStockAlerts() {
+      // RN-09: alerta = activo con current_stock <= min_stock_alert (inclusivo). Se filtra en PostgreSQL
+      // comparando columnas con una referencia de campo; solo lectura (IN-03).
+      const rows = await db.findMany({
+        where: { isActive: true, currentStock: { lte: db.fields.minStockAlert } },
+        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+      });
       return { items: rows.map(toProduct) };
     },
 

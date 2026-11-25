@@ -6,6 +6,7 @@ const idOf = (req: Request) => (req.params as unknown as { productId: number }).
 
 export interface ProductController {
   list: RequestHandler;
+  listStockAlerts: RequestHandler;
   create: RequestHandler;
   get: RequestHandler;
   update: RequestHandler;
@@ -17,6 +18,9 @@ export function createProductController(service: ProductService): ProductControl
   return {
     list: async (_req, res) => {
       res.status(200).json(await service.list());
+    },
+    listStockAlerts: async (_req, res) => {
+      res.status(200).json(await service.listStockAlerts());
     },
     create: async (req, res) => {
       res.status(201).json(await service.create(req.body as CreateProductInput));
