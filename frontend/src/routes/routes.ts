@@ -37,9 +37,6 @@ export const DASHBOARD_ROUTES: readonly DashboardRoute[] = [
   { path: '/dashboard/orders', label: 'Pedidos', icon: ShoppingCartOutlined, Component: OrdersPage },
 ];
 
-/** Destino de '/' y de cualquier ruta desconocida. */
-export const FALLBACK_PATH: DashboardPath = '/dashboard';
-
-/** Clave de la entrada "Cerrar sesión" del menú: deshabilitada, no navega. */
+/** Clave de la entrada "Cerrar sesión" del menú: acción del cliente, no navega a una ruta. */
 export const LOGOUT_MENU_KEY = 'logout';
 export const LOGOUT_MENU_LABEL = 'Cerrar sesión';

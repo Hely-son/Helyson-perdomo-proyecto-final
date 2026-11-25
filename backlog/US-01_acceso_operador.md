@@ -2,7 +2,7 @@
 
 | Fase | Requisitos | Criterios PRD | Puntos | Depende de |
 |---|---|---|---|---|
-| `MVP` | AU-01, AU-02, AU-03, RNF-08 | CA-11 | 9 | Habilitadores |
+| `MVP` | AU-01, AU-02, AU-03, RNF-08 | CA-11 | 11 | Habilitadores |
 
 ## Historia
 
@@ -34,7 +34,7 @@ Crear `POST /auth/login` (bcrypt + JWT con la expiración de `JWT_EXPIRES_IN`, p
 - Los tests de integración de login válido, login inválido y los tres casos de 401 pasan. El caso expirado usa una expiración corta configurada en el test.
 
 ### TK-01.2 · [UI] Pantalla de login y rutas protegidas
-**Fase:** `MVP` · **Puntos:** 3 · **Depende de:** TK-01.1, TK-00.2 · **Spec:** specs/05_operator_dashboard.spec.md
+**Fase:** `MVP` · **Puntos:** 5 (reestimado de 3 en la puerta 1) · **Depende de:** TK-01.1, TK-00.2 · **Spec:** specs/05_operator_dashboard.spec.md
 
 Crear el formulario de login, guardar el token, proteger `/dashboard/*` y agregar el botón de logout.
 

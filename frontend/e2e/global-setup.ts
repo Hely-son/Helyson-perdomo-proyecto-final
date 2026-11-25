@@ -1,0 +1,29 @@
+// globalSetup de Playwright (TK-01.2, D2): una sola vez por ejecución, en el proceso principal y antes de los
+// workers. Prepara el operador E2E en medsupply_test con el script del backend (que valida por su cuenta el destino).
+// Sin shell; la URL, el email, el nombre y la contraseña viajan solo por el entorno del proceso hijo. No imprime valores.
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { resolveTestDatabaseUrl } from '../playwright.config';
+import { E2E_OPERATOR_EMAIL, E2E_OPERATOR_NAME, e2eOperatorPassword } from './support/e2e-env';
+
+export const BACKEND_DIR = path.resolve(import.meta.dirname, '..', '..', 'backend');
+export const TSX_BIN = path.join(BACKEND_DIR, 'node_modules', '.bin', 'tsx');
+export const UPSERT_SCRIPT = path.join(BACKEND_DIR, 'tests', 'e2e-support', 'upsert-e2e-operator.ts');
+
+export default function globalSetup(): void {
+  const result = spawnSync(TSX_BIN, [UPSERT_SCRIPT], {
+    cwd: BACKEND_DIR,
+    shell: false,
+    stdio: ['ignore', 'inherit', 'inherit'],
+    env: {
+      PATH: process.env.PATH,
+      DATABASE_URL: resolveTestDatabaseUrl(),
+      E2E_OPERATOR_EMAIL,
+      E2E_OPERATOR_NAME,
+      E2E_OPERATOR_PASSWORD: e2eOperatorPassword(),
+    },
+  });
+  if (result.status !== 0) {
+    throw new Error(`global-setup: no se pudo preparar el operador E2E (código ${String(result.status)})`);
+  }
+}

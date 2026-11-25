@@ -1,8 +1,14 @@
 // Acceso HTTP centralizado del frontend (TK-00.2). Único módulo que llama a fetch.
 // La URL base sale de VITE_API_BASE_URL; en desarrollo es relativa y el proxy de Vite la reenvía.
+import { isSessionLost } from '../auth/errors';
+import { isSessionValid } from '../auth/session';
+import { sessionStore } from '../auth/session-store';
+
 const DEFAULT_BASE_URL = '/api/v1';
 
-export const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || DEFAULT_BASE_URL;
+// `import.meta.env` no existe fuera de Vite (Jest/Node): se lee de forma defensiva.
+const viteEnv = import.meta.env as { VITE_API_BASE_URL?: string } | undefined;
+export const API_BASE_URL: string = viteEnv?.VITE_API_BASE_URL || DEFAULT_BASE_URL;
 
 /**
  * Error devuelto por el API con el formato `Error` de docs/openapi.yaml.
@@ -21,7 +27,62 @@ export class ApiError extends Error {
   }
 }
 
+/** La sesión local venció antes de enviar una petición protegida (spec 05 §15.4, DP-05). */
+export class SessionExpiredError extends Error {
+  constructor() {
+    super('La sesión expiró.');
+    this.name = 'SessionExpiredError';
+  }
+}
+
+/** Se intentó una petición protegida sin sesión guardada (spec 05 §15.5). */
+export class NoSessionError extends Error {
+  constructor() {
+    super('No hay una sesión iniciada.');
+    this.name = 'NoSessionError';
+  }
+}
+
+export type SessionLostReason = 'expired' | 'unauthorized' | 'none';
+type SessionLostHandler = (reason: SessionLostReason) => void;
+
+let sessionLostHandler: SessionLostHandler | null = null;
+// Una pérdida de sesión es un único evento: la primera causa (expired, unauthorized o none) se notifica una vez y
+// las siguientes se ignoran hasta que se establezca una sesión nueva. Las peticiones posteriores siguen rechazándose.
+let lossNotified = false;
+
+function notifySessionLost(reason: SessionLostReason): void {
+  if (lossNotified) return;
+  lossNotified = true;
+  sessionLostHandler?.(reason);
+}
+
+/**
+ * Registra una pérdida de sesión detectada fuera del cliente (los loaders del router, que ya redirigen a /login):
+ * integra esa causa en la misma coordinación, sin invocar el manejador, para que las peticiones posteriores no
+ * notifiquen ni naveguen de nuevo.
+ */
+export function markSessionLossHandled(): void {
+  if (sessionStore.getSession() !== null) return; // con una sesión activa no hay pérdida que coordinar
+  lossNotified = true;
+}
+
+sessionStore.subscribe(() => {
+  if (sessionStore.getSession() !== null) lossNotified = false;
+});
+
+/**
+ * Único punto de integración con la navegación: quien lo registre decide cómo llevar al operador a /login
+ * (este módulo no importa el router).
+ */
+export function setSessionLostHandler(handler: SessionLostHandler | null): void {
+  sessionLostHandler = handler;
+  lossNotified = false;
+}
+
 export interface ApiRequestOptions {
+  /** true en las operaciones protegidas (Bearer): comprueba la sesión y adjunta el token. */
+  auth?: boolean;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   headers?: Record<string, string>;
@@ -55,10 +116,28 @@ async function parseJson(response: Response): Promise<unknown> {
 
 /** Llama al API y devuelve el cuerpo JSON tal como lo envía el backend. */
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, headers = {}, signal } = options;
+  const { method = 'GET', body, headers = {}, signal, auth = false } = options;
+  let sentToken: string | null = null;
+  if (auth) {
+    const session = sessionStore.getSession();
+    if (session === null) {
+      notifySessionLost('none');
+      throw new NoSessionError();
+    }
+    if (!isSessionValid(session, Date.now())) {
+      sessionStore.clearSession('expired');
+      notifySessionLost('expired');
+      throw new SessionExpiredError();
+    }
+    sentToken = session.token;
+  }
   const init: RequestInit = {
     method,
-    headers: { Accept: 'application/json', ...headers },
+    headers: {
+      Accept: 'application/json',
+      ...headers,
+      ...(sentToken === null ? {} : { Authorization: `Bearer ${sentToken}` }),
+    },
     signal,
   };
   if (body !== undefined) {
@@ -77,7 +156,13 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const data = await parseJson(response);
   if (!response.ok) {
     const error = readErrorBody(data);
-    throw new ApiError(response.status, error?.code ?? null, error?.message ?? response.statusText);
+    const apiError = new ApiError(response.status, error?.code ?? null, error?.message ?? response.statusText);
+    // Una sola notificación aunque varias respuestas lleguen a la vez: solo si la sesión enviada sigue activa.
+    if (isSessionLost(apiError, { auth }) && sessionStore.getSession()?.token === sentToken) {
+      sessionStore.clearSession('unauthorized');
+      notifySessionLost('unauthorized');
+    }
+    throw apiError;
   }
   return data as T;
 }

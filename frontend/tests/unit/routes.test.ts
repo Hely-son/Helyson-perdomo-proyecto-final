@@ -1,4 +1,4 @@
-import { DASHBOARD_ROUTES, FALLBACK_PATH, PUBLIC_ROUTES } from '../../src/routes/routes';
+import { DASHBOARD_ROUTES, PUBLIC_ROUTES } from '../../src/routes/routes';
 import { DASHBOARD_MENU_ITEMS } from '../../src/routes/menu';
 
 const registered = [...PUBLIC_ROUTES, ...DASHBOARD_ROUTES].map((r) => r.path as string);
@@ -25,16 +25,28 @@ describe('QA-00.5-29 (ESC-45): el dashboard solo expone rutas MVP', () => {
   });
 });
 
-describe('QA-00.5-30 (ESC-49a): comportamiento provisional del destino de respaldo', () => {
-  it('FALLBACK_PATH es /dashboard', () => {
-    expect(FALLBACK_PATH).toBe('/dashboard');
+// QA-01.2-15 sustituye a QA-00.5-30 (TK-01.2): el destino de respaldo ya no es fijo, depende de la sesión (DP-07, ESC-49).
+// Import dinámico: mientras src/auth no exista, solo falla este bloque y QA-00.5-29 sigue como regresión.
+describe('QA-01.2-15 (ESC-49, DP-07): destino de respaldo según la sesión, sin bucles', () => {
+  const NOW = Date.parse('2026-11-24T12:00:00.000Z');
+  const valid = { token: 't', expiresAt: new Date(NOW + 60_000).toISOString(), operatorName: 'Op' };
+  let resolveUnknownRoute: typeof import('../../src/auth/guards').resolveUnknownRoute;
+
+  beforeAll(async () => {
+    ({ resolveUnknownRoute } = await import('../../src/auth/guards'));
   });
 
-  it('el destino de respaldo es una ruta registrada, así que no hay bucle de redirección', () => {
-    expect(registered).toContain(FALLBACK_PATH);
+  it('con sesión válida el respaldo es /dashboard; sin sesión, /login', () => {
+    expect(resolveUnknownRoute(valid, NOW)).toBe('/dashboard');
+    expect(resolveUnknownRoute(null, NOW)).toBe('/login');
   });
 
-  it.each(['/no-existe', '/dashboard/unknown', ...V2_PATHS])('%s no está registrada', (path) => {
+  it('ambos destinos de respaldo son rutas registradas, así que no hay bucle de redirección', () => {
+    expect(registered).toContain(resolveUnknownRoute(valid, NOW));
+    expect(registered).toContain(resolveUnknownRoute(null, NOW));
+  });
+
+  it.each(['/no-existe', '/dashboard/unknown', '/dashboard/inexistente', ...V2_PATHS])('%s no está registrada', (path) => {
     expect(registered).not.toContain(path);
   });
 });

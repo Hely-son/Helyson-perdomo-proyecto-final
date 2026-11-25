@@ -5,7 +5,7 @@ import { DASHBOARD_ROUTES, LOGOUT_MENU_KEY, LOGOUT_MENU_LABEL, type DashboardPat
 
 type MenuItem = NonNullable<MenuProps['items']>[number];
 
-/** Menú del dashboard derivado de DASHBOARD_ROUTES, más "Cerrar sesión" deshabilitado. */
+/** Menú del dashboard derivado de DASHBOARD_ROUTES, más "Cerrar sesión". */
 export const DASHBOARD_MENU_ITEMS: MenuItem[] = [
   ...DASHBOARD_ROUTES.map((route) => ({
     key: route.path,
@@ -17,7 +17,6 @@ export const DASHBOARD_MENU_ITEMS: MenuItem[] = [
     key: LOGOUT_MENU_KEY,
     label: LOGOUT_MENU_LABEL,
     icon: createElement(LogoutOutlined),
-    disabled: true,
   },
 ];
 

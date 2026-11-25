@@ -1,7 +1,7 @@
-import { Navigate } from 'react-router';
-import { FALLBACK_PATH } from './routes';
+import { Navigate, useLoaderData } from 'react-router';
 
-/** '/' y cualquier ruta desconocida redirigen al inicio del dashboard, sin pantalla 404. */
+/** '/' y cualquier ruta desconocida: /dashboard con sesión válida, /login sin ella (DP-07). Sin pantalla 404. */
 export default function FallbackRedirect() {
-  return <Navigate to={FALLBACK_PATH} replace />;
+  const to = useLoaderData<string>();
+  return <Navigate to={to} replace />;
 }

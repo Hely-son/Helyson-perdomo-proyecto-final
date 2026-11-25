@@ -1,5 +1,8 @@
 // Runner E2E (TK-00.5, D-5..D-8, A13). Levanta backend (3100) y frontend (5174) y usa medsupply_test,
 // que prepara `npm run test:db` antes (en serie, nunca en paralelo). No recrea ni migra PostgreSQL.
+// TK-01.2 (D2, D3, D6): secreto JWT y contraseña del operador E2E aleatorios por ejecución; el operador
+// E2E se prepara una vez en e2e/global-setup.ts. Ningún valor se imprime, persiste ni pasa por la línea de comandos.
+import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseEnv } from 'node:util';
@@ -11,8 +14,13 @@ const FRONTEND_PORT = 5174;
 const BACKEND_URL = `http://${HOST}:${BACKEND_PORT}`;
 const FRONTEND_URL = `http://${HOST}:${FRONTEND_PORT}`;
 
+// Se generan una vez, en el proceso principal: los workers vuelven a evaluar este archivo, pero heredan
+// su entorno, así que `??=` conserva el mismo valor en todos. No se reutiliza el JWT_SECRET de desarrollo.
+const E2E_JWT_SECRET = (process.env.MEDSUPPLY_E2E_JWT_SECRET ??= randomBytes(48).toString('base64url'));
+process.env.MEDSUPPLY_E2E_OPERATOR_PASSWORD ??= randomBytes(24).toString('base64url');
+
 /** Deriva la URL de medsupply_test desde DATABASE_URL (entorno o .env de la raíz), sin imprimirla nunca. */
-function resolveTestDatabaseUrl(): string {
+export function resolveTestDatabaseUrl(): string {
   let raw = process.env.DATABASE_URL;
   if (!raw) {
     const envFile = path.resolve(import.meta.dirname, '..', '.env');
@@ -30,15 +38,21 @@ function resolveTestDatabaseUrl(): string {
 
 export default defineConfig({
   testDir: './e2e',
+  globalSetup: './e2e/global-setup.ts',
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
   use: { baseURL: FRONTEND_URL },
   webServer: [
     {
-      // Build + start, sin watcher (A13). JWT_SECRET llega del .env por --env-file-if-exists (H3).
-      // Las variables van en `env`, no en el comando (aparece en ps y en errores).
+      // Build + start, sin watcher (A13). Las variables van en `env`, no en el comando (aparece en ps y en errores).
+      // JWT_SECRET es el temporal de E2E: el entorno del proceso tiene prioridad sobre --env-file-if-exists=../.env
+      // (lo comprueba e2e/jwt-secret-isolation.spec.ts).
       command: 'npm run build && node --env-file-if-exists=../.env dist/server.js',
       cwd: '../backend',
-      env: { PORT: String(BACKEND_PORT), DATABASE_URL: resolveTestDatabaseUrl() },
+      env: {
+        PORT: String(BACKEND_PORT),
+        DATABASE_URL: resolveTestDatabaseUrl(),
+        JWT_SECRET: E2E_JWT_SECRET,
+      },
       url: `${BACKEND_URL}/api/v1/health`,
       reuseExistingServer: false,
       timeout: 120_000,

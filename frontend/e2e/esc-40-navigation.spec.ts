@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { loginAsE2EOperator } from './support/session';
 
-// QA-00.5-31 y QA-00.5-23 · ESC-40 (parcial, sin sesión): menú y navegación del dashboard.
-// No cubre el cierre de sesión ni la sesión (TK-01.2): solo comprueba que "Cerrar sesión" existe.
-test('QA-00.5-31 ESC-40 (parcial, sin sesión): menú y navegación del dashboard', async ({ page }) => {
-  await page.goto('/dashboard');
+// QA-01.2-26 · ESC-40 completo (TK-01.2). Sustituye a QA-00.5-31 (parcial, sin sesión): ahora el dashboard
+// exige sesión, así que se inicia sesión antes, y "Cerrar sesión" debe estar habilitado. Su efecto lo prueba
+// QA-01.2-25 (logout.spec.ts). Matriz: docs/qa/TK-01.2-matrix.md.
+test('QA-01.2-26 ESC-40: menú y navegación del dashboard con sesión iniciada', async ({ page }) => {
+  await loginAsE2EOperator(page);
 
   const menu = page.getByRole('menu');
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -11,7 +13,9 @@ test('QA-00.5-31 ESC-40 (parcial, sin sesión): menú y navegación del dashboar
 
   const items = menu.getByRole('menuitem');
   await expect(items).toHaveText(['Inicio', 'Productos', 'Pedidos', 'Cerrar sesión']);
-  await expect(menu.getByRole('menuitem', { name: 'Cerrar sesión' })).toHaveCount(1);
+  const logout = menu.getByRole('menuitem', { name: 'Cerrar sesión' });
+  await expect(logout).toHaveCount(1);
+  await expect(logout).not.toHaveAttribute('aria-disabled', 'true');
 
   await menu.getByRole('menuitem', { name: 'Productos' }).click();
   await expect(page).toHaveURL(/\/dashboard\/products$/);
