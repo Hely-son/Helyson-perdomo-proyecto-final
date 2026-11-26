@@ -1,8 +1,10 @@
 // Loaders del router: aplican las decisiones puras de src/auth/guards.ts antes de mostrar cada pantalla (spec 05 §15.5, §16.2, §16.3).
 import { redirect } from 'react-router';
 import { markSessionLossHandled } from '../api/client';
+import { listProducts, listStockAlerts, type Product } from '../api/products';
 import { resolveLoginAccess, resolveProtectedAccess, resolveUnknownRoute } from '../auth/guards';
 import { sessionStore } from '../auth/session-store';
+import { classifyProductError } from '../products/inventory';
 
 /** Ruta protegida: sin sesión o con sesión vencida redirige a /login sin llamar a la API. */
 export function protectedLoader(): null {
@@ -39,4 +41,29 @@ export function loginLoader(): LoginLoaderData {
 /** Ruta desconocida o V2 (DP-07): destino según la sesión. */
 export function unknownRouteLoader(): string {
   return resolveUnknownRoute(sessionStore.getSession(), Date.now());
+}
+
+export type ProductsLoaderData =
+  | { status: 'ready'; products: Product[]; alerts: Product[] | null }
+  | { status: 'error' }
+  /** La sesión se perdió: el flujo de sesión ya redirige a /login; la pantalla no muestra error. */
+  | { status: 'session' };
+
+const isSessionError = (error: unknown): boolean => classifyProductError(error).kind === 'session';
+
+/**
+ * /dashboard/products: lee productos y alertas en paralelo, cada una con su propio manejo (spec 05 §16.4).
+ * Nunca lanza: los fallos viajan en el resultado. Si solo fallan las alertas, alerts es null (sin resaltado).
+ */
+export async function productsLoader(): Promise<ProductsLoaderData> {
+  const [products, alerts] = await Promise.allSettled([listProducts(), listStockAlerts()]);
+  if (
+    (products.status === 'rejected' && isSessionError(products.reason)) ||
+    (alerts.status === 'rejected' && isSessionError(alerts.reason))
+  ) {
+    return { status: 'session' };
+  }
+  if (products.status === 'rejected' || !Array.isArray(products.value?.items)) return { status: 'error' };
+  const alertItems = alerts.status === 'fulfilled' && Array.isArray(alerts.value?.items) ? alerts.value.items : null;
+  return { status: 'ready', products: products.value.items, alerts: alertItems };
 }

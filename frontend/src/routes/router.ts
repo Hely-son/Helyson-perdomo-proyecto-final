@@ -1,5 +1,6 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import { setSessionLostHandler } from '../api/client';
+import LoadingIndicator from '../components/LoadingIndicator';
 import DashboardLayout from '../layouts/DashboardLayout';
 import FallbackRedirect from './FallbackRedirect';
 import { loginLoader, protectedLoader, unknownRouteLoader } from './loaders';
@@ -13,10 +14,16 @@ const routeObjects: RouteObject[] = [
   })),
   {
     Component: DashboardLayout,
+    // Carga inicial de una pantalla con loader de datos (p. ej. recarga en /dashboard/products): indicador de carga.
+    HydrateFallback: LoadingIndicator,
     loader: protectedLoader,
     // La sesión se vuelve a comprobar en cada navegación interna (DP-05), no solo al cargar la página.
     shouldRevalidate: () => true,
-    children: DASHBOARD_ROUTES.map(({ path, Component }) => ({ path, Component })),
+    children: DASHBOARD_ROUTES.map(({ path, Component, loader }) => ({
+      path,
+      Component,
+      ...(loader ? { loader } : {}),
+    })),
   },
   { path: '*', Component: FallbackRedirect, loader: unknownRouteLoader },
 ];

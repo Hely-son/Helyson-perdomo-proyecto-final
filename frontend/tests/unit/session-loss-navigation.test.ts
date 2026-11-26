@@ -205,9 +205,14 @@ describe('QA-01.2-31 (regresión de lo aprobado; §15.5, §15.6, D-07)', () => {
     expect(navigateCalls).toEqual(['/login']);
 
     // Nuevo login (como LoginPage): guarda la sesión y entra al dashboard.
+    // TK-03.3 (autorizado por el usuario): START tiene ahora el loader real de productos (GET /products y
+    // GET /products/alerts); durante esta entrada responden con éxito ({ items: [] }) y después se restablece
+    // UNAUTHORIZED para la pérdida posterior que se verifica.
+    respond = () => jsonResponse(200, { items: [] });
     store.setSession(session(3_600_000, 'token-2'));
     await router.navigate(START);
     await settle();
+    respond = unauthorized;
     expect(router.state.location.pathname).toBe(START);
     navigateCalls = [];
 

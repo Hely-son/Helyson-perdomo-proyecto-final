@@ -1,6 +1,6 @@
-import { Layout, Menu, Typography } from 'antd';
+import { Layout, Menu, Spin, Typography } from 'antd';
 import type { MenuProps } from 'antd';
-import { Outlet, useLocation, useNavigate } from 'react-router';
+import { Outlet, useLocation, useNavigate, useNavigation } from 'react-router';
 import { useSession } from '../auth/use-session';
 import { sessionStore } from '../auth/session-store';
 import { DASHBOARD_MENU_ITEMS, dashboardPathFromMenuKey, selectedMenuKey } from '../routes/menu';
@@ -9,6 +9,7 @@ import { LOGOUT_MENU_KEY } from '../routes/routes';
 export default function DashboardLayout() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const navigation = useNavigation();
   const session = useSession();
   const selected = selectedMenuKey(pathname);
 
@@ -43,7 +44,10 @@ export default function DashboardLayout() {
       </Layout.Sider>
       <Layout>
         <Layout.Content style={{ margin: 24 }}>
-          <Outlet />
+          {/* Indicador mientras el loader de la pantalla de destino lee datos (spec 05 §16.4 "Cargando"). */}
+          <Spin spinning={navigation.state === 'loading'}>
+            <Outlet />
+          </Spin>
         </Layout.Content>
       </Layout>
     </Layout>
