@@ -37,7 +37,7 @@ Seguimiento operativo del MVP. Solo registra estado: la definición de cada tick
 | TK-04.1 | Hecho | — | commit único `TK-04.1: endpoint de alertas de stock` (implementación y cierre) | 2026-11-25 |
 | TK-04.3 | Hecho | — | commit único `TK-04.3: panel de alertas` (implementación y cierre) | 2026-11-26 |
 | TK-04.5 | Hecho | — | commit único `TK-04.5: E2E de alertas` (implementación y cierre) | 2026-11-26 |
-| TK-05.7 | Pendiente | — | — | — |
+| TK-05.7 | Hecho | — | commit único `TK-05.7: almacén de sesiones de chat en memoria` (implementación y cierre) | 2026-11-26 |
 | TK-05.1 | Pendiente | — | — | — |
 | TK-05.2 | Pendiente | — | — | — |
 | TK-05.3 | Pendiente | — | — | — |
@@ -116,6 +116,9 @@ Observaciones operativas que surgieron durante un ticket y deben revisarse en ot
 | TK-04.3 (QA, fixture) | **Informativo** (2026-11-26). `medsupply_test` contiene el producto **activo** `QA TK-04.3 alert fixture` (id 4, stock 2, mínimo 3), exclusivo del E2E de ESC-33/ESC-22: se reinicia por la API en cada ejecución. No se borra ni se modifica fuera de ese E2E. Las pruebas que cuenten productos o alertas deben excluirlo por nombre cuando no sea su objeto. **Impacto en TK-04.5:** `medsupply_test` no contiene los productos del seed (hoy: ids 1 y 2 inactivos, id 3 `QA CA-13 fixture`, id 4), y el id 4 es el único activo en alerta; CA-01/ESC-20 citan "el producto inactivo del seed": los datos de partida se deciden en la puerta 1 de TK-04.5 **Actualización de TK-04.5 (2026-11-26):** resuelto con fixtures propios (D1; ver fila TK-04.5 fixture) | TK-05.x (catálogo del chat) |
 | TK-04.5 (DoD 2, excepción) | **Excepción aprobada por el usuario (2026-11-26, puerta 2), limitada a TK-04.5; no es cumplimiento íntegro del criterio 2 ni modifica la DoD general.** Evidencia local de la verificación independiente (`frontend-engineer`, Node 26): `npm run test:e2e` (36 passed), `npm run lint` y `npm run typecheck`, todos exit 0. Solo se añade una prueba E2E; seguridad no aplica; su ejecución en CI corresponde a TK-00.7 | TK-00.7 (CI) |
 | TK-04.5 (QA, fixtures) | **Informativo** (2026-11-26). `medsupply_test` contiene `QA CA-01 active fixture` (id 5, activo; el E2E lo reinicia a 10/5 y lo deja en 5/4, fuera de alertas) y `QA CA-01 inactive fixture` (id 6, inactivo 1/3; sustituye al "inactivo del seed" de CA-01/ESC-20, D1). Exclusivos de `frontend/e2e/ca-01-alerts.spec.ts`; no se borran ni se modifican fuera de ese E2E. Estado final inferido de la lógica de la prueba, no verificado por consulta. El id 5 será visible en el catálogo del chat: los E2E que listen o cuenten productos activos deben filtrarlo por nombre | TK-05.x (catálogo del chat) |
+| TK-05.7 (DoD 2, excepción) | **Excepción aprobada por el usuario (2026-11-26, D-4), limitada a TK-05.7; no es cumplimiento íntegro del criterio 2 ni modifica la DoD general.** Evidencia local oficial de QA fase 2: backend `npm test` (23 suites, 231/231), `npm run lint` y `npm run typecheck`, todos exit 0. Módulo en memoria, sin PostgreSQL, HTTP ni frontend: no se ejecutaron `test:db` ni E2E. Seguridad no aplica (D-5). Su ejecución en CI corresponde a TK-00.7 (pospuesto) | TK-00.7 (CI) |
+| TK-05.7 (D-2, integración) | `ChatSessionStore` (`backend/src/modules/chat/session-store.ts`) no está conectado al servidor. Al integrarlo: llamar a `startSweep` al arrancar (y `stopSweep` al cerrar), pasar `chatSessionTtlMinutes` de `config/env.ts` como `ttlMinutes`, y cubrir la parte de ESC-45 sobre rechazos de transporte y `SESSION_INVALID` | TK-05.1 |
+| TK-05.7 (QA fase 2, hallazgo bajo) | **No bloqueante** (decisión del usuario, puerta 2, 2026-11-26). Si un manejador durara más que el TTL, el barrido podría eliminar la sesión mientras se procesa su mensaje. La spec no lo define; no es realista con manejadores de milisegundos. Revisar al integrar el almacén con el flujo HTTP | TK-05.1 |
 
 ## Specs
 
@@ -123,7 +126,7 @@ Observaciones operativas que surgieron durante un ticket y deben revisarse en ot
 |---|---|---|---|
 | `specs/01_data_models.spec.md` | v1.1 | Aprobada | Pendiente |
 | `specs/02_inventory_system.spec.md` | v1.2 | Aprobada | En progreso |
-| `specs/03_conversational_bot.spec.md` | v1.1 | Aprobada | Pendiente |
+| `specs/03_conversational_bot.spec.md` | v1.1 | Aprobada | En progreso |
 | `specs/04_orders_claims.spec.md` | v1.0 | Aprobada | Pendiente |
 | `specs/05_operator_dashboard.spec.md` | v1.1 | Aprobada | En progreso |
 
