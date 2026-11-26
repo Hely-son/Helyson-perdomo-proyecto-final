@@ -2,7 +2,7 @@
 
 | Fase | Requisitos | Criterios PRD | Puntos | Depende de |
 |---|---|---|---|---|
-| `MVP` | AU-01, AU-02, AU-03, RNF-08 | CA-11 | 11 | Habilitadores |
+| `MVP` | AU-01, AU-02, AU-03, RNF-08 | CA-11 | 11 + TK-01.4 (por estimar) | Habilitadores |
 
 ## Historia
 
@@ -51,7 +51,22 @@ Crear el formulario de login, guardar el token, proteger `/dashboard/*` y agrega
 - Cerrar sesión descarta el token y el estado autenticado en el cliente; no hay endpoint de logout ni revocación del JWT (spec 05 §15.8, ESC-38).
 
 ### TK-01.3 · [TEST] E2E de acceso
-**Fase:** `MVP` · **Puntos:** 1 · **Depende de:** TK-01.2, TK-00.4 · **Spec:** specs/05_operator_dashboard.spec.md
+**Fase:** `MVP` · **Puntos:** 1 · **Depende de:** TK-01.2, TK-00.4, TK-03.3 · **Spec:** specs/05_operator_dashboard.spec.md
+
+Se ejecuta después de TK-03.3, la primera pantalla que llama a una operación protegida real, para validar ESC-37 en nivel E (ver `backlog/README.md`, "Dependencias entre historias y entre tickets").
 
 **Hecho cuando:**
 - El E2E de CA-11 pasa en sus dos casos: sin sesión y con sesión expirada.
+- ESC-37 pasa en nivel E al abrir `/dashboard/products` (spec 05 §11.4).
+
+### TK-01.4 · [UI] Endurecimiento de sesión y router en el cliente
+**Fase:** `MVP` · **Puntos:** por estimar en la puerta 1 · **Depende de:** TK-01.2 · **Spec:** specs/05_operator_dashboard.spec.md
+
+Resolver las observaciones S-1 y O3/S-2 heredadas de TK-01.2 (`backlog/TRACKER.md`, "Seguimientos abiertos") antes de la primera pantalla con datos protegidos. La solución técnica y la estimación se fijan en la puerta 1. Sin cambios de backend, contrato ni infraestructura.
+
+**Hecho cuando:**
+- S-1: cerrar sesión en una pestaña propaga el cierre a las demás pestañas del mismo navegador (spec 05 §15.8, ESC-58), con prueba unitaria.
+- O3/S-2: una pérdida de sesión detectada durante la inicialización del router no lanza error ni deja bloqueada la coordinación de pérdida de sesión: se redirige a `/login` y un login posterior vuelve a notificar una pérdida futura. Con prueba unitaria.
+- Las pruebas cubren la interacción con `lossNotified` y `consumeEndReason`: una sola redirección por pérdida y un motivo de fin coherente con la causa (cierre de sesión o expiración).
+- El manejador de pérdida de sesión sigue registrándose una sola vez, en el nivel superior de `frontend/src/routes/router.ts` (O1 de TK-01.2).
+- Las pruebas existentes del frontend (unidad y E2E) siguen pasando.

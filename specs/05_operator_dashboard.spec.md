@@ -2,7 +2,7 @@
 
 | Estado | Cubre | Tickets |
 |---|---|---|
-| Aprobada v1.1 (Entrega 2). Fecha de aprobación: 2026-11-18. Historial: v1.0 aprobada el 2026-11-18 (DP-01..DP-09, ESC-01..ESC-51); v1.1 incorpora el resaltado de stock crítico según DP-04 de la spec 02, resuelta en la spec 02 v1.2, con ESC-52..ESC-55, y añade ESC-56 (validación local del teléfono en el simulador) y ESC-57 (acciones sobre productos inactivos, según DP-01 y DP-02 de la spec 02 v1.2). Las alineaciones de backlog OBS-03, OBS-04 y OBS-08 están cerradas (TK-02.4, TK-00.4 y TK-01.2). Alcance: clientes (§1 a §14), acceso del operador (§15) y estructura y comportamiento transversal del dashboard (§16) | Clientes `MVP`: CL-02, CL-03, RN-12 · Acceso `MVP`: AU-01, AU-02, AU-03, RNF-08 · Criterios: CA-06, CA-11 · `V2`: CL-01, RN-10 (clientes) | Clientes `MVP`: TK-02.4 · Acceso `MVP`: TK-01.1, TK-01.2, TK-01.3 · relacionados: TK-00.1, TK-00.2, TK-00.3, TK-00.4, TK-05.1, TK-03.3, TK-04.3, TK-06.4 · `V2`: TK-02.1, TK-02.2, TK-02.3 |
+| Aprobada v1.1 (Entrega 2). Fecha de aprobación: 2026-11-18. Historial: v1.0 aprobada el 2026-11-18 (DP-01..DP-09, ESC-01..ESC-51); v1.1 incorpora el resaltado de stock crítico según DP-04 de la spec 02, resuelta en la spec 02 v1.2, con ESC-52..ESC-55, y añade ESC-56 (validación local del teléfono en el simulador) y ESC-57 (acciones sobre productos inactivos, según DP-01 y DP-02 de la spec 02 v1.2). Enmienda autorizada por el usuario el 2026-11-25 (D2), sin cambio de versión registrado: ESC-58 (§11.9) y propagación del cierre de sesión entre pestañas en §15.8 (TK-01.4). Las alineaciones de backlog OBS-03, OBS-04 y OBS-08 están cerradas (TK-02.4, TK-00.4 y TK-01.2). Alcance: clientes (§1 a §14), acceso del operador (§15) y estructura y comportamiento transversal del dashboard (§16) | Clientes `MVP`: CL-02, CL-03, RN-12 · Acceso `MVP`: AU-01, AU-02, AU-03, RNF-08 · Criterios: CA-06, CA-11 · `V2`: CL-01, RN-10 (clientes) | Clientes `MVP`: TK-02.4 · Acceso `MVP`: TK-01.1, TK-01.2, TK-01.3, TK-01.4 · relacionados: TK-00.1, TK-00.2, TK-00.3, TK-00.4, TK-05.1, TK-03.3, TK-04.3, TK-06.4 · `V2`: TK-02.1, TK-02.2, TK-02.3 |
 
 **Fuentes.** [PRD](../docs/PRD.md) v1.2 · [ARCHITECTURE](../docs/ARCHITECTURE.md) · [`docs/openapi.yaml`](../docs/openapi.yaml) `info.version` 1.0.0 · [spec 01](01_data_models.spec.md) Aprobada v1.1 · [spec 02](02_inventory_system.spec.md) Aprobada v1.2 (v1.1 aprobada) · [spec 03](03_conversational_bot.spec.md) Aprobada v1.1 · [spec 04](04_orders_claims.spec.md) Aprobada v1.0 · [backlog](../backlog/README.md) US-01 a US-07.
 
@@ -376,6 +376,15 @@ Ejemplos de ESC-56:
 | ID | Precondiciones | Acción | Resultado esperado | Trazas | Nivel |
 |---|---|---|---|---|---|
 | ESC-57 | Sesión iniciada; un producto inactivo con stock 1 y mínimo 3 en `listProducts` | Abrir `/dashboard/products`; editar el precio del producto inactivo y después ajustar su stock con el `expectedStock` mostrado | La fila del producto inactivo aparece, no resaltada, y ofrece las acciones de editar y ajustar stock, sin ninguna acción de reactivación. Ambas operaciones se completan, se recargan las listas (§16.4) y el producto sigue inactivo y sin resaltar | DP-01, DP-02 (spec 02) · RN-09, RN-10 · TK-03.3 | E |
+
+### 11.9 Cierre de sesión entre pestañas (§15.8)
+
+ESC-38 conserva su alcance: el cierre en la pestaña donde se usa **Cerrar sesión**. ESC-58 cubre solo su propagación a otras pestañas.
+
+| ID | Precondiciones | Acción | Resultado esperado | Trazas | Nivel |
+|---|---|---|---|---|---|
+| ESC-58 | Sesión iniciada; dos pestañas del mismo navegador abiertas en el dashboard | Usar **Cerrar sesión** en una de ellas | La otra pestaña descarta el token de memoria sin esperar a su expiración. A más tardar en su siguiente navegación o petición protegida, no envía el token y termina en `/login`, sin el aviso de sesión expirada | US-01 crit. 5 · §15.8 · TK-01.4 | U |
+
 ## 12. Trazabilidad
 
 ### 12.1 Requisitos, reglas y criterios
@@ -408,7 +417,8 @@ Ejemplos de ESC-56:
 | TK-02.1..TK-02.3 | `V2` | Gestión de clientes | 05 | — |
 | TK-01.1 | `MVP` | `login`, middleware JWT y costo de bcrypt en una constante (§15.2..§15.5) | 05 | ESC-23..ESC-32, ESC-51 |
 | TK-01.2 | `MVP` | Pantalla de login, rutas protegidas, respuesta a 401 y cierre de sesión (§15.6..§15.8, §16.2, §16.3) | 05 | ESC-33..ESC-40, ESC-46..ESC-50 |
-| TK-01.3 | `MVP` | E2E de CA-11, sin sesión y con sesión expirada | 05 | ESC-36, ESC-37, ESC-46 |
+| TK-01.3 | `MVP` | E2E de CA-11, sin sesión y con sesión expirada; ESC-37 en nivel E después de TK-03.3 | 05 | ESC-36, ESC-37, ESC-46 |
+| TK-01.4 | `MVP` | Propagación del cierre de sesión entre pestañas (§15.8) y robustez del manejador de pérdida de sesión del router | 05 | ESC-58 |
 | TK-00.1 | `MVP` | Configuración de `JWT_EXPIRES_IN` y secretos | ARCHITECTURE | ESC-31, ESC-32 |
 | TK-00.2 | `MVP` | Rutas y cliente API del frontend; esta spec fija su navegación (§16.2) | ARCHITECTURE | ESC-40, ESC-45 |
 | TK-03.3, TK-04.3, TK-06.4 | `MVP` | Pantallas de productos, alertas y pedidos: reglas en las specs 02 y 04; esta spec fija sus estados transversales, el resaltado por cruce con `listStockAlerts` y las acciones sobre productos inactivos (editar y ajustar, sin reactivación) (§16.4, §16.5) | 02 y 04 | ESC-41..ESC-44, ESC-52..ESC-55, ESC-57 |
@@ -428,7 +438,7 @@ No hay responsabilidades duplicadas con la spec 03: esta spec decide **quién es
 | AU-03 | Expiración de 8 horas, configurable | ESC-28, ESC-31, ESC-37, ESC-46, ESC-47 | `login` | US-01 crit. 4 | TK-01.1, TK-00.1, TK-01.2 | `MVP` | §15.4 | Cubierto, incluida la comprobación local de la expiración (DP-05, resuelta) |
 | CA-11 | Redirección a `/login` sin sesión o con la sesión expirada | ESC-27, ESC-28, ESC-36, ESC-37, ESC-46 | Operaciones Bearer | US-01 crit. 3 | TK-01.1, TK-01.2, TK-01.3 | `MVP` | §15.5, §15.6 | Cubierto |
 | RNF-08 | Hash con sal, mensaje genérico, expiración, secretos fuera del repositorio | ESC-23, ESC-25, ESC-31, ESC-32, ESC-51 | `login` | US-01 crit. 2 | TK-01.1, TK-00.1, TK-00.4 | `MVP` | §15.3 | Cubierto (costo de bcrypt y contraseña del seed: DP-08, resuelta) |
-| — (US-01 crit. 5) | Cierre de sesión en el cliente, sin revocación | ESC-38 | — | US-01 crit. 5 | TK-01.2 | `MVP` | §15.8 | Cubierto |
+| — (US-01 crit. 5) | Cierre de sesión en el cliente, sin revocación, propagado a las demás pestañas | ESC-38, ESC-58 | — | US-01 crit. 5 | TK-01.2, TK-01.4 | `MVP` | §15.8 | Cubierto |
 | — | Layout y navegación del dashboard | ESC-40, ESC-45, ESC-49, ESC-50 | — | US-01 | TK-00.2, TK-01.2 | `MVP` | §16.2 | Cubierto (rutas desconocidas: DP-07; nombre del operador: DP-09; ambas resueltas) |
 | — | Pantalla de login | ESC-33..ESC-35, ESC-39, ESC-48 | `login` | US-01 crit. 1, 2 | TK-01.2 | `MVP` | §16.3 | Cubierto (`/login` con sesión válida: DP-06, resuelta) |
 | IN-01, IN-02, IN-03, PE-01, PE-02 (presentación) | Estados transversales de alertas, productos y pedidos; resaltado de stock crítico; acciones sobre productos inactivos | ESC-41..ESC-44, ESC-52..ESC-55, ESC-57 | Operaciones de §16.1 | US-03, US-04, US-06 | TK-03.3, TK-04.3, TK-06.4 | `MVP` | §16.4, §16.5 | Cubierto; las reglas son de las specs 02 y 04, el resaltado de stock crítico sigue DP-04 de la spec 02, y las acciones sobre inactivos, DP-01 y DP-02; todas resueltas en la spec 02 v1.2 (aprobada). La concurrencia de la edición (DP-06) es del backend |
@@ -581,6 +591,7 @@ Decidido en ARCHITECTURE ("Frontend"): el token se guarda **en memoria y en `loc
 Definido por US-01 crit. 5 y el contrato ("cerrar sesión es una acción del cliente: descarta el token"):
 
 - El layout ofrece **Cerrar sesión** (TK-01.2). Al usarlo, el frontend descarta el token de memoria y de `localStorage` y navega a `/login`.
+- **Varias pestañas.** El cierre se propaga a las demás pestañas del mismo navegador que comparten ese `localStorage`: descartan el token de memoria y dejan de enviarlo (TK-01.4, ESC-58). Es solo coordinación del cliente, no revocación.
 - **No hay endpoint de logout ni revocación del JWT en el backend.** Un token copiado antes del cierre sigue siendo válido hasta su expiración (§14.2). Revocarlo exigiría un cambio de contrato y de arquitectura no aprobado.
 
 ## 16. Dashboard: estructura compartida y comportamiento de las pantallas

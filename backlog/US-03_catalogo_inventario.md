@@ -46,7 +46,7 @@ Crear `PATCH /products/:id/stock` con el nuevo valor absoluto y el `expectedStoc
 - El ajuste también se permite sobre productos inactivos, con `expectedStock` y `STOCK_CHANGED`, y no los reactiva; el producto sigue fuera de `listStockAlerts` (spec 02, DP-02). Hay test de integración de ESC-34 (spec 02).
 
 ### TK-03.3 · [UI] Pantalla de inventario
-**Fase:** `MVP` · **Puntos:** 3 · **Depende de:** TK-03.1, TK-03.2, TK-01.2, TK-04.1 · **Spec:** specs/02_inventory_system.spec.md
+**Fase:** `MVP` · **Puntos:** 3 · **Depende de:** TK-03.1, TK-03.2, TK-01.2, TK-04.1, TK-01.4 · **Spec:** specs/02_inventory_system.spec.md
 
 Crear la tabla de productos (precio, stock, mínimo, estado), el formulario modal, la acción "Ajustar stock" y la de desactivar.
 

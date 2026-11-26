@@ -18,6 +18,11 @@ export interface SessionStore {
   subscribe(listener: () => void): () => void;
   /** Devuelve el motivo del último cierre una sola vez. */
   consumeEndReason(): SessionEndReason | null;
+  /**
+   * Cambio de almacenamiento hecho por otra pestaña (§15.8, ESC-58). Solo invalida la memoria; nunca escribe ni
+   * elimina en el almacenamiento compartido y no adopta sesiones ajenas.
+   */
+  syncExternalChange(key: string | null): void;
 }
 
 export function createSessionStore(storage: StorageLike): SessionStore {
@@ -61,6 +66,15 @@ export function createSessionStore(storage: StorageLike): SessionStore {
         listeners.delete(listener);
       };
     },
+    syncExternalChange(key) {
+      if (key !== null && key !== SESSION_STORAGE_KEY) return;
+      if (current === null) return;
+      const stored = parseStoredSession(safe(() => storage.getItem(SESSION_STORAGE_KEY), null));
+      if (stored !== null && stored.token === current.token) return;
+      current = null;
+      endReason = 'logout';
+      notify();
+    },
     consumeEndReason() {
       const reason = endReason;
       endReason = null;
@@ -84,3 +98,10 @@ function browserStorage(): StorageLike {
 }
 
 export const sessionStore: SessionStore = createSessionStore(browserStorage());
+
+// Una sola suscripción por instancia del navegador; en Node/Jest sin ventana no se registra.
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('storage', (event) => {
+    sessionStore.syncExternalChange(event.key);
+  });
+}

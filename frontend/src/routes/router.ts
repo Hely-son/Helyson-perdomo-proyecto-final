@@ -24,9 +24,10 @@ const routeObjects: RouteObject[] = [
 // Único punto de integración entre el cliente HTTP y la navegación (el cliente no importa el router).
 // Se registra ANTES de crear el router: react-router ejecuta el loader inicial de forma síncrona dentro de
 // createBrowserRouter, y ese loader marca la pérdida de sesión; registrar el manejador después la reiniciaría.
-// El manejador solo se invoca tras la inicialización, así que puede referenciar `router`.
+// El manejador puede dispararse durante createBrowserRouter (loaders síncronos de la misma pasada), antes de que
+// `router` esté inicializado; por eso la navegación se difiere con queueMicrotask.
 setSessionLostHandler(() => {
-  void router.navigate('/login', { replace: true });
+  queueMicrotask(() => void router.navigate('/login', { replace: true }));
 });
 
 export const router = createBrowserRouter(routeObjects);

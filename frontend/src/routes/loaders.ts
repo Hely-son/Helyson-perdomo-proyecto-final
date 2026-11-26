@@ -8,6 +8,8 @@ import { sessionStore } from '../auth/session-store';
 export function protectedLoader(): null {
   const decision = resolveProtectedAccess(sessionStore.getSession(), Date.now());
   if (decision.kind === 'allow') return null;
+  // El loader ya redirige: el cliente no debe duplicar la navegación (no-op si hay sesión activa).
+  if (decision.reason !== 'expired') markSessionLossHandled();
   if (decision.reason === 'expired') {
     // Expiración coordinada: el aviso viaja con la redirección y el cliente HTTP no vuelve a notificar.
     sessionStore.clearSession('expired');
