@@ -10,7 +10,7 @@ import { createAuthService } from './modules/auth/auth.service';
 import type { AuthOptions } from './modules/auth/token';
 import { createChatRouter } from './modules/chat/chat.routes';
 import { createChatService } from './modules/chat/chat.service';
-import type { Cart, ConversationState } from './modules/chat/chat-fsm';
+import type { Cart, ChatProducts, ConversationState } from './modules/chat/chat-fsm';
 import { ChatSessionStore } from './modules/chat/session-store';
 import { healthRouter } from './modules/health/health.routes';
 import { createProductsRouter } from './modules/products/products.routes';
@@ -21,6 +21,8 @@ export interface CreateAppOptions {
   prisma: PrismaClient;
   // Almacén de sesiones de chat; si no se inyecta se crea uno propio (TTL 30, sin barrido).
   chatSessionStore?: ChatSessionStore<ConversationState, Cart>;
+  // Servicio de productos que consume el chat; si no se inyecta se usa el real (createProductService).
+  chatProducts?: ChatProducts;
   // Solo para pruebas: server.ts nunca lo pasa.
   testRouter?: Router;
 }
@@ -40,9 +42,10 @@ export function createApp(options: CreateAppOptions): Express {
   if (options.testRouter) {
     app.use(API_PREFIX, options.testRouter);
   }
-  app.use(`${API_PREFIX}/products`, createProductsRouter(createProductService({ prisma: options.prisma })));
+  const productService = createProductService({ prisma: options.prisma });
+  app.use(`${API_PREFIX}/products`, createProductsRouter(productService));
   const chatStore = options.chatSessionStore ?? new ChatSessionStore<ConversationState, Cart>({ ttlMinutes: 30 });
-  app.use(`${API_PREFIX}/chat`, createChatRouter(createChatService({ db: options.prisma, store: chatStore })));
+  app.use(`${API_PREFIX}/chat`, createChatRouter(createChatService({ db: options.prisma, store: chatStore, products: options.chatProducts ?? productService })));
   app.use(notFound);
   app.use(errorHandler);
 

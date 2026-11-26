@@ -1,4 +1,5 @@
 import { handleChatMessage } from '../../../src/modules/chat/chat-fsm';
+import { createFakeProducts, type FakeProductsService, PRODUCT_A, PRODUCT_B } from '../../helpers/chat-products';
 
 // TK-05.1 · Pruebas de aceptación de QA (fase 1): motor FSM, estados del menú (unidad, sin red ni base de datos).
 // Spec 03 §4.2 (tabla de estados y reglas comunes), F-3; ESC-14, ESC-15 y ESC-16 (parciales, D-E).
@@ -6,9 +7,14 @@ import { handleChatMessage } from '../../../src/modules/chat/chat-fsm';
 // provisionales; `0` vuelve al menú desde cualquier estado conservando el carrito), D-E (cobertura parcial).
 // Interfaz asumida: handleChatMessage(session: { state; cart }, text) muta session.state y devuelve los textos del bot.
 // El tipo de la sesión se deduce de la firma: las pruebas no dependen de la forma de las líneas del carrito (TK-05.2).
-// Matriz: docs/qa/TK-05.1-matrix.md
+// TK-05.2: handleChatMessage recibe un tercer argumento `deps = { products }` (servicio de productos; aquí simulado, ver
+// tests/helpers/chat-products.ts). CATALOG deja de ser provisional: se prueba en chat-catalog-cart.test.ts.
+// Matriz: docs/qa/TK-05.1-matrix.md y docs/qa/TK-05.2-matrix.md
 
 type Session = Parameters<typeof handleChatMessage>[0];
+type Handle = (session: Session, text: string, deps: { products: FakeProductsService }) => Promise<string[]> | string[];
+const handle = handleChatMessage as unknown as Handle;
+const deps = { products: createFakeProducts([PRODUCT_A, PRODUCT_B]).service };
 
 const makeSession = (state: string, cart: unknown[] = []): Session => ({
   state: state as Session['state'],
@@ -21,7 +27,7 @@ const TWO_ITEMS = [
 ];
 
 const reply = async (session: Session, text: string): Promise<string[]> => {
-  const messages = await handleChatMessage(session, text);
+  const messages = await handle(session, text, deps);
   expect(Array.isArray(messages)).toBe(true);
   expect(messages.length).toBeGreaterThanOrEqual(1);
   for (const m of messages) {
@@ -109,12 +115,13 @@ describe('TK-05.1 · FSM · `0` vuelve al menú conservando el carrito (ESC-15 p
     expect(session.cart).toEqual(TWO_ITEMS);
   });
 
-  test.todo('ESC-15 (pendiente, D-E) · `0` desde ASK_QUANTITY, STOCK_EXCEEDED, CART, REMOVE_ITEM, SUMMARY y RESOLVE_STOCK: TK-05.2 y TK-05.6');
+  // ASK_QUANTITY, STOCK_EXCEEDED, CART y REMOVE_ITEM: chat-catalog-cart.test.ts (TK-05.2).
+  test.todo('ESC-15 (pendiente, D-E) · `0` desde SUMMARY y RESOLVE_STOCK: TK-05.6');
 });
 
-describe('TK-05.1 · FSM · entrada inválida en los estados provisionales (ESC-16 parcial, D-E)', () => {
+describe('TK-05.1 · FSM · entrada inválida (ESC-16 parcial, D-E)', () => {
   test.each(['xyz', '', '   '])(
-    'ESC-16 (CATALOG, provisional) · la entrada inválida %j responde con un mensaje y no cambia estado ni carrito',
+    'ESC-16 (CATALOG) · la entrada inválida %j responde con un mensaje y no cambia estado ni carrito',
     async (input) => {
       const session = makeSession('CATALOG', structuredClone(TWO_ITEMS));
       await reply(session, input);
@@ -123,6 +130,7 @@ describe('TK-05.1 · FSM · entrada inválida en los estados provisionales (ESC-
     },
   );
 
-  test.todo('ESC-16 (pendiente, D-E) · `xyz` en ASK_QUANTITY, STOCK_EXCEEDED, CART, REMOVE_ITEM, SUMMARY y RESOLVE_STOCK: TK-05.2 y TK-05.6');
-  test.todo('ESC-07 (pendiente, D-E) · el contenido del catálogo (productos activos, precios, "Sin stock"): TK-05.2');
+  // ASK_QUANTITY, STOCK_EXCEEDED, CART y REMOVE_ITEM: chat-catalog-cart.test.ts (TK-05.2).
+  // ESC-07 (contenido del catálogo): resuelto en tests/unit/chat/chat-catalog-cart.test.ts (ESC-17) y tests/db/chat-catalog-cart.test.ts (ESC-17, PostgreSQL).
+  test.todo('ESC-16 (pendiente, D-E) · `xyz` en SUMMARY y RESOLVE_STOCK: TK-05.6');
 });

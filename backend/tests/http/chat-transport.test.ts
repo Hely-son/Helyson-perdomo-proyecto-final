@@ -4,12 +4,13 @@ import type { CreateAppOptions } from '../../src/app';
 import { ChatSessionStore } from '../../src/modules/chat/session-store';
 import { expectErrorResponse } from '../helpers/error-response';
 import { createTestApp } from '../helpers/app';
+import { createFakeProducts, PRODUCT_A, PRODUCT_B } from '../helpers/chat-products';
 
 // TK-05.1 · Pruebas de aceptación de QA (fase 1): transporte de los endpoints del chat, sin base de datos
 // (las sesiones se crean directamente en el almacén inyectado; los rechazos ocurren antes de cualquier consulta).
 // Spec 03 §4.1 (DP-06), F-2, §7, §8; contrato docs/openapi.yaml, operaciones startChatSession y sendChatMessage (RNF-02).
 // Escenarios: ESC-09, ESC-10, ESC-45 (parte de transporte), 400 por JSON inválido, sessionId no expuesto (RNF-08).
-// Interfaz asumida: CreateAppOptions.chatSessionStore (opcional); estado inicial 'MAIN_MENU' y carrito [] en store.create.
+// Interfaz asumida: CreateAppOptions.chatSessionStore y CreateAppOptions.chatProducts (opcionales; este último, desde TK-05.2); estado inicial 'MAIN_MENU' y carrito [] en store.create.
 // Reloj controlado: Date.now espiado y congelado, avanza solo con un desplazamiento (el almacén lee Date.now). Sin esperas reales.
 // Matriz: docs/qa/TK-05.1-matrix.md
 
@@ -30,7 +31,8 @@ beforeEach(() => {
   const base = Date.now();
   nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => base + offsetMs); // reloj congelado: solo avanza con offsetMs
   store = new ChatSessionStore({ ttlMinutes: TTL });
-  app = createTestApp({ chatSessionStore: store });
+  // TK-05.2: `1` consulta el catálogo; sin base de datos se inyecta el servicio de productos simulado (CreateAppOptions.chatProducts, supuesto de QA).
+  app = createTestApp({ chatSessionStore: store, chatProducts: createFakeProducts([PRODUCT_A, PRODUCT_B]).service });
 });
 afterEach(() => {
   nowSpy.mockRestore();

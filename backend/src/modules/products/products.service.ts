@@ -42,6 +42,22 @@ export interface UpdateProductInput {
   minStockAlert?: number;
 }
 
+/** Elemento del catálogo del chat (spec 02 F-7): solo lo que el cliente ve. */
+export interface CatalogItem {
+  id: number;
+  name: string;
+  price: string;
+  currentStock: number;
+}
+
+/** Estado y stock actuales de un producto (spec 02 §8.2). */
+export interface ProductAvailability {
+  id: number;
+  name: string;
+  isActive: boolean;
+  currentStock: number;
+}
+
 export interface AdjustStockInput {
   newStock: number;
   expectedStock: number;
@@ -54,7 +70,7 @@ export type IntFieldRef = { readonly modelName: 'Product'; readonly name: string
 export interface ProductDb {
   product: {
     findMany(args: {
-      where?: { isActive: boolean; currentStock: { lte: IntFieldRef } };
+      where?: { isActive: boolean; currentStock?: { lte: IntFieldRef } };
       orderBy: { name: 'asc' } | Array<{ name: 'asc' } | { id: 'asc' }>;
     }): Promise<ProductRecord[]>;
     /** Referencias de campo de Prisma: permiten comparar columnas en el filtro. */
@@ -77,6 +93,10 @@ export interface ProductService {
   update(id: number, input: UpdateProductInput): Promise<Product>;
   deactivate(id: number): Promise<Product>;
   adjustStock(id: number, input: AdjustStockInput): Promise<Product>;
+  /** Productos activos con precio y stock, stock 0 incluido (spec 02 F-7, RN-10). Solo lectura. */
+  listCatalog(): Promise<{ items: CatalogItem[] }>;
+  /** Estado y stock actuales; null si no existe. Sin caché ni reserva (RN-02, DP-01). */
+  getAvailability(id: number): Promise<ProductAvailability | null>;
 }
 
 const notFound = () => new AppError(404, 'PRODUCT_NOT_FOUND', 'El producto no existe.');
@@ -115,6 +135,19 @@ export function createProductService(deps: { prisma: ProductDb }): ProductServic
         orderBy: [{ name: 'asc' }, { id: 'asc' }],
       });
       return { items: rows.map(toProduct) };
+    },
+
+    async listCatalog() {
+      const rows = await db.findMany({ where: { isActive: true }, orderBy: [{ name: 'asc' }, { id: 'asc' }] });
+      return {
+        items: rows.map((r) => ({ id: r.id, name: r.name, price: r.price.toFixed(2), currentStock: r.currentStock })),
+      };
+    },
+
+    async getAvailability(id) {
+      const row = await db.findUnique({ where: { id } });
+      if (row === null) return null;
+      return { id: row.id, name: row.name, isActive: row.isActive, currentStock: row.currentStock };
     },
 
     async get(id) {
