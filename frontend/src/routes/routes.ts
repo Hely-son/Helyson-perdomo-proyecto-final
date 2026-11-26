@@ -8,7 +8,7 @@ import LoginPage from '../pages/LoginPage';
 import DashboardHomePage from '../pages/DashboardHomePage';
 import ProductsPage from '../pages/ProductsPage';
 import OrdersPage from '../pages/OrdersPage';
-import { productsLoader } from './loaders';
+import { alertsLoader, productsLoader } from './loaders';
 
 export type PublicPath = '/chat' | '/login';
 export type DashboardPath = '/dashboard' | '/dashboard/products' | '/dashboard/orders';
@@ -36,7 +36,7 @@ export const PUBLIC_ROUTES: readonly PublicRoute[] = [
 
 /** Rutas dentro del layout del dashboard, en el orden del menú. */
 export const DASHBOARD_ROUTES: readonly DashboardRoute[] = [
-  { path: '/dashboard', label: 'Inicio', icon: HomeOutlined, Component: DashboardHomePage },
+  { path: '/dashboard', label: 'Inicio', icon: HomeOutlined, Component: DashboardHomePage, loader: alertsLoader },
   {
     path: '/dashboard/products',
     label: 'Productos',

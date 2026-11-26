@@ -92,6 +92,14 @@ describe('QA-03.3-W (spec 05 §15.5, §16.1; TRACKER O3/S-2): loader de datos ba
 
 describe('QA-03.3-ESC-41 (spec 05 §16.4 "Cargando" y "Sin resultados"; IN-01 presentación)', () => {
   it('(a) navegación con las respuestas pendientes: las dos lecturas salen en paralelo y se ve un indicador de carga', async () => {
+    // TK-04.3 (O-4): Inicio tiene su propio loader y se sigue pintando mientras la navegación a Productos está pendiente,
+    // así que su estado entra en el HTML medido. Se fija uno determinista que no puede confundirse con el vacío del
+    // catálogo ("No hay productos en alerta" coincidiría con EMPTY_CATALOG) ni con el error técnico del catálogo:
+    // Inicio con una alerta. El indicador sigue saliendo del layout durante la navegación, como antes.
+    app.respond(byRoute({ 'GET /products/alerts': () => list([B]) }));
+    await router.navigate('/dashboard');
+    await app.settle();
+    app.reset();
     const products = deferred();
     const alerts = deferred();
     app.respond(byRoute({ 'GET /products': () => products.promise, 'GET /products/alerts': () => alerts.promise }));

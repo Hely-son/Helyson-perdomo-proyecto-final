@@ -67,3 +67,23 @@ export async function productsLoader(): Promise<ProductsLoaderData> {
   const alertItems = alerts.status === 'fulfilled' && Array.isArray(alerts.value?.items) ? alerts.value.items : null;
   return { status: 'ready', products: products.value.items, alerts: alertItems };
 }
+
+export type AlertsLoaderData =
+  | { status: 'ready'; alerts: Product[] }
+  | { status: 'error' }
+  /** La sesión se perdió: el flujo de sesión ya redirige a /login; el panel no muestra error. */
+  | { status: 'session' };
+
+/**
+ * /dashboard: lee las alertas de stock (spec 05 §16.4, spec 02 F-6). La condición de alerta la decide la API (RN-09).
+ * Nunca lanza: los fallos viajan en el resultado.
+ */
+export async function alertsLoader(): Promise<AlertsLoaderData> {
+  try {
+    const response = await listStockAlerts();
+    if (!Array.isArray(response?.items)) return { status: 'error' };
+    return { status: 'ready', alerts: response.items };
+  } catch (error) {
+    return isSessionError(error) ? { status: 'session' } : { status: 'error' };
+  }
+}
