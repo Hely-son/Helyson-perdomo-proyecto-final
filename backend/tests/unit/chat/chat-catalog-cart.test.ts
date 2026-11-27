@@ -15,7 +15,7 @@ import {
 // TK-05.2 · Pruebas de aceptación de QA (fase 1): catálogo y carrito del chat (unidad, sin red ni base de datos).
 // Spec 03 §4.2 (CATALOG, ASK_QUANTITY, STOCK_EXCEEDED, CART, REMOVE_ITEM), §4.3, F-3, F-4, F-5, §8, §10.3, §10.4, §10.7 (ESC-43);
 // ESC-17, ESC-18, ESC-19, ESC-20, ESC-21, ESC-22 (nivel U), ESC-23, ESC-24, ESC-43 y heredados de TK-05.1: ESC-07, ESC-15, ESC-16.
-// Decisiones de la puerta 1 (2026-11-26): D-1 (CART ofrece solo 1 Agregar otro producto y 2 Quitar ítem; sin confirmar),
+// Decisiones de la puerta 1 (2026-11-26): D-1 (CART ofrece solo 1 Agregar otro producto y 2 Quitar ítem; sin confirmar; TK-05.6 la sustituye por D-G: `3` Confirmar compra),
 // D-2 (catálogo numerado 1..N y `N+1) Ver carrito`; `0` sigue reservado), D-4 (lista, producto elegido y stock informado
 // dentro de la propia sesión; aislamiento entre sesiones). La D-3 (barrido) se prueba en session-store-busy.test.ts.
 //
@@ -36,10 +36,13 @@ type Deps = { products: FakeProductsService };
 type Handle = (session: Session, text: string, deps: Deps) => Promise<string[]> | string[];
 const handle = handleChatMessage as unknown as Handle;
 
-const makeSession = (state: string = 'MAIN_MENU', cart: unknown[] = []): Session => ({
-  state: state as Session['state'],
-  cart: cart as unknown as Session['cart'],
-});
+const makeSession = (state: string = 'MAIN_MENU', cart: unknown[] = []): Session =>
+  // TK-05.6: el FSM lee `customerId` de la sesión (confirmOrder); se añade con un cast para que el tipo compile antes y después.
+  ({
+    customerId: 1,
+    state,
+    cart,
+  }) as unknown as Session;
 
 interface Env {
   fake: FakeProducts;
@@ -468,7 +471,7 @@ describe('TK-05.2 · FSM · STOCK_EXCEEDED (F-5, ESC-22, ESC-23, CA-04, D-05, D-
 });
 
 describe('TK-05.2 · FSM · CART y REMOVE_ITEM (F-5, §4.3, ESC-24, D-1)', () => {
-  test('D-1 · CART muestra cada línea con producto y cantidad y ofrece solo `1` Agregar otro producto y `2` Quitar ítem (sin confirmar ni `3`)', async () => {
+  test('D-G (antes D-1, cambio previsto en TK-05.6) · CART muestra cada línea con producto y cantidad y ofrece `1` Agregar otro producto, `2` Quitar ítem y `3` Confirmar compra', async () => {
     const env = makeEnv([PRODUCT_A, PRODUCT_D]);
     const session = makeSession();
     await addToCart(env, session, PRODUCT_A, 2);
@@ -478,12 +481,12 @@ describe('TK-05.2 · FSM · CART y REMOVE_ITEM (F-5, §4.3, ESC-24, D-1)', () =>
     expect(lineOf(reply, PRODUCT_D.name)).toMatch(/\b5\b/);
     expect(lines(reply).some((l) => /^1\)\s*Agregar/i.test(l))).toBe(true);
     expect(lines(reply).some((l) => /^2\)\s*Quitar/i.test(l))).toBe(true);
-    expect(lines(reply).some((l) => /^3\)/.test(l))).toBe(false);
-    expect(reply).not.toMatch(/confirmar/i);
+    expect(lines(reply).some((l) => /^3\)\s*Confirmar/i.test(l))).toBe(true);
+    expect(lines(reply).some((l) => /^4\)/.test(l))).toBe(false);
   });
 
-  test.each(['3', 'xyz', ''])(
-    'D-1 / ESC-16 · en CART con líneas, la entrada %j es inválida: repite el carrito y sus dos opciones; no pasa a SUMMARY ni cambia el carrito',
+  test.each(['4', 'xyz', ''])(
+    'D-G / ESC-16 · en CART con líneas, la entrada %j es inválida: repite el carrito y sus tres opciones; no pasa a SUMMARY ni cambia el carrito',
     async (input) => {
       const env = makeEnv([PRODUCT_A]);
       const session = makeSession();
@@ -494,6 +497,7 @@ describe('TK-05.2 · FSM · CART y REMOVE_ITEM (F-5, §4.3, ESC-24, D-1)', () =>
       expect(reply).toContain(PRODUCT_A.name);
       expect(lines(reply).some((l) => /^1\)\s*Agregar/i.test(l))).toBe(true);
       expect(lines(reply).some((l) => /^2\)\s*Quitar/i.test(l))).toBe(true);
+      expect(lines(reply).some((l) => /^3\)\s*Confirmar/i.test(l))).toBe(true);
     },
   );
 

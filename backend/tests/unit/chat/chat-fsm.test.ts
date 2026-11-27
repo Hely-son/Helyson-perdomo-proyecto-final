@@ -16,10 +16,13 @@ type Handle = (session: Session, text: string, deps: { products: FakeProductsSer
 const handle = handleChatMessage as unknown as Handle;
 const deps = { products: createFakeProducts([PRODUCT_A, PRODUCT_B]).service };
 
-const makeSession = (state: string, cart: unknown[] = []): Session => ({
-  state: state as Session['state'],
-  cart: cart as unknown as Session['cart'],
-});
+const makeSession = (state: string, cart: unknown[] = []): Session =>
+  // TK-05.6: el FSM lee `customerId` de la sesión (confirmOrder); se añade con un cast para que el tipo compile antes y después.
+  ({
+    customerId: 1,
+    state,
+    cart,
+  }) as unknown as Session;
 
 const TWO_ITEMS = [
   { productId: 1, quantity: 2 },
@@ -116,7 +119,7 @@ describe('TK-05.1 · FSM · `0` vuelve al menú conservando el carrito (ESC-15 p
   });
 
   // ASK_QUANTITY, STOCK_EXCEEDED, CART y REMOVE_ITEM: chat-catalog-cart.test.ts (TK-05.2).
-  test.todo('ESC-15 (pendiente, D-E) · `0` desde SUMMARY y RESOLVE_STOCK: TK-05.6');
+  // SUMMARY y RESOLVE_STOCK (antes test.todo, D-E): resueltos en chat-confirmation.test.ts (TK-05.6, ESC-15).
 });
 
 describe('TK-05.1 · FSM · entrada inválida (ESC-16 parcial, D-E)', () => {
@@ -132,5 +135,5 @@ describe('TK-05.1 · FSM · entrada inválida (ESC-16 parcial, D-E)', () => {
 
   // ASK_QUANTITY, STOCK_EXCEEDED, CART y REMOVE_ITEM: chat-catalog-cart.test.ts (TK-05.2).
   // ESC-07 (contenido del catálogo): resuelto en tests/unit/chat/chat-catalog-cart.test.ts (ESC-17) y tests/db/chat-catalog-cart.test.ts (ESC-17, PostgreSQL).
-  test.todo('ESC-16 (pendiente, D-E) · `xyz` en SUMMARY y RESOLVE_STOCK: TK-05.6');
+  // SUMMARY y RESOLVE_STOCK (antes test.todo, D-E): resueltos en chat-confirmation.test.ts (TK-05.6, ESC-16).
 });

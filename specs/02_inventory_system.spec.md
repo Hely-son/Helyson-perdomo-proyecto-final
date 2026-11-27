@@ -285,7 +285,7 @@ No forman parte del contrato HTTP. Se nombran por su función; los nombres de la
 | Capacidad | Consumidor | Reglas | Spec que la detalla | Tickets |
 |---|---|---|---|---|
 | Catálogo del chat: productos activos con precio y stock | Chat FSM (vía `sendChatMessage`) | CH-04, RN-10 | 03 | TK-05.2 |
-| Disponibilidad de un producto al elegirlo y al agregarlo al carrito: si está activo y su stock actual | Chat FSM | CH-05, RN-02 (sin reserva), RN-10 · DP-03 (resuelta) | 03 | TK-05.2 |
+| Disponibilidad de un producto al elegirlo y al agregarlo al carrito: si está activo, su stock actual y su precio vigente (de cualquier producto existente, activo o inactivo; el chat lo usa para el resumen) | Chat FSM | CH-05, CH-06, RN-02 (sin reserva), RN-10 · DP-03 (resuelta) | 03 | TK-05.2, TK-05.6 |
 | Descuento condicional del stock al confirmar | `orders.service` | RN-01, RN-02, RN-03, RNF-03, RNF-04 | 04 | TK-05.3, TK-05.5 |
 | Restitución del stock al cancelar | `orders.service` | RN-05 | 04 | TK-06.1 |
 

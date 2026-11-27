@@ -15,6 +15,8 @@ import { ChatSessionStore } from './modules/chat/session-store';
 import { healthRouter } from './modules/health/health.routes';
 import { createProductsRouter } from './modules/products/products.routes';
 import { createProductService } from './modules/products/products.service';
+import { createOrderService } from './modules/orders/orders.service';
+import type { ConfirmedOrder, OrderService } from './modules/orders/orders.service';
 
 export interface CreateAppOptions {
   auth: AuthOptions;
@@ -23,6 +25,10 @@ export interface CreateAppOptions {
   chatSessionStore?: ChatSessionStore<ConversationState, Cart>;
   // Servicio de productos que consume el chat; si no se inyecta se usa el real (createProductService).
   chatProducts?: ChatProducts;
+  // Servicio de pedidos que consume el chat al confirmar; por defecto el real (createOrderService).
+  chatOrders?: Pick<OrderService, 'confirmOrder'>;
+  // Construye los textos del pedido confirmado (TK-05.6, D-C); por defecto, número de orden y estado.
+  chatConfirmedOrderMessage?: (order: ConfirmedOrder) => string[];
   // Solo para pruebas: server.ts nunca lo pasa.
   testRouter?: Router;
 }
@@ -45,7 +51,13 @@ export function createApp(options: CreateAppOptions): Express {
   const productService = createProductService({ prisma: options.prisma });
   app.use(`${API_PREFIX}/products`, createProductsRouter(productService));
   const chatStore = options.chatSessionStore ?? new ChatSessionStore<ConversationState, Cart>({ ttlMinutes: 30 });
-  app.use(`${API_PREFIX}/chat`, createChatRouter(createChatService({ db: options.prisma, store: chatStore, products: options.chatProducts ?? productService })));
+  app.use(`${API_PREFIX}/chat`, createChatRouter(createChatService({
+        db: options.prisma,
+        store: chatStore,
+        products: options.chatProducts ?? productService,
+        orders: options.chatOrders ?? createOrderService({ prisma: options.prisma }),
+        confirmedOrderMessage: options.chatConfirmedOrderMessage,
+      }),));
   app.use(notFound);
   app.use(errorHandler);
 

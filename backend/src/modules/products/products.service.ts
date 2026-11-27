@@ -56,6 +56,8 @@ export interface ProductAvailability {
   name: string;
   isActive: boolean;
   currentStock: number;
+  /** Precio vigente (decimal con dos decimales) de cualquier producto existente, activo o inactivo (TK-05.6, D-B). */
+  price: string;
 }
 
 export interface AdjustStockInput {
@@ -95,7 +97,7 @@ export interface ProductService {
   adjustStock(id: number, input: AdjustStockInput): Promise<Product>;
   /** Productos activos con precio y stock, stock 0 incluido (spec 02 F-7, RN-10). Solo lectura. */
   listCatalog(): Promise<{ items: CatalogItem[] }>;
-  /** Estado y stock actuales; null si no existe. Sin caché ni reserva (RN-02, DP-01). */
+  /** Estado, stock y precio actuales; null si no existe. Sin caché ni reserva (RN-02, DP-01). */
   getAvailability(id: number): Promise<ProductAvailability | null>;
 }
 
@@ -147,7 +149,7 @@ export function createProductService(deps: { prisma: ProductDb }): ProductServic
     async getAvailability(id) {
       const row = await db.findUnique({ where: { id } });
       if (row === null) return null;
-      return { id: row.id, name: row.name, isActive: row.isActive, currentStock: row.currentStock };
+      return { id: row.id, name: row.name, isActive: row.isActive, currentStock: row.currentStock, price: row.price.toFixed(2) };
     },
 
     async get(id) {

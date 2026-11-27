@@ -1,6 +1,6 @@
 import { AppError } from '../../lib/app-error';
 import { identifyCustomerByPhone, type CustomerDb } from '../customers/customers.service';
-import { handleChatMessage, MENU_TEXT, type Cart, type ChatProducts, type ConversationState } from './chat-fsm';
+import { handleChatMessage, MENU_TEXT, type Cart, type ChatDeps, type ChatOrders, type ChatProducts, type ConversationState } from './chat-fsm';
 import type { ChatSessionStore } from './session-store';
 
 export type ChatStore = ChatSessionStore<ConversationState, Cart>;
@@ -21,7 +21,13 @@ const toMessages = (texts: string[]) => texts.map((text) => ({ text }));
 // CH-02: mismo mensaje para no registrado, inactivo, inválido y no normalizable (F-1).
 const NOT_ENABLED = 'No encontramos tu número. Contacta a la distribuidora para habilitarlo.';
 
-export function createChatService(deps: { db: CustomerDb; store: ChatStore; products: ChatProducts }): ChatService {
+export function createChatService(deps: {
+  db: CustomerDb;
+  store: ChatStore;
+  products: ChatProducts;
+  orders: ChatOrders;
+  confirmedOrderMessage?: ChatDeps['confirmedOrderMessage'];
+}): ChatService {
   return {
     async startSession(phone) {
       const result = await identifyCustomerByPhone(deps.db, phone);
@@ -39,7 +45,7 @@ export function createChatService(deps: { db: CustomerDb; store: ChatStore; prod
       };
     },
     async sendMessage(sessionId, text) {
-      const outcome = await deps.store.process(sessionId, (session) => handleChatMessage(session, text, { products: deps.products }));
+      const outcome = await deps.store.process(sessionId, (session) => handleChatMessage(session, text, { products: deps.products, orders: deps.orders, confirmedOrderMessage: deps.confirmedOrderMessage }));
       if (outcome.status === 'invalid') {
         throw new AppError(404, 'SESSION_INVALID', 'La conversación no es válida o expiró. Inicia una nueva conversación.');
       }
