@@ -4,11 +4,20 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { resolveTestDatabaseUrl } from '../playwright.config';
-import { E2E_OPERATOR_EMAIL, E2E_OPERATOR_NAME, e2eOperatorPassword } from './support/e2e-env';
+import {
+  E2E_CHAT_CUSTOMER_NAME,
+  E2E_CHAT_CUSTOMER_PHONE,
+  E2E_CHAT_CUSTOMER_TAX_ID,
+  E2E_OPERATOR_EMAIL,
+  E2E_OPERATOR_NAME,
+  e2eOperatorPassword,
+} from './support/e2e-env';
 
 export const BACKEND_DIR = path.resolve(import.meta.dirname, '..', '..', 'backend');
 export const TSX_BIN = path.join(BACKEND_DIR, 'node_modules', '.bin', 'tsx');
 export const UPSERT_SCRIPT = path.join(BACKEND_DIR, 'tests', 'e2e-support', 'upsert-e2e-operator.ts');
+
+export const UPSERT_CHAT_CUSTOMER_SCRIPT = path.join(BACKEND_DIR, 'tests', 'e2e-support', 'upsert-e2e-chat-customer.ts');
 
 export default function globalSetup(): void {
   const result = spawnSync(TSX_BIN, [UPSERT_SCRIPT], {
@@ -25,5 +34,22 @@ export default function globalSetup(): void {
   });
   if (result.status !== 0) {
     throw new Error(`global-setup: no se pudo preparar el operador E2E (código ${String(result.status)})`);
+  }
+
+  // TK-05.4 (D2): cliente ficticio activo del simulador de chat; mismo patrón y mismas garantías que el operador.
+  const customer = spawnSync(TSX_BIN, [UPSERT_CHAT_CUSTOMER_SCRIPT], {
+    cwd: BACKEND_DIR,
+    shell: false,
+    stdio: ['ignore', 'inherit', 'inherit'],
+    env: {
+      PATH: process.env.PATH,
+      DATABASE_URL: resolveTestDatabaseUrl(),
+      E2E_CHAT_CUSTOMER_NAME,
+      E2E_CHAT_CUSTOMER_TAX_ID,
+      E2E_CHAT_CUSTOMER_PHONE,
+    },
+  });
+  if (customer.status !== 0) {
+    throw new Error(`global-setup: no se pudo preparar el cliente E2E del chat (código ${String(customer.status)})`);
   }
 }

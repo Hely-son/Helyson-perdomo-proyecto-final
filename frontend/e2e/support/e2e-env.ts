@@ -7,6 +7,16 @@ export const E2E_OPERATOR_EMAIL = 'operador.e2e@medsupply.test';
 /** Nombre ficticio conocido: el layout debe mostrarlo junto a "Cerrar sesión" (ESC-50). */
 export const E2E_OPERATOR_NAME = 'Operadora E2E Ficticia';
 
+/**
+ * Cliente ficticio y activo del simulador de chat (TK-05.4, D2), exclusivo de E2E en medsupply_test.
+ * Lo prepara e2e/global-setup.ts con backend/tests/e2e-support/upsert-e2e-chat-customer.ts. No es del seed.
+ * Se escribe con los nueve dígitos nacionales (lo que envía el simulador); en la base se guarda normalizado (+56…).
+ */
+export const E2E_CHAT_CUSTOMER_NAME = 'Clínica E2E Ficticia';
+export const E2E_CHAT_CUSTOMER_TAX_ID = 'QA-E2E-CHAT-01';
+export const E2E_CHAT_CUSTOMER_NATIONAL_PHONE = '955500123';
+export const E2E_CHAT_CUSTOMER_PHONE = `+56${E2E_CHAT_CUSTOMER_NATIONAL_PHONE}`;
+
 /** Backend de E2E (sin pasar por el proxy de Vite). */
 export const BACKEND_URL = 'http://127.0.0.1:3100';
 

@@ -42,7 +42,7 @@ Seguimiento operativo del MVP. Solo registra estado: la definición de cada tick
 | TK-05.2 | Hecho | — | commit único `TK-05.2: catálogo y carrito en el chat` (implementación y cierre) | 2026-11-26 |
 | TK-05.3 | Hecho | — | commit único `TK-05.3: confirmación atómica del pedido` (implementación y cierre) | 2026-11-26 |
 | TK-05.6 | Hecho | — | commit único `TK-05.6: resumen y confirmación en el chat` (implementación y cierre) | 2026-11-26 |
-| TK-05.4 | Pendiente | — | — | — |
+| TK-05.4 | Hecho | — | commit único `TK-05.4: simulador de chat` (implementación y cierre) | 2026-11-26 |
 | TK-05.5 | Pendiente | — | — | — |
 | TK-06.1 | Pendiente | — | — | — |
 | TK-06.2 | Pendiente | — | — | — |
@@ -137,6 +137,9 @@ Observaciones operativas que surgieron durante un ticket y deben revisarse en ot
 | TK-05.6 (cobertura pendiente) | **Informativo** (2026-11-26). Fuera del alcance de TK-05.6: ESC-35 y ESC-36 (concurrencia) y los E2E de ESC-28, ESC-30 y ESC-31 (CA-03, CA-14, CA-15) (`docs/qa/TK-05.6-matrix.md`) | TK-05.5 |
 | TK-05.6 (seguridad, entrada ` 1 `) | **Informativo, aceptado** (decisión del usuario, 2026-11-26). `handleChatMessage` recorta los espacios de toda entrada (comportamiento previo, uniforme en todos los estados), por lo que ` 1 ` confirma en `SUMMARY`. `01`, `1.0` y `+1` no confirman. Sin impacto de seguridad; sin cambios de código | — |
 | TK-05.6 (QA, observaciones) | **Informativo** (2026-11-26). (1) Si `showSummary` fallara tras un rechazo ya procesado (producto inexistente, no realista por DP-01), el carrito ya quedó ajustado y el siguiente mensaje muestra el carrito, sin estado inconsistente; verificado por lectura de código. (2) Sangría poco habitual en el bloque de `createChatService` de `backend/src/app.ts`; solo estilo, lint en verde. (3) La aserción de que el log no contiene el mensaje original verifica el comportamiento existente (D4a de TK-01.1), no es un requisito de TK-05.6 | — |
+| TK-05.4 (DoD 2, excepción) | **Excepción aprobada por el usuario (2026-11-26, D4), limitada a TK-05.4; no modifica la DoD general.** Evidencia local oficial de QA fase 2 (Node 26): frontend `npm run test:e2e` (48 passed, exit 0), `npm test` (25 suites, 276/276; código de salida no capturado, aceptado por el resumen), `npm run lint` y `npm run typecheck` (exit 0). Cambio solo de cliente; seguridad no aplica (decisión del usuario; controles verificados por QA). Su ejecución en CI corresponde a TK-00.7 | TK-00.7 (CI) |
+| TK-05.4 (QA, fixtures) | **Informativo** (2026-11-26, D2 y Q1). `medsupply_test` contiene el cliente activo `QA-E2E-CHAT-01` (teléfono `+56955500123`, nacional `955500123`), creado o actualizado en cada corrida E2E por `backend/tests/e2e-support/upsert-e2e-chat-customer.ts` desde el `globalSetup`, y el producto activo `QA TK-05.4 chat fixture` (10.00, stock 10), creado por `frontend/e2e/chat-simulator.spec.ts` solo si falta. No se modifican fuera de esos E2E. Útiles para TK-05.5; los E2E que cuenten productos activos deben filtrarlo por nombre. No es un requisito funcional | TK-05.5 |
+| TK-05.4 (QA, observaciones) | **Informativo** (2026-11-26). (1) El simulador rechaza paréntesis como separador (`(9) 4907 6876`), aunque el backend los admite (spec 05 §6.1, DP-01); fuera de ESC-56. (2) El texto de `SESSION_INVALID` está fijado en el frontend con el texto del contrato en lugar de mostrar el `message` de la API; compatible con el contrato. (3) Cosmético: el aviso de `sessionId: null` es un `Alert` y el botón de reinicio solo aparece con sesión. Sin cambios de código | — |
 
 ## Specs
 
