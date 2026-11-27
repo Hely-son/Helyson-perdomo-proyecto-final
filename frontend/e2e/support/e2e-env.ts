@@ -17,6 +17,17 @@ export const E2E_CHAT_CUSTOMER_TAX_ID = 'QA-E2E-CHAT-01';
 export const E2E_CHAT_CUSTOMER_NATIONAL_PHONE = '955500123';
 export const E2E_CHAT_CUSTOMER_PHONE = `+56${E2E_CHAT_CUSTOMER_NATIONAL_PHONE}`;
 
+/**
+ * Cliente ficticio INACTIVO del chat (TK-05.5, D2): CA-06 con un cliente deshabilitado (ESC-03). Lo prepara el mismo globalSetup
+ * con el mismo script (E2E_CHAT_CUSTOMER_ACTIVE=false). Teléfono propio, distinto del activo y de cualquier fixture del seed.
+ */
+export const E2E_INACTIVE_CHAT_CUSTOMER_NAME = 'Clínica E2E Inactiva Ficticia';
+export const E2E_INACTIVE_CHAT_CUSTOMER_TAX_ID = 'QA-E2E-CHAT-02';
+export const E2E_INACTIVE_CHAT_CUSTOMER_NATIONAL_PHONE = '955500124';
+export const E2E_INACTIVE_CHAT_CUSTOMER_PHONE = `+56${E2E_INACTIVE_CHAT_CUSTOMER_NATIONAL_PHONE}`;
+/** Teléfono fijo sin cliente registrado (CA-06, ESC-02: +56 9 0000 0000); no coincide con ningún fixture. */
+export const E2E_UNREGISTERED_NATIONAL_PHONE = '900000000';
+
 /** Backend de E2E (sin pasar por el proxy de Vite). */
 export const BACKEND_URL = 'http://127.0.0.1:3100';
 

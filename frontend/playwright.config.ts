@@ -52,6 +52,9 @@ export default defineConfig({
         PORT: String(BACKEND_PORT),
         DATABASE_URL: resolveTestDatabaseUrl(),
         JWT_SECRET: E2E_JWT_SECRET,
+        // TK-05.5 (D1): plazo de inactividad del chat de 1 minuto solo para E2E (CA-16, CH-11). El entorno del proceso tiene
+        // prioridad sobre --env-file-if-exists=../.env. e2e/chat-purchase.spec.ts (CA-16) falla si el backend conserva 30 minutos.
+        CHAT_SESSION_TTL_MINUTES: '1',
       },
       url: `${BACKEND_URL}/api/v1/health`,
       reuseExistingServer: false,

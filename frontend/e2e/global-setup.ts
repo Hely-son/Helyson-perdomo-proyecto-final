@@ -8,6 +8,9 @@ import {
   E2E_CHAT_CUSTOMER_NAME,
   E2E_CHAT_CUSTOMER_PHONE,
   E2E_CHAT_CUSTOMER_TAX_ID,
+  E2E_INACTIVE_CHAT_CUSTOMER_NAME,
+  E2E_INACTIVE_CHAT_CUSTOMER_PHONE,
+  E2E_INACTIVE_CHAT_CUSTOMER_TAX_ID,
   E2E_OPERATOR_EMAIL,
   E2E_OPERATOR_NAME,
   e2eOperatorPassword,
@@ -51,5 +54,23 @@ export default function globalSetup(): void {
   });
   if (customer.status !== 0) {
     throw new Error(`global-setup: no se pudo preparar el cliente E2E del chat (código ${String(customer.status)})`);
+  }
+
+  // TK-05.5 (D2): cliente ficticio INACTIVO del chat (CA-06, ESC-03); mismo script, con E2E_CHAT_CUSTOMER_ACTIVE=false.
+  const inactive = spawnSync(TSX_BIN, [UPSERT_CHAT_CUSTOMER_SCRIPT], {
+    cwd: BACKEND_DIR,
+    shell: false,
+    stdio: ['ignore', 'inherit', 'inherit'],
+    env: {
+      PATH: process.env.PATH,
+      DATABASE_URL: resolveTestDatabaseUrl(),
+      E2E_CHAT_CUSTOMER_NAME: E2E_INACTIVE_CHAT_CUSTOMER_NAME,
+      E2E_CHAT_CUSTOMER_TAX_ID: E2E_INACTIVE_CHAT_CUSTOMER_TAX_ID,
+      E2E_CHAT_CUSTOMER_PHONE: E2E_INACTIVE_CHAT_CUSTOMER_PHONE,
+      E2E_CHAT_CUSTOMER_ACTIVE: 'false',
+    },
+  });
+  if (inactive.status !== 0) {
+    throw new Error(`global-setup: no se pudo preparar el cliente E2E inactivo del chat (código ${String(inactive.status)})`);
   }
 }

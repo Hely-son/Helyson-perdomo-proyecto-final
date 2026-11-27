@@ -5,7 +5,11 @@ import { createPrismaClient } from '../../src/lib/prisma';
 // de .dockerignore: no llega a dist/ ni a la imagen. No ejecuta el seed y no borra nada: solo crea o actualiza la
 // fila identificada por E2E_CHAT_CUSTOMER_TAX_ID, que queda activa (si un test la desactivara, la corrida siguiente la restablece).
 //
-// Entradas, solo por entorno: DATABASE_URL, E2E_CHAT_CUSTOMER_NAME, E2E_CHAT_CUSTOMER_TAX_ID, E2E_CHAT_CUSTOMER_PHONE.
+// TK-05.5 (D2): también prepara el cliente fijo INACTIVO (QA-E2E-CHAT-02) con E2E_CHAT_CUSTOMER_ACTIVE=false; sin esa variable
+// (o con cualquier valor distinto de "false") el cliente queda activo, como antes. En ambos casos la corrida siguiente restablece el estado.
+//
+// Entradas, solo por entorno: DATABASE_URL, E2E_CHAT_CUSTOMER_NAME, E2E_CHAT_CUSTOMER_TAX_ID, E2E_CHAT_CUSTOMER_PHONE
+// y, opcional, E2E_CHAT_CUSTOMER_ACTIVE ("false" para el cliente inactivo).
 // Los mensajes son fijos: nunca incluyen la URL, el nombre, el identificador fiscal ni el teléfono.
 
 const TEST_DATABASE = 'medsupply_test';
@@ -43,7 +47,8 @@ function isNormalizedPhone(value: string | undefined): value is string {
 }
 
 async function main(): Promise<number> {
-  const { DATABASE_URL, E2E_CHAT_CUSTOMER_NAME, E2E_CHAT_CUSTOMER_TAX_ID, E2E_CHAT_CUSTOMER_PHONE } = process.env;
+  const { DATABASE_URL, E2E_CHAT_CUSTOMER_NAME, E2E_CHAT_CUSTOMER_TAX_ID, E2E_CHAT_CUSTOMER_PHONE, E2E_CHAT_CUSTOMER_ACTIVE } = process.env;
+  const isActive = E2E_CHAT_CUSTOMER_ACTIVE !== 'false';
   if (!targetsTestDatabase(DATABASE_URL)) {
     logError('la base destino no es medsupply_test; no se conecta ni se escribe nada.');
     return 1;
@@ -69,10 +74,10 @@ async function main(): Promise<number> {
     }
     await prisma.customer.upsert({
       where: { taxId: E2E_CHAT_CUSTOMER_TAX_ID },
-      create: { businessName: E2E_CHAT_CUSTOMER_NAME, taxId: E2E_CHAT_CUSTOMER_TAX_ID, phone: E2E_CHAT_CUSTOMER_PHONE, isActive: true },
-      update: { businessName: E2E_CHAT_CUSTOMER_NAME, phone: E2E_CHAT_CUSTOMER_PHONE, isActive: true },
+      create: { businessName: E2E_CHAT_CUSTOMER_NAME, taxId: E2E_CHAT_CUSTOMER_TAX_ID, phone: E2E_CHAT_CUSTOMER_PHONE, isActive },
+      update: { businessName: E2E_CHAT_CUSTOMER_NAME, phone: E2E_CHAT_CUSTOMER_PHONE, isActive },
     });
-    log('Cliente E2E del chat preparado en medsupply_test.');
+    log(`Cliente E2E del chat (${isActive ? 'activo' : 'inactivo'}) preparado en medsupply_test.`);
     return 0;
   } catch (err) {
     const code = typeof err === 'object' && err !== null && 'code' in err && typeof err.code === 'string' ? ` (código ${err.code})` : '';
