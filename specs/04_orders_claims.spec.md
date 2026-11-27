@@ -361,7 +361,7 @@ Nivel: **U** unidad · **I** integración contra PostgreSQL · **C** concurrenci
 | TK-05.3 | `MVP` | F-1, D-01..D-04 | 04 | ESC-01..ESC-08, ESC-11..ESC-15, ESC-37 |
 | TK-05.5 | `MVP` | Concurrencia RNF-04 de la confirmación | 04 y 03 | ESC-09, ESC-10 |
 | TK-05.6 | `MVP` | Traducción del resultado de F-1 en el chat (spec 03) | 03 | (spec 03) |
-| TK-06.1 | `MVP` | F-4, F-5, D-05..D-07 | 04 | ESC-16..ESC-18, ESC-20..ESC-22, ESC-24..ESC-29 |
+| TK-06.1 | `MVP` | F-4, F-5, D-05..D-07 | 04 | ESC-16..ESC-18, ESC-20..ESC-22, ESC-24..ESC-29 · spec 02 ESC-14 (cancelación entre la lectura y el ajuste; distinto del ESC-14 de esta spec) |
 | TK-06.2 | `MVP` | `listOrders`, `getOrder`, `changeOrderStatus` | 04 | ESC-16, ESC-19, ESC-30, ESC-32..ESC-34 |
 | TK-06.3 | `MVP` | F-2 en el servicio; los estados del FSM son de la spec 03 | 03 | ESC-35, ESC-36 |
 | TK-06.4 | `MVP` | Pantalla de pedidos (F-6) | 04 | DP-02 |
@@ -389,7 +389,7 @@ Aprobadas por el responsable del proyecto con la alternativa A. Conservan su ID.
 | ID | Estado | Observación | Dónde |
 |---|---|---|---|
 | OBS-01 | Abierta (brecha de backlog) | La spec 03 aprobada (`RESOLVE_STOCK`) necesita el stock disponible de cada ítem rechazado por `STOCK_INSUFFICIENT`, y D-01 lo incluye. El "Hecho cuando" de TK-05.3 solo exige el precio vigente para `PRICE_CHANGED` y no menciona el stock disponible | `backlog/US-05_compra_conversacional.md`, TK-05.3 |
-| OBS-02 | Abierta (brecha de backlog) | La regla general de ARCHITECTURE (orden ascendente de `productId` y reintento ante `P2034`) aplica también a la cancelación (D-05), pero TK-06.1 no la menciona ni prueba ESC-29 | `backlog/US-06_seguimiento_pedidos.md`, TK-06.1 |
+| OBS-02 | Resuelta (2026-11-27) | La regla general de ARCHITECTURE (orden ascendente de `productId` y reintento ante `P2034`) aplica también a la cancelación (D-05). El backlog de TK-06.1 ya incorpora D-05 y ESC-29 en su "Hecho cuando", y ambos quedaron cubiertos en TK-06.1 (`docs/qa/TK-06.1-matrix.md`) | `backlog/US-06_seguimiento_pedidos.md`, TK-06.1 |
 | OBS-03 | Abierta | El contrato se declara "aprobada provisionalmente para chat y pedidos" (igual que OBS-03 de la spec 03). Esta spec se alinea con la versión 1.0.0 sin declararla aprobada | `docs/openapi.yaml`, "Estado del contrato" |
 | OBS-04 | Abierta (dependencia V2) | La confirmación no revalida que el cliente siga activo. En el MVP no puede desactivarse un cliente en ejecución (solo seed; CL-01 es `V2`), así que no hay caso real. Al priorizar CL-01 habrá que decidir si una sesión abierta de un cliente desactivado puede confirmar | PRD CL-01, CL-02 |
 | OBS-05 | Abierta (dependencia V2) | PE-01 (`V2`) y TK-07.3 incluirán reclamos en `getOrder`, y TK-07.1 define códigos (`ORDER_NOT_DELIVERED`, `CLAIM_ALREADY_OPEN`) que no están en el contrato. Es correcto para el MVP; en V2 exigirá un cambio de contrato con nueva `info.version` | `docs/openapi.yaml`; US-07 |

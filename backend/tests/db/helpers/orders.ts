@@ -1,6 +1,6 @@
 import type { Client } from 'pg';
-import { assertTestDatabase } from './test-database';
-import type { Db } from './products';
+import { assertTestDatabase, connectTestDatabase } from './test-database';
+import { type Db, waitForLockWaiters } from './products';
 
 // Utilidades de las pruebas de aceptación de TK-05.3 (confirmación atómica del pedido) contra medsupply_test.
 // Escenarios: docs/qa/TK-05.3-matrix.md. Contrato de la operación: spec 04 F-1 y D-01; interfaz aprobada en la puerta 1.
@@ -164,5 +164,101 @@ export async function injectInsertFailure(client: Client, target: InjectionTarge
   return async () => {
     await client.query(`DROP TRIGGER IF EXISTS ${fn} ON ${target}`);
     await client.query(`DROP FUNCTION IF EXISTS ${fn}()`);
+  };
+}
+
+// ---------------------------------------------------------------------------------------------
+// TK-06.1 · transiciones de estado del pedido por el operador (spec 04 F-4, F-5; spec 02 F-9).
+// Escenarios: docs/qa/TK-06.1-matrix.md. Interfaz aprobada en la puerta 1: `changeOrderStatus(orderId, target)` en el
+// objeto que devuelve `createOrderService`; éxito `{ id, orderNumber, status }`; errores de dominio `AppError`
+// (404 ORDER_NOT_FOUND, 409 INVALID_ORDER_TRANSITION); destino PENDING o fuera del enum: `OrderInputError`.
+// ---------------------------------------------------------------------------------------------
+
+export type OrderStatus = 'PENDING' | 'PROCESSING' | 'DISPATCHED' | 'DELIVERED' | 'CANCELLED';
+export const ORDER_STATUSES: OrderStatus[] = ['PENDING', 'PROCESSING', 'DISPATCHED', 'DELIVERED', 'CANCELLED'];
+/** Destinos que el operador puede pedir (contrato `ChangeOrderStatusRequest`: PENDING nunca es destino). */
+export const OPERATOR_TARGETS: OrderStatus[] = ['PROCESSING', 'DISPATCHED', 'DELIVERED', 'CANCELLED'];
+
+export interface StatusChangeResult {
+  id: number;
+  orderNumber: string;
+  status: OrderStatus;
+}
+
+/** Forma de la operación nueva. El servicio real aún no la declara (rojo por función inexistente, no por tipos). */
+export interface StatusChangingService {
+  changeOrderStatus(orderId: number, target: unknown): Promise<StatusChangeResult>;
+}
+
+/** Llama a `changeOrderStatus` del servicio sin exigir que su tipo ya la declare. */
+export async function changeStatus(service: object, orderId: number, target: unknown): Promise<StatusChangeResult> {
+  return (service as StatusChangingService).changeOrderStatus(orderId, target);
+}
+
+export type Settled<T> = { ok: true; value: T } | { ok: false; error: unknown };
+
+/** Convierte una promesa en un resultado sin lanzar (evita rechazos sin atender mientras se espera a otras sesiones). */
+export function settle<T>(promise: Promise<T>): Promise<Settled<T>> {
+  return promise.then(
+    (value) => ({ ok: true as const, value }),
+    (error: unknown) => ({ ok: false as const, error }),
+  );
+}
+
+export interface OrderFixtureItem {
+  productId: number;
+  quantity: number;
+  unitPrice?: Money;
+}
+
+/** Pedido fixture (Prisma) en el estado dado, con sus ítems y el total exacto. No toca el stock de los productos. */
+export async function insertOrder(
+  db: Db,
+  input: { customerId: number; status: OrderStatus; items: OrderFixtureItem[] },
+): Promise<{ id: number; orderNumber: string }> {
+  const items = input.items.map((i) => ({ productId: i.productId, quantity: i.quantity, unitPrice: i.unitPrice ?? '100.00' }));
+  const order = await db.order.create({
+    data: { customerId: input.customerId, status: input.status, totalAmount: exactTotal(items), items: { create: items } },
+  });
+  return { id: order.id, orderNumber: order.orderNumber };
+}
+
+export async function statusOf(db: Db, orderId: number): Promise<OrderStatus> {
+  const rows = await db.$queryRaw<{ status: OrderStatus }[]>`SELECT status::text AS status FROM orders WHERE id = ${orderId}`;
+  return rows[0].status;
+}
+
+export interface RowLock {
+  /** Espera a que al menos `count` sesiones estén bloqueadas esperando un bloqueo (mecanismo real de PostgreSQL). */
+  waitForWaiters(count: number): Promise<boolean>;
+  /** Confirma la transacción que retiene la fila y cierra las conexiones auxiliares. */
+  release(): Promise<void>;
+}
+
+/**
+ * Retiene `SELECT … FOR UPDATE` sobre una fila desde una conexión de la prueba (patrón de TK-03.1/03.3/05.3/05.5): las
+ * sesiones de la aplicación que quieran escribirla se encolan en el orden en que llegan. No sustituye ninguna pieza de la app.
+ */
+export async function holdRowLock(table: 'orders' | 'products', id: number): Promise<RowLock> {
+  const locker = await connectTestDatabase();
+  const observer = await connectTestDatabase();
+  try {
+    await locker.query('BEGIN');
+    await locker.query(`SELECT id FROM ${table} WHERE id = $1 FOR UPDATE`, [id]);
+  } catch (err) {
+    await locker.end().catch(() => undefined);
+    await observer.end().catch(() => undefined);
+    throw err;
+  }
+  return {
+    waitForWaiters: (count) => waitForLockWaiters(observer, count),
+    release: async () => {
+      try {
+        await locker.query('COMMIT');
+      } finally {
+        await locker.end().catch(() => undefined);
+        await observer.end().catch(() => undefined);
+      }
+    },
   };
 }

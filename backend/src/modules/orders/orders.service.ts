@@ -1,5 +1,6 @@
 import { Prisma } from '../../generated/prisma/client';
 import type { PrismaClient } from '../../generated/prisma/client';
+import { AppError } from '../../lib/app-error';
 
 // Confirmación atómica del pedido (spec 04 F-1, D-01..D-04; RN-01..RN-04). Operación de dominio, sin endpoint.
 
@@ -32,9 +33,25 @@ export interface ConfirmedOrder {
 
 export type ConfirmOrderResult = { ok: true; order: ConfirmedOrder } | { ok: false; rejections: Rejection[] };
 
+export type OperatorTargetStatus = 'PROCESSING' | 'DISPATCHED' | 'DELIVERED' | 'CANCELLED';
+
+export interface OrderStatusChange {
+  id: number;
+  orderNumber: string;
+  status: OperatorTargetStatus;
+}
+
 export interface OrderService {
   confirmOrder(input: ConfirmOrderInput): Promise<ConfirmOrderResult>;
+  changeOrderStatus(orderId: number, target: unknown): Promise<OrderStatusChange>;
 }
+
+// Avance del operador (spec 04 D-06): destino → único origen permitido. El stock no cambia (D-07).
+const ADVANCE_ORIGIN: Record<'PROCESSING' | 'DISPATCHED' | 'DELIVERED', 'PENDING' | 'PROCESSING' | 'DISPATCHED'> = {
+  PROCESSING: 'PENDING',
+  DISPATCHED: 'PROCESSING',
+  DELIVERED: 'DISPATCHED',
+};
 
 /** Control de flujo interno: provoca el ROLLBACK real y se traduce a `{ ok: false }`. No es P2034 ni se reintenta. */
 class RejectionsSignal extends Error {
@@ -56,6 +73,18 @@ const invalidInput = (message: string) => new OrderInputError(message);
 
 function isWriteConflict(err: unknown): boolean {
   return typeof err === 'object' && err !== null && (err as { code?: unknown }).code === 'P2034';
+}
+
+/** 1 intento + hasta 3 reintentos solo ante P2034 (ESC-12). Cualquier otro error se propaga sin reintentar. */
+async function withWriteConflictRetry<T>(run: () => Promise<T>): Promise<T> {
+  for (let n = 1; ; n += 1) {
+    try {
+      return await run();
+    } catch (err) {
+      if (isWriteConflict(err) && n < MAX_ATTEMPTS) continue;
+      throw err;
+    }
+  }
 }
 
 function validate(input: ConfirmOrderInput): void {
@@ -130,18 +159,60 @@ export function createOrderService(deps: { prisma: PrismaClient }): OrderService
     );
   }
 
+  /** Distingue no encontrado de transición no permitida tras 0 filas afectadas. */
+  async function rejectTransition(db: Pick<PrismaClient, 'order'>, orderId: number): Promise<never> {
+    const exists = await db.order.findUnique({ where: { id: orderId }, select: { id: true } });
+    if (exists === null) throw new AppError(404, 'ORDER_NOT_FOUND', 'El pedido no existe.');
+    throw new AppError(409, 'INVALID_ORDER_TRANSITION', 'La transición de estado no está permitida.');
+  }
+
+  // F-4: una actualización condicional WHERE id AND status = origen.
+  async function advance(orderId: number, target: 'PROCESSING' | 'DISPATCHED' | 'DELIVERED'): Promise<OrderStatusChange> {
+    const { count } = await prisma.order.updateMany({
+      where: { id: orderId, status: ADVANCE_ORIGIN[target] },
+      data: { status: target },
+    });
+    if (count === 0) return rejectTransition(prisma, orderId);
+    const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, select: { id: true, orderNumber: true } });
+    return { id: order.id, orderNumber: order.orderNumber, status: target };
+  }
+
+  // F-5: cancelación y restitución de stock en una transacción (RN-09, RN-10).
+  async function cancel(orderId: number): Promise<OrderStatusChange> {
+    return prisma.$transaction(
+      async (tx) => {
+        const { count } = await tx.order.updateMany({
+          where: { id: orderId, status: { in: ['PENDING', 'PROCESSING'] } },
+          data: { status: 'CANCELLED' },
+        });
+        if (count === 0) return rejectTransition(tx, orderId); // ROLLBACK
+        const items = await tx.orderItem.findMany({ where: { orderId }, orderBy: { productId: 'asc' } });
+        // Orden ascendente de productId (interbloqueos); sin condición de isActive (RN-10).
+        for (const item of items) {
+          await tx.product.update({ where: { id: item.productId }, data: { currentStock: { increment: item.quantity } } });
+        }
+        const order = await tx.order.findUniqueOrThrow({ where: { id: orderId }, select: { id: true, orderNumber: true } });
+        return { id: order.id, orderNumber: order.orderNumber, status: 'CANCELLED' as const };
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
+    );
+  }
+
   return {
     async confirmOrder(input) {
       validate(input);
-      for (let n = 1; ; n += 1) {
-        try {
-          return { ok: true, order: await attempt(input) };
-        } catch (err) {
-          if (err instanceof RejectionsSignal) return { ok: false, rejections: err.rejections };
-          if (isWriteConflict(err) && n < MAX_ATTEMPTS) continue;
-          throw err;
-        }
+      try {
+        return { ok: true, order: await withWriteConflictRetry(() => attempt(input)) };
+      } catch (err) {
+        if (err instanceof RejectionsSignal) return { ok: false, rejections: err.rejections };
+        throw err;
       }
+    },
+
+    async changeOrderStatus(orderId, target) {
+      if (target === 'CANCELLED') return withWriteConflictRetry(() => cancel(orderId));
+      if (target === 'PROCESSING' || target === 'DISPATCHED' || target === 'DELIVERED') return advance(orderId, target);
+      throw invalidInput('El estado destino no es válido para el operador.');
     },
   };
 }
