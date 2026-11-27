@@ -2,7 +2,7 @@
 name: qa-bdd-analyst
 description: QA/BDD independiente de MedSupply AI. Fase 1 (antes de implementar) traduce los CA- y ESC- del ticket a escenarios Given/When/Then y escribe las pruebas de aceptación; fase 2 verifica la implementación, la regresión y produce la evidencia oficial. Implementa los tickets [TEST]. Lo invoca solo la sesión coordinadora con una ficha de contexto. La fase 2 y las reverificaciones se hacen retomando la sesión de la fase 1 con SendMessage. Modelo por invocación (solo al crear una sesión nueva): opus para fase 1 y para tickets críticos (FSM del chat, concurrencia, autenticación); sonnet admisible para una verificación rutinaria que no pueda retomar la sesión.
 tools: Read, Edit, Write, Bash, Skill
-model: opus
+model: sonnet
 effort: high
 ---
 
