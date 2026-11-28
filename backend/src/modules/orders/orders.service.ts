@@ -41,7 +41,42 @@ export interface OrderStatusChange {
   status: OperatorTargetStatus;
 }
 
+export type OrderStatusValue = 'PENDING' | 'PROCESSING' | 'DISPATCHED' | 'DELIVERED' | 'CANCELLED';
+
+export interface ListOrdersInput {
+  status?: OrderStatusValue;
+  page: number;
+  pageSize: number;
+}
+
+export interface OrderSummaryDto {
+  id: number;
+  orderNumber: string;
+  status: OrderStatusValue;
+  totalAmount: string;
+  customer: { id: number; businessName: string };
+  createdAt: string;
+}
+
+export interface OrderPageDto {
+  items: OrderSummaryDto[];
+  pagination: { page: number; pageSize: number; totalItems: number; totalPages: number };
+}
+
+export interface OrderDetailDto {
+  id: number;
+  orderNumber: string;
+  status: OrderStatusValue;
+  totalAmount: string;
+  customer: { id: number; businessName: string; taxId: string; phone: string };
+  items: { productId: number; productName: string; quantity: number; unitPrice: string; subtotal: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface OrderService {
+  listOrders(input: ListOrdersInput): Promise<OrderPageDto>;
+  getOrder(orderId: number): Promise<OrderDetailDto>;
   confirmOrder(input: ConfirmOrderInput): Promise<ConfirmOrderResult>;
   changeOrderStatus(orderId: number, target: unknown): Promise<OrderStatusChange>;
 }
@@ -199,6 +234,59 @@ export function createOrderService(deps: { prisma: PrismaClient }): OrderService
   }
 
   return {
+    // F-3 / DP-01: createdAt desc, id desc (determinista); nunca por orderNumber.
+    async listOrders({ status, page, pageSize }) {
+      const where = status ? { status } : {};
+      const [totalItems, rows] = await Promise.all([
+        prisma.order.count({ where }),
+        prisma.order.findMany({
+          where,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          include: { customer: { select: { id: true, businessName: true } } },
+        }),
+      ]);
+      return {
+        items: rows.map((o) => ({
+          id: o.id,
+          orderNumber: o.orderNumber,
+          status: o.status,
+          totalAmount: o.totalAmount.toFixed(2),
+          customer: { id: o.customer.id, businessName: o.customer.businessName },
+          createdAt: o.createdAt.toISOString(),
+        })),
+        pagination: { page, pageSize, totalItems, totalPages: Math.ceil(totalItems / pageSize) },
+      };
+    },
+
+    async getOrder(orderId) {
+      const o = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+          customer: { select: { id: true, businessName: true, taxId: true, phone: true } },
+          items: { include: { product: { select: { name: true } } } },
+        },
+      });
+      if (o === null) throw new AppError(404, 'ORDER_NOT_FOUND', 'El pedido no existe.');
+      return {
+        id: o.id,
+        orderNumber: o.orderNumber,
+        status: o.status,
+        totalAmount: o.totalAmount.toFixed(2),
+        customer: { id: o.customer.id, businessName: o.customer.businessName, taxId: o.customer.taxId, phone: o.customer.phone },
+        items: o.items.map((i) => ({
+          productId: i.productId,
+          productName: i.product.name,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice.toFixed(2),
+          subtotal: i.unitPrice.times(i.quantity).toFixed(2),
+        })),
+        createdAt: o.createdAt.toISOString(),
+        updatedAt: o.updatedAt.toISOString(),
+      };
+    },
+
     async confirmOrder(input) {
       validate(input);
       try {

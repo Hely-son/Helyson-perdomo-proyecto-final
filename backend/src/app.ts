@@ -15,6 +15,7 @@ import { ChatSessionStore } from './modules/chat/session-store';
 import { healthRouter } from './modules/health/health.routes';
 import { createProductsRouter } from './modules/products/products.routes';
 import { createProductService } from './modules/products/products.service';
+import { createOrdersRouter } from './modules/orders/orders.routes';
 import { createOrderService } from './modules/orders/orders.service';
 import type { ConfirmedOrder, OrderService } from './modules/orders/orders.service';
 
@@ -50,6 +51,7 @@ export function createApp(options: CreateAppOptions): Express {
   }
   const productService = createProductService({ prisma: options.prisma });
   app.use(`${API_PREFIX}/products`, createProductsRouter(productService));
+  app.use(`${API_PREFIX}/orders`, createOrdersRouter(createOrderService({ prisma: options.prisma })));
   const chatStore = options.chatSessionStore ?? new ChatSessionStore<ConversationState, Cart>({ ttlMinutes: 30 });
   app.use(`${API_PREFIX}/chat`, createChatRouter(createChatService({
         db: options.prisma,
