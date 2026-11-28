@@ -1,0 +1,138 @@
+# CI (TK-00.7; RNF-06). docs/ARCHITECTURE.md, "Entornos".
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash # activa pipefail
+
+jobs:
+  ci:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        # La misma imagen que docker-compose.yml y docker-compose.delivery.yml.
+        image: postgres:16.16@sha256:3950ad7c3148ca2175ef1b6c36c9efbf78957ae8fbe8b3a5d7c35af50500382f
+        env:
+          # Base efímera de este job, publicada solo en la interfaz local del runner: sin contraseñas que guardar.
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 127.0.0.1:5432:5432
+        # Por TCP: durante la inicialización el servidor temporal solo escucha en el socket local.
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.13.1
+          package-manager-cache: false
+
+      - name: OpenAPI (RNF-02)
+        run: npx @redocly/cli@2.73.0 lint docs/openapi.yaml
+
+      # Crea el rol de aplicación (no superusuario, con CREATEDB) y las bases medsupply y medsupply_test.
+      # Las contraseñas son aleatorias en cada ejecución y se enmascaran antes de usarse o exportarse.
+      # Con `trust` el servidor no las comprueba; las exigen el script y las pruebas.
+      - name: PostgreSQL
+        run: |
+          admin_password="$(openssl rand -hex 24)"
+          app_password="$(openssl rand -hex 24)"
+          echo "::add-mask::$admin_password"
+          echo "::add-mask::$app_password"
+          database_url="postgresql://medsupplyci:${app_password}@127.0.0.1:5432/medsupply"
+          echo "::add-mask::$database_url"
+
+          PGHOST=127.0.0.1 \
+          MEDSUPPLY_DB_ENV=development \
+          POSTGRES_USER=postgres \
+          POSTGRES_PASSWORD="$admin_password" \
+          APP_DB_USER=medsupplyci \
+          APP_DB_PASSWORD="$app_password" \
+            bash docker/postgres/init-db.sh
+
+          echo "DATABASE_URL=$database_url" >> "$GITHUB_ENV"
+
+      - name: Backend · dependencias
+        working-directory: backend
+        run: npm ci --ignore-scripts
+
+      # Con --ignore-scripts el motor de migraciones no se instala: se descarga aquí, como en backend/Dockerfile.
+      - name: Backend · motor de Prisma
+        working-directory: backend
+        run: node_modules/.bin/prisma -v && ls node_modules/@prisma/engines/schema-engine*
+
+      - name: Backend · cliente de Prisma
+        working-directory: backend
+        run: npm run db:generate
+
+      - name: Backend · migraciones
+        working-directory: backend
+        run: npm run db:migrate:deploy
+
+      - name: Backend · lint
+        working-directory: backend
+        run: npm run lint
+
+      - name: Backend · typecheck
+        working-directory: backend
+        run: npm run typecheck
+
+      - name: Backend · build
+        working-directory: backend
+        run: npm run build
+
+      - name: Backend · pruebas unitarias
+        working-directory: backend
+        run: npm test
+
+      # Incluye la concurrencia (RNF-04). Recrea medsupply_test y la deja migrada para los E2E.
+      - name: Backend · pruebas de integración
+        working-directory: backend
+        run: npm run test:db
+
+      - name: Frontend · dependencias
+        working-directory: frontend
+        run: npm ci --ignore-scripts
+
+      - name: Frontend · lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Frontend · typecheck
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Frontend · pruebas unitarias
+        working-directory: frontend
+        run: npm test -- -w 2
+
+      - name: Frontend · build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Frontend · Chromium
+        working-directory: frontend
+        run: node_modules/.bin/playwright install --with-deps chromium
+
+      # Después de la integración del backend: comparten medsupply_test.
+      - name: Frontend · E2E
+        working-directory: frontend
+        run: npm run test:e2e
