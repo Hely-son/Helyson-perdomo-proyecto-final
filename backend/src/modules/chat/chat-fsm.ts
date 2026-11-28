@@ -1,6 +1,6 @@
 // Motor FSM del chat (spec 03 §4.2, F-3, F-4, F-5). Sin acceso a datos ni HTTP: la disponibilidad sale del
-// servicio de productos (deps.products); la confirmación, del de pedidos (deps.orders). ORDER_LOOKUP llega en TK-06.3.
-import type { ConfirmedOrder, OrderService, Rejection } from '../orders/orders.service';
+// servicio de productos (deps.products); la confirmación y la consulta de pedidos propios, del de pedidos (deps.orders).
+import type { ConfirmedOrder, CustomerOrderDto, OrderService, Rejection } from '../orders/orders.service';
 import type { ProductService } from '../products/products.service';
 
 export type ConversationState =
@@ -25,8 +25,8 @@ export type Cart = CartLine[];
 /** Lo único que el FSM consume del servicio de productos (spec 02 §8.2). */
 export type ChatProducts = Pick<ProductService, 'listCatalog' | 'getAvailability'>;
 
-/** Lo único que el FSM consume del servicio de pedidos (spec 04 F-1). */
-export type ChatOrders = Pick<OrderService, 'confirmOrder'>;
+/** Lo único que el FSM consume del servicio de pedidos (spec 04 F-1, F-2). */
+export type ChatOrders = Pick<OrderService, 'confirmOrder' | 'findCustomerOrder'>;
 
 export interface ChatDeps {
   products: ChatProducts;
@@ -60,7 +60,9 @@ export const MENU_TEXT = '1) Catálogo y compra\n2) Mis pedidos';
 
 const msgs = {
   menuPrompt: 'Elige una opción.',
-  orderLookup: 'Mis pedidos (próximamente). Responde 0 para volver al menú.',
+  orderLookup: 'Mis pedidos: escribe el número de tu pedido, o 0 para volver al menú.',
+  orderNotFound: 'Pedido no encontrado',
+  orderLookupAgain: 'Escribe otro número de pedido, o 0 para volver al menú.',
   invalid: 'Opción no válida.',
   soldOut: 'Ese producto está agotado (Sin stock) y no se puede elegir.',
   notAvailable: 'Ese producto ya no está disponible.',
@@ -202,6 +204,16 @@ async function applyRejections(session: FsmSession, deps: ChatDeps, rejections: 
   return nextResolution(session, deps, notices);
 }
 
+/** Detalle de un pedido propio (F-8): importes tal como los entrega el servicio. */
+function renderOrder(order: CustomerOrderDto): string {
+  return [
+    `Pedido ${order.orderNumber}`,
+    `Estado: ${order.status}`,
+    ...order.items.map((i) => `- ${i.productName} × ${i.quantity} a $${i.unitPrice} = $${i.subtotal}`),
+    `Total: $${order.totalAmount}`,
+  ].join('\n');
+}
+
 async function showRemoveList(session: FsmSession, deps: ChatDeps): Promise<string[]> {
   const labels = await lineLabels(session, deps);
   session.state = 'REMOVE_ITEM';
@@ -341,8 +353,11 @@ const handlers: Partial<Record<ConversationState, Handler>> = {
     return showCart(session, deps);
   },
 
-  async ORDER_LOOKUP() {
-    return [msgs.orderLookup];
+  // D-11, D-12, DP-10: toda entrada (salvo `0`) se trata como número de pedido; sigue en ORDER_LOOKUP.
+  async ORDER_LOOKUP(session, input, deps) {
+    const order = await deps.orders.findCustomerOrder(session.customerId, input.toUpperCase());
+    if (order === null) return [msgs.orderNotFound];
+    return [renderOrder(order), msgs.orderLookupAgain];
   },
 };
 

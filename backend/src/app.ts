@@ -26,8 +26,8 @@ export interface CreateAppOptions {
   chatSessionStore?: ChatSessionStore<ConversationState, Cart>;
   // Servicio de productos que consume el chat; si no se inyecta se usa el real (createProductService).
   chatProducts?: ChatProducts;
-  // Servicio de pedidos que consume el chat al confirmar; por defecto el real (createOrderService).
-  chatOrders?: Pick<OrderService, 'confirmOrder'>;
+  // Servicio de pedidos que consume el chat (confirmación y "Mis pedidos"); por defecto el real (createOrderService).
+  chatOrders?: Pick<OrderService, 'confirmOrder' | 'findCustomerOrder'>;
   // Construye los textos del pedido confirmado (TK-05.6, D-C); por defecto, número de orden y estado.
   chatConfirmedOrderMessage?: (order: ConfirmedOrder) => string[];
   // Solo para pruebas: server.ts nunca lo pasa.

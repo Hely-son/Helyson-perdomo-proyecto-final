@@ -46,7 +46,7 @@ Seguimiento operativo del MVP. Solo registra estado: la definición de cada tick
 | TK-05.5 | Hecho | — | commit único `TK-05.5: concurrencia de la confirmación y E2E de compra` (implementación y cierre) | 2026-11-27 |
 | TK-06.1 | Hecho | — | commit único `TK-06.1: transiciones de estado del pedido` (implementación y cierre) | 2026-11-27 |
 | TK-06.2 | Hecho | — | commit único `TK-06.2: endpoints de pedidos para el operador` (implementación y cierre) | 2026-11-27 |
-| TK-06.3 | Pendiente | — | — | — |
+| TK-06.3 | Hecho | — | commit único `TK-06.3: consulta de mis pedidos en el chat` (implementación y cierre) | 2026-11-27 |
 | TK-06.4 | Pendiente | — | — | — |
 | TK-06.5 | Pendiente | — | — | — |
 
@@ -144,6 +144,7 @@ Observaciones operativas que surgieron durante un ticket y deben revisarse en ot
 | TK-05.5 (QA, observaciones) | **Informativo** (2026-11-27). (1) `waitForLockWaiters` (`backend/tests/db/helpers/products.ts`) cuenta cualquier espera `Lock` de la base, no solo la de la fila de A; con `--runInBand` es improbable un falso positivo y el plazo de 8 s y `s1Settled` respaldan la prueba de ESC-35. (2) ESC-10 detecta interbloqueos de forma probabilística (20 rondas por variante, sin forzar el entrelazado). (3) CA-16 (ESC-08) añade unos 65 s fijos a `test:e2e` (D1: `CHAT_SESSION_TTL_MINUTES=1` en el backend de E2E). (4) Con un pool de Prisma menor que 8 conexiones, ESC-09 paralelizaría menos. (5) `medsupply_test` acumula productos `QA TK-05.5 …` (nombres únicos, sin limpieza) y los clientes `QA-E2E-CHAT-01` (activo) y `QA-E2E-CHAT-02` (inactivo, `955500124`); ESC-02 usa el teléfono no registrado `900000000`. Sin cambios de código | — |
 | TK-06.1 (DoD 2, excepción) | **Excepción aprobada por el usuario (2026-11-27), limitada a TK-06.1; no modifica la DoD general.** Evidencia oficial local de QA fase 2 (Node 26): backend `npm test` (34 suites, 449 passed, exit 0), `npm run test:db` (28 suites, 508 passed, exit 0), lint y typecheck de backend y frontend (exit 0). Seguridad no aplica (lógica de servicio sin endpoint). Su ejecución en CI corresponde a TK-00.7 | TK-00.7 (CI) |
 | TK-06.2 (DoD 2, excepción) | **Excepción aprobada por el usuario (2026-11-27), limitada a TK-06.2; no modifica la DoD general.** Evidencia oficial local de QA fase 2 (Node 26): backend `npm test` (34 suites, 449 passed, exit 0), `npm run test:db` (29 suites, 615 passed, exit 0), lint y typecheck de backend y frontend (exit 0). Seguridad aprobada con observaciones (B1 aceptada, B2 cerrada con comprobación puntual). Su ejecución en CI corresponde a TK-00.7 | TK-00.7 (CI) |
+| TK-06.3 (DoD 2, excepción) | **Excepción aprobada por el usuario (2026-11-27, D5), limitada a TK-06.3; no modifica la DoD general.** Evidencia oficial local de QA (Node 26), repetida tras corregir S-01: backend `npm test` (36 suites, 468 passed, exit 0), `npm run test:db` (30 suites, 622 passed, exit 0), `npm run lint` y `npm run typecheck` (exit 0). Seguridad aprobada (S-01 resuelto; I-01 e I-02 informativos sin acción). E2E de CA-07 en TK-06.5 (`docs/qa/TK-06.3-matrix.md`). Su ejecución en CI corresponde a TK-00.7 | TK-00.7 (CI) |
 
 ## Specs
 

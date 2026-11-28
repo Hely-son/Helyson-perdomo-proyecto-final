@@ -5,6 +5,7 @@ import { AppError } from '../../lib/app-error';
 // Confirmación atómica del pedido (spec 04 F-1, D-01..D-04; RN-01..RN-04). Operación de dominio, sin endpoint.
 
 const MONEY_FORMAT = /^\d{1,10}\.\d{2}$/;
+const ORDER_NUMBER_FORMAT = /^MED-\d{5,}$/; // número completo (RN-04, spec 04 D-08)
 const MAX_ATTEMPTS = 4; // 1 + 3 reintentos ante P2034 (ESC-12)
 
 export interface ConfirmItemInput {
@@ -74,9 +75,13 @@ export interface OrderDetailDto {
   updatedAt: string;
 }
 
+/** Pedido tal como lo consulta su cliente desde el chat (spec 04 F-2): sin `id` ni datos del cliente. */
+export type CustomerOrderDto = Pick<OrderDetailDto, 'orderNumber' | 'status' | 'totalAmount' | 'items'>;
+
 export interface OrderService {
   listOrders(input: ListOrdersInput): Promise<OrderPageDto>;
   getOrder(orderId: number): Promise<OrderDetailDto>;
+  findCustomerOrder(customerId: number, orderNumber: string): Promise<CustomerOrderDto | null>;
   confirmOrder(input: ConfirmOrderInput): Promise<ConfirmOrderResult>;
   changeOrderStatus(orderId: number, target: unknown): Promise<OrderStatusChange>;
 }
@@ -284,6 +289,39 @@ export function createOrderService(deps: { prisma: PrismaClient }): OrderService
         })),
         createdAt: o.createdAt.toISOString(),
         updatedAt: o.updatedAt.toISOString(),
+      };
+    },
+
+    // F-2 / D-08 (RN-08): número exacto y cliente en la misma consulta; ajeno e inexistente dan el mismo `null`.
+    async findCustomerOrder(customerId, orderNumber) {
+      // Prisma omite un filtro `undefined`: sin esta guarda la consulta podría perder el filtro por cliente.
+      if (!Number.isInteger(customerId) || customerId <= 0) throw invalidInput('El cliente no es válido.');
+      // Lo que no es un número completo no llega a PostgreSQL (que además rechaza el carácter nulo).
+      if (!ORDER_NUMBER_FORMAT.test(orderNumber)) return null;
+      const o = await prisma.order.findFirst({
+        where: { orderNumber, customerId },
+        select: {
+          orderNumber: true,
+          status: true,
+          totalAmount: true,
+          items: {
+            orderBy: { productId: 'asc' },
+            select: { productId: true, quantity: true, unitPrice: true, product: { select: { name: true } } },
+          },
+        },
+      });
+      if (o === null) return null;
+      return {
+        orderNumber: o.orderNumber,
+        status: o.status,
+        totalAmount: o.totalAmount.toFixed(2),
+        items: o.items.map((i) => ({
+          productId: i.productId,
+          productName: i.product.name,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice.toFixed(2),
+          subtotal: i.unitPrice.times(i.quantity).toFixed(2),
+        })),
       };
     },
 
