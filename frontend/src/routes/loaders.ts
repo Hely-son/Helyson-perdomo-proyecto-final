@@ -1,9 +1,11 @@
 // Loaders del router: aplican las decisiones puras de src/auth/guards.ts antes de mostrar cada pantalla (spec 05 §15.5, §16.2, §16.3).
-import { redirect } from 'react-router';
+import { redirect, type LoaderFunctionArgs } from 'react-router';
 import { markSessionLossHandled } from '../api/client';
+import { getOrder, listOrders, type OrderDetail, type OrderPage } from '../api/orders';
 import { listProducts, listStockAlerts, type Product } from '../api/products';
 import { resolveLoginAccess, resolveProtectedAccess, resolveUnknownRoute } from '../auth/guards';
 import { sessionStore } from '../auth/session-store';
+import { classifyOrderError, parseOrdersQuery, type OrdersQuery } from '../orders/orders';
 import { classifyProductError } from '../products/inventory';
 
 /** Ruta protegida: sin sesión o con sesión vencida redirige a /login sin llamar a la API. */
@@ -86,4 +88,55 @@ export async function alertsLoader(): Promise<AlertsLoaderData> {
   } catch (error) {
     return isSessionError(error) ? { status: 'session' } : { status: 'error' };
   }
+}
+
+export type OrderDetailState =
+  | { status: 'ready'; order: OrderDetail }
+  | { status: 'not-found' }
+  | { status: 'invalid'; message: string }
+  | { status: 'error' };
+
+export type OrdersLoaderData =
+  /** detail es null si la URL no abre ningún pedido. Un fallo del detalle no oculta el listado. */
+  | { status: 'ready'; query: OrdersQuery; orders: OrderPage; detail: OrderDetailState | null }
+  | { status: 'error'; query: OrdersQuery; detail: OrderDetailState | null }
+  | { status: 'invalid'; query: OrdersQuery; message: string; detail: OrderDetailState | null }
+  /** La sesión se perdió: el flujo de sesión ya redirige a /login; la pantalla no muestra error. */
+  | { status: 'session' };
+
+function orderDetailState(result: PromiseSettledResult<OrderDetail | null>): OrderDetailState | null {
+  if (result.status === 'fulfilled') {
+    const order = result.value;
+    if (order === null) return null;
+    return Array.isArray(order?.items) && order.customer ? { status: 'ready', order } : { status: 'error' };
+  }
+  const error = classifyOrderError(result.reason);
+  if (error.kind === 'not-found') return { status: 'not-found' };
+  if (error.kind === 'validation') return { status: 'invalid', message: error.message };
+  return { status: 'error' };
+}
+
+/**
+ * /dashboard/orders: lee en paralelo el listado y, si la URL abre un pedido, su detalle (spec 05 §16.4, spec 04 F-3).
+ * Nunca lanza: los fallos viajan en el resultado.
+ */
+export async function ordersLoader({ request }: LoaderFunctionArgs): Promise<OrdersLoaderData> {
+  const query = parseOrdersQuery(new URL(request.url).searchParams);
+  const [orders, order] = await Promise.allSettled([
+    listOrders(query),
+    query.orderId === null ? Promise.resolve(null) : getOrder(query.orderId),
+  ]);
+  const lostSession = (result: PromiseSettledResult<unknown>) =>
+    result.status === 'rejected' && classifyOrderError(result.reason).kind === 'session';
+  if (lostSession(orders) || lostSession(order)) return { status: 'session' };
+
+  const detail = orderDetailState(order);
+  if (orders.status === 'rejected') {
+    const error = classifyOrderError(orders.reason);
+    return error.kind === 'validation'
+      ? { status: 'invalid', query, message: error.message, detail }
+      : { status: 'error', query, detail };
+  }
+  if (!Array.isArray(orders.value?.items) || !orders.value.pagination) return { status: 'error', query, detail };
+  return { status: 'ready', query, orders: orders.value, detail };
 }

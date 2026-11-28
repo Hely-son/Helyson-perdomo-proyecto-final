@@ -8,7 +8,7 @@ import LoginPage from '../pages/LoginPage';
 import DashboardHomePage from '../pages/DashboardHomePage';
 import ProductsPage from '../pages/ProductsPage';
 import OrdersPage from '../pages/OrdersPage';
-import { alertsLoader, productsLoader } from './loaders';
+import { alertsLoader, ordersLoader, productsLoader } from './loaders';
 
 export type PublicPath = '/chat' | '/login';
 export type DashboardPath = '/dashboard' | '/dashboard/products' | '/dashboard/orders';
@@ -44,7 +44,13 @@ export const DASHBOARD_ROUTES: readonly DashboardRoute[] = [
     Component: ProductsPage,
     loader: productsLoader,
   },
-  { path: '/dashboard/orders', label: 'Pedidos', icon: ShoppingCartOutlined, Component: OrdersPage },
+  {
+    path: '/dashboard/orders',
+    label: 'Pedidos',
+    icon: ShoppingCartOutlined,
+    Component: OrdersPage,
+    loader: ordersLoader,
+  },
 ];
 
 /** Clave de la entrada "Cerrar sesión" del menú: acción del cliente, no navega a una ruta. */
