@@ -25,6 +25,14 @@ export const E2E_INACTIVE_CHAT_CUSTOMER_NAME = 'Clínica E2E Inactiva Ficticia';
 export const E2E_INACTIVE_CHAT_CUSTOMER_TAX_ID = 'QA-E2E-CHAT-02';
 export const E2E_INACTIVE_CHAT_CUSTOMER_NATIONAL_PHONE = '955500124';
 export const E2E_INACTIVE_CHAT_CUSTOMER_PHONE = `+56${E2E_INACTIVE_CHAT_CUSTOMER_NATIONAL_PHONE}`;
+/**
+ * Segundo cliente ficticio ACTIVO del chat (TK-06.5, D2): dueño del pedido ajeno de CA-07 (spec 04 ESC-35). Lo prepara el
+ * mismo globalSetup con el mismo script. Teléfono propio, distinto de los demás clientes E2E y de cualquier fixture del seed.
+ */
+export const E2E_SECOND_CHAT_CUSTOMER_NAME = 'Farmacia E2E Ajena Ficticia';
+export const E2E_SECOND_CHAT_CUSTOMER_TAX_ID = 'QA-E2E-CHAT-03';
+export const E2E_SECOND_CHAT_CUSTOMER_NATIONAL_PHONE = '955500125';
+export const E2E_SECOND_CHAT_CUSTOMER_PHONE = `+56${E2E_SECOND_CHAT_CUSTOMER_NATIONAL_PHONE}`;
 /** Teléfono fijo sin cliente registrado (CA-06, ESC-02: +56 9 0000 0000); no coincide con ningún fixture. */
 export const E2E_UNREGISTERED_NATIONAL_PHONE = '900000000';
 

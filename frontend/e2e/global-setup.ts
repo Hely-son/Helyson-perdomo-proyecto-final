@@ -13,6 +13,9 @@ import {
   E2E_INACTIVE_CHAT_CUSTOMER_TAX_ID,
   E2E_OPERATOR_EMAIL,
   E2E_OPERATOR_NAME,
+  E2E_SECOND_CHAT_CUSTOMER_NAME,
+  E2E_SECOND_CHAT_CUSTOMER_PHONE,
+  E2E_SECOND_CHAT_CUSTOMER_TAX_ID,
   e2eOperatorPassword,
 } from './support/e2e-env';
 
@@ -72,5 +75,22 @@ export default function globalSetup(): void {
   });
   if (inactive.status !== 0) {
     throw new Error(`global-setup: no se pudo preparar el cliente E2E inactivo del chat (código ${String(inactive.status)})`);
+  }
+
+  // TK-06.5 (D2): segundo cliente ficticio activo del chat, dueño del pedido ajeno de CA-07; mismo script, sin cambios.
+  const second = spawnSync(TSX_BIN, [UPSERT_CHAT_CUSTOMER_SCRIPT], {
+    cwd: BACKEND_DIR,
+    shell: false,
+    stdio: ['ignore', 'inherit', 'inherit'],
+    env: {
+      PATH: process.env.PATH,
+      DATABASE_URL: resolveTestDatabaseUrl(),
+      E2E_CHAT_CUSTOMER_NAME: E2E_SECOND_CHAT_CUSTOMER_NAME,
+      E2E_CHAT_CUSTOMER_TAX_ID: E2E_SECOND_CHAT_CUSTOMER_TAX_ID,
+      E2E_CHAT_CUSTOMER_PHONE: E2E_SECOND_CHAT_CUSTOMER_PHONE,
+    },
+  });
+  if (second.status !== 0) {
+    throw new Error(`global-setup: no se pudo preparar el segundo cliente E2E del chat (código ${String(second.status)})`);
   }
 }
