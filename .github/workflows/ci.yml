@@ -101,7 +101,7 @@ jobs:
 
       - name: Backend · pruebas unitarias
         working-directory: backend
-        run: npm test -- ci-red-inexistente
+        run: npm test
 
       # Incluye la concurrencia (RNF-04). Recrea medsupply_test y la deja migrada para los E2E.
       - name: Backend · pruebas de integración
